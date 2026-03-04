@@ -1206,11 +1206,11 @@
       },
       "System.Drawing.Common": {
         "type": "Transitive",
-        "resolved": "4.7.0",
+        "resolved": "4.7.2",
         "contentHash": "v+XbyYHaZjDfn0ENmJEV1VYLgGgCTx1gnfOBcppowbpOAriglYgGCvFCPr2EEZyBvXlpxbEsTwkOlInl107ahA==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "3.1.0",
-          "Microsoft.Win32.SystemEvents": "4.7.0"
+          "Microsoft.Win32.SystemEvents": "4.7.2"
         }
       },
       "System.Globalization": {
@@ -1981,10 +1981,10 @@
       },
       "System.Windows.Extensions": {
         "type": "Transitive",
-        "resolved": "4.7.0",
+        "resolved": "4.7.2",
         "contentHash": "CeWTdRNfRaSh0pm2gDTJFwVaXfTq6Xwv/sA887iwPTneW7oMtMlpvDIO+U60+3GWTB7Aom6oQwv5VZVUhQRdPQ==",
         "dependencies": {
-          "System.Drawing.Common": "4.7.0"
+          "System.Drawing.Common": "4.7.2"
         }
       },
       "System.Xml.ReaderWriter": {
