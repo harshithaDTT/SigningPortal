@@ -1,0 +1,538 @@
+﻿.logo {
+    text-align: center;
+    margin-bottom: 1%;
+}
+
+
+
+tbody tr td:first-child {
+    text-align: left !important;
+}
+
+
+
+tbody, td, tfoot, th, thead, tr {
+    border: none !important;
+}
+
+
+
+table tbody > tr {
+    border-bottom: none !important;
+}
+
+
+
+.pdfView table {
+    border-collapse: collapse;
+}
+
+
+
+label {
+    display: inline-block;
+    width: 200px;
+    height: 10px;
+}
+
+
+
+
+
+#signatorieslist:last-child {
+    border-bottom: none !important;
+}
+
+
+
+.pdfView {
+    max-width: 883px;
+    margin: auto;
+    padding: 30px;
+    border: 1px solid #eee;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .15);
+    font-size: 16px;
+    line-height: 24px;
+    font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+    color: #555;
+}
+
+
+
+    .pdfView table td {
+        padding: 8px;
+        vertical-align: top;
+    }
+
+
+
+    .pdfView table {
+        width: 100%;
+        line-height: inherit;
+        text-align: left;
+    }
+
+
+.document-container {
+    display: flex;
+    align-items: flex-start;
+}
+
+.document-image {
+    width: 114px !important;
+    height: 120px !important;
+}
+
+@media screen and (max-width:576px) {
+    .document-image {
+        width: 90px !important;
+        height: 90px !important;
+    }
+}
+
+.cancel {
+    background-color: rgb(244, 67, 54) !important
+}
+
+
+
+.sweet-alert p {
+    color: #797979;
+    font-size: 1.125em !important;
+    text-align: center;
+    font-family: sans-serif;
+    font-weight: 300;
+    position: relative;
+    text-align: inherit;
+    float: none;
+    margin: 0;
+    padding: 0;
+    line-height: normal;
+}
+
+
+
+.document-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.signaturesRequired {
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.container {
+    width: 66%;
+}
+
+    .container .qwer {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        font-size: 13px;
+    }
+
+    .container .steps {
+        display: flex;
+        width: 100%;
+        margin-top: 38px;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+    }
+
+.steps .circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 15px;
+    width: 15px;
+    color: #999;
+    background: green;
+    border-radius: 35%;
+    background: #fff;
+    border: 4px solid #e0e0e0;
+    z-index: 1;
+}
+
+    .steps .circle.active {
+        border-color: #4070f4;
+        color: #4070f4;
+    }
+
+.steps .progress-bar {
+    position: absolute;
+    height: 4px;
+    width: 100%;
+    background: #e0e0e0;
+}
+
+.progress-bar .indicator {
+    position: absolute;
+    height: 100%;
+    width: 0%;
+    background: #4070f4;
+    transition: all 300ms ease;
+}
+
+.content .card {
+    background-color: #f8f8f8;
+    padding-top: 34px !important;
+    margin-top: -35px !important;
+}
+
+.card-content {
+    overflow-y: auto; /* Add overflow-y to enable vertical scrolling if needed */
+    max-height: 605px; /* Add max-height to limit the height of the card content */
+    margin-left: 10px;
+}
+
+.MuiPaper-root {
+    color: rgba(0, 0, 0, 0.87);
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    background-color: #fff;
+}
+
+.jss19 {
+    width: 52px;
+    height: 52px;
+}
+
+.jss17 {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    max-width: 80px;
+    align-items: center;
+    border-radius: 50%;
+    justify-content: center;
+    background-color: #ebebeb;
+}
+
+table tbody > tr:first-child > td {
+    background-color: transparent !important;
+}
+
+
+.MuiPaper-elevation4 {
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+}
+
+#progressbarid {
+    display: flex;
+}
+
+#Details-Modal-Content {
+    height: 85%;
+    width: 147%;
+}
+
+#MyListTb {
+    width: 100%;
+}
+
+
+@media (max-width: 767px) {
+
+    #Details-Modal-Content {
+        height: 65%;
+        width: fit-content !important;
+    }
+
+    #selfsigning_table {
+        margin-left: 10px;
+    }
+
+    #multisigning_signatories {
+        margin-left: 10px;
+    }
+
+    #multisigning_table {
+        margin-left: 10px;
+    }
+
+    #documentdetails_heading {
+        font-size: 15px !important;
+    }
+
+    #Details_Modal {
+        overflow-x: auto;
+        padding: 0px !important;
+    }
+
+    .pdfView table td {
+        padding: 6px !important;
+        vertical-align: top;
+        font-size: 10px !important;
+    }
+
+    .pdfView {
+        padding: 0px !important;
+    }
+
+    #documentboxid {
+        margin-top: 25% !important;
+        width: 80% !important;
+    }
+
+
+    .logoimage {
+        width: 150px !important;
+        height: 53px !important;
+    }
+
+    .wrap-text {
+        word-break: break-word;
+        white-space: normal;
+        max-width: 200px;
+        overflow-wrap: break-word;
+    }
+
+    #selfsigning_table {
+        table-layout: fixed;
+        width: 95%;
+    }
+
+    #multisigning_table {
+        table-layout: fixed;
+        width: 95%;
+    }
+
+    #multisigning_signatories {
+        table-layout: fixed;
+        width: 95%;
+    }
+
+    .split-table {
+        table-layout: fixed;
+        width: 94% !important;
+        margin-left: 10px;
+    }
+
+    #signatorieslisttable {
+        table-layout: fixed;
+        width: 95%;
+    }
+
+    #signaturesRequireddiv {
+        margin-left: 0px !important;
+    }
+
+    #Viewdetails {
+        margin-right: 0px !important;
+    }
+}
+
+@media (max-width:575px) {
+    #documentboxid {
+        margin-top: 30% !important;
+        width: 90% !important;
+    }
+
+    #Details-Modal-Content {
+        height: 70%;
+        width: fit-content !important;
+    }
+}
+
+@media (max-width:576px) {
+    #documentboxid {
+        margin-top: 30% !important;
+        width: 90% !important;
+    }
+
+    #Details-Modal-Content {
+        height: 70%;
+        width: fit-content !important;
+    }
+}
+
+@media (min-width:992px) {
+    #documentboxid {
+        width: 50%;
+    }
+}
+
+/* Styling the expand "+" icon */
+table.dataTable > tbody > tr > td.control::before {
+    font-size: 20px;
+    font-weight: bold;
+    color: #007bff;
+    display: inline-block;
+    text-align: center;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 24px;
+}
+
+/* Styling the collapse "−" icon */
+table.dataTable > tbody > tr.parent > td.control::before {
+    font-size: 15px !important;
+    font-weight: bold;
+    display: inline-block;
+    text-align: center;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    border-radius: 20px;
+}
+
+table.dataTable tbody tr.parent td.control::before {
+    background-color: forestgreen !important;
+    color: white !important;
+}
+
+.tooltip-inner {
+    background: rgb(19 180 105) !important;
+    text-align: left !important;
+}
+
+.arrow::before {
+    border-top-color: rgb(19 180 105) !important;
+}
+
+.tooltip-inner {
+    max-width: none !important;
+    white-space: nowrap !important;
+    overflow-x: auto;
+}
+
+.signatory-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px 24px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    font-family: "Segoe UI", sans-serif;
+    transition: box-shadow 0.3s ease;
+}
+
+@media screen and (max-width:576px) {
+    .signatory-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding: 12px 8px;
+    }
+}
+
+.signatory-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.signatory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.signatory-profile {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+    .signatory-profile img {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+.signatory-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.signatory-name {
+    font-weight: 700;
+    color: #1f2937;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.signatory-email {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.detail-item {
+    display: flex;
+    gap: 6px;
+    font-size: 14px;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #4b5563;
+    font-size: 14px;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+.signatory-status {
+    display: flex;
+    gap: 26px;
+    align-items: center;
+}
+
+@media screen and (max-width:576px) {
+    .signatory-status {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding-left: 63px;
+        gap: 0px;
+        width: 100%;
+    }
+
+    .signed-btn {
+        width: 100%;
+    }
+}
+
+.signingstats-heading {
+    font-weight: 600;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.signingstats-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.btn-sign {
+    padding: 6px 14px;
+    background-color: #198754;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+}
+
+    .btn-sign:hover {
+        background-color: #157347;
+    }

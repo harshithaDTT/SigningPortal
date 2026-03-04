@@ -1,0 +1,1444 @@
+﻿@model SigningPortal.Web.ViewModels.Integration.StorageIntegrationListViewModel
+
+@*@{
+    var googleDrive = false;
+    var oneDrive = false;
+
+    if(Model.StrorageList.Count > 0){
+        foreach(var storage in Model.StrorageList){
+            if (storage.StorageName == "GOOGLE_DRIVE")
+                googleDrive = true;
+            if (storage.StorageName == "ONE_DRIVE")
+                oneDrive = true;
+        }
+    }
+}*@
+
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+
+<style>
+    .unlink-button {
+        background-color: #dc143c !important;
+        border: none;
+        color: #fff;
+        padding: 8px 24px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+        margin: 10px 0;
+        border-radius: 6px;
+        width: 45%;
+        max-width: 200px;
+    }
+
+
+    .cancel-button, .link-button {
+        border: none;
+        color: #fff;
+        padding: 8px 24px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 10px 0;
+        border-radius: 6px;
+    }
+
+
+    .link-button {
+        width: 45%;
+        font-size: 14px;
+        max-width: 220px;
+    }
+
+    @@media screen and (min-width:576px) and (max-width:768px) {
+        .link-button, .unlink-button {
+            width: 45%;
+            font-size: 15px;
+        }
+    }
+
+    @@media screen and (min-width:769px) and (max-width:991px) {
+        .link-button, .unlink-button {
+            width: 40%;
+            font-size: 16px;
+        }
+    }
+
+    @@media screen and (min-width:992px) and (max-width:1200px) {
+        .link-button, .unlink-button {
+            width: 40%;
+            font-size: 16px;
+        }
+    }
+
+    @@media screen and (min-width:1200px) {
+        .link-button, .unlink-button {
+            width: 100%;
+            font-size: 16px;
+        }
+    }
+
+    .card1 {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        margin-bottom: 1.5rem;
+        word-wrap: break-word;
+        background-clip: initial;
+        border-radius: 0.25rem;
+        background-color: #fff;
+        border: 1px solid #d8dbe0;
+        padding-top: 2rem;
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+
+    .card-content {
+        overflow-y: auto; /* Add overflow-y to enable vertical scrolling if needed */
+    }
+
+    .link-button {
+        background: #27bc77;
+        border: 2px solid #8dd3bb;
+        border-radius: 50px;
+        color: white;
+    }
+
+        .link-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
+        }
+    /* ===== CLOUD INTEGRATION UI ===== */
+
+    .cloud-header {
+        max-width: 700px;
+        margin: auto;
+    }
+
+    .cloud-badge {
+        background: #e0f7f3;
+        color: #0d9488;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .cloud-title {
+        font-size: 36px;
+        font-weight: 700;
+        margin-top: 14px;
+    }
+
+    .cloud-subtitle {
+        color: #64748b;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    .cloud-grid {
+        width: 90%;
+    }
+
+    /* GRID */
+    .cloud-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 30px;
+        margin: auto;
+    }
+
+    /* CARD */
+    .cloud-card {
+        background: radial-gradient(circle at top, #ffffff, #f8fafc);
+        border-radius: 22px;
+        padding: 36px 28px;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+        transition: all .3s ease;
+    }
+
+        .cloud-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+        }
+
+    .cloud-logo {
+        width: 80px;
+        height: 56px;
+        margin-bottom: 18px;
+    }
+
+    .cloud-card h4 {
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .cloud-card p {
+        color: #64748b;
+        font-size: 14px;
+        margin: 10px 0 24px;
+    }
+
+    /* BUTTONS */
+    .cloud-btn {
+        width: 100%;
+        padding: 12px 18px;
+        border-radius: 14px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 10px;
+        transition: all .25s ease;
+    }
+
+    .google-btn {
+        background: #1ee98b;
+        color: #fff;
+    }
+
+        .google-btn:hover {
+            background: #1ee98b;
+        }
+
+    .onedrive-btn {
+        background: #4fd1c5;
+        color: #fff;
+    }
+
+        .onedrive-btn:hover {
+            background: #38b2ac;
+        }
+
+    .unlink-btn {
+        background: #ffeaea !important;
+        color: #cc0000 !important;
+        border: 1px solid #ff9c9c !important;
+    }
+
+    .set-btn {
+        background: #0f766e;
+        color: #fff;
+    }
+
+    .active-text {
+        color: #16a34a;
+        font-weight: 700;
+        margin-top: 8px;
+    }
+
+    .expiry-text {
+        margin-top: 8px;
+        font-size: 13px;
+        color: #64748b;
+    }
+    /* ===== NEW DRIVE CARD UI (MATCHES DESIGN) ===== */
+
+    .drive-card-ui {
+        background: #ffffff;
+        border-radius: 26px;
+        padding: 30px 30px;
+        text-align: center;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+        transition: 0.3s ease;
+        position: relative;
+    }
+
+        .drive-card-ui:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+        }
+
+    .drive-icon-box {
+        width: 78px;
+        height: 78px;
+        border-radius: 18px;
+        background: #ffffff;
+        margin: auto;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+        .drive-icon-box img {
+            width: 80px;
+            height: 57px;
+        }
+
+    .drive-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    /* FEATURES */
+
+    .drive-features {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px 25px;
+        font-size: 13px;
+        margin: 2rem 3rem 2rem 4rem;
+    }
+
+        .drive-features div {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #334155;
+        }
+
+
+        .drive-features.google span {
+            color: #22c55e;
+        }
+
+        .drive-features.onedrive span {
+            color: #3b82f6;
+        }
+
+    /* DESC */
+
+    .drive-desc {
+        font-size: 13px;
+        color: #64748b;
+        margin: 2rem 2rem 2rem 2rem;
+        line-height: 1.5;
+    }
+
+    /* BUTTON */
+
+    .drive-connect-btn {
+        width: auto;
+        border-radius: 0.5rem;
+        border: none;
+        font-size: 15px;
+        min-height: 44px;
+        font-weight: 500;
+        padding: 0.625rem 1rem;
+        color: #fff;
+        cursor: pointer;
+        transition: 0.25s ease;
+    }
+
+        .drive-connect-btn.google-btn {
+            background: #00d084;
+        }
+
+            .drive-connect-btn.google-btn:hover {
+                background: #00b574;
+            }
+
+        .drive-connect-btn.onedrive-btn {
+            background: #0EA5A4;
+        }
+
+            .drive-connect-btn.onedrive-btn:hover {
+                background: #38b2ac;
+            }
+    /* ===== LINKED STATE UI ===== */
+
+    .linked-card {
+        border: 2px solid #86efac;
+        position: relative;
+    }
+
+    /* Ribbon Badge */
+    .linked-ribbon {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #34d399;
+        color: white;
+        padding: 6px 14px;
+        font-size: 11px;
+        font-weight: 700;
+        border-bottom-left-radius: 14px;
+        border-top-right-radius: 26px;
+    }
+
+    /* Status Pill */
+    .status-pill {
+        display: inline-block;
+        margin: 6px 0 10px;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+        .status-pill.active {
+            background: linear-gradient(90deg, #e4f5ee, #f9fffd);
+            color: #059669;
+        }
+
+    .google-valid-pill {
+        position: absolute;
+        top: 40px;
+        right: 0;
+        margin: 0;
+        border-top-right-radius: 26px;
+        border-bottom-right-radius: 0;
+        border-top-left-radius: 14px;
+        border-bottom-left-radius: 14px;
+    }
+
+    .onedrive-valid-pill {
+        position: absolute;
+        top: 40px;
+        right: 0;
+        margin: 0;
+        border-top-right-radius: 26px;
+        border-bottom-right-radius: 0;
+        border-top-left-radius: 14px;
+        border-bottom-left-radius: 14px;
+    }
+
+    /* Valid till text */
+    .valid-till {
+        font-size: 12px;
+        color: #475569;
+        margin-bottom: 12px;
+    }
+    /* Overlay */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+    }
+
+    /* Card */
+    .modal-card {
+        min-width:450px;
+        max-width: 500px;
+        background: #fff;
+        border-radius: 16px;
+        padding: 18px 48px;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Icon */
+    .modal-icon {
+        width: 70px;
+        height: 56px;
+        margin: 0 auto 12px;
+        border-radius: 14%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        margin-top: 20px;
+        background: radial-gradient( circle at center, rgba(0, 170, 150, 0.18) 0%, rgba(0, 170, 150, 0.12) 25%, rgba(0, 170, 150, 0.06) 45%, rgba(0, 170, 150, 0.02) 65%, transparent 80% );
+    }
+
+    /* Title */
+    .modal-title {
+        margin: 0rem 1rem 1rem 1rem;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    /* Description */
+    .modal-desc {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 24px;
+        margin-top: 20px;
+    }
+
+    /* Actions */
+    .modal-actions {
+        display: flex;
+        gap: 14px;
+        justify-content: space-evenly;
+        margin: 2rem 1rem 1rem 1rem;
+    }
+
+    /* Buttons */
+    .btn-cancel {
+        padding: 10px 20px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    .btn-confirm {
+        padding: 10px 22px;
+        border-radius: 10px;
+        border: none;
+        background: #0d9488;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    /* Footer */
+    .modal-footer {
+        font-size: 12px;
+        color: #9ca3af;
+        justify-content: center;
+        min-height: 40px;
+        background: none;
+        margin-top: 15px;
+    }
+
+    .lsm-footer {
+        justify-content: center;
+        min-height: 40px;
+        background: none;
+        margin-top: 15px;
+    }
+    /* Demo button */
+    .open-btn {
+        padding: 10px 16px;
+        background: #0d9488;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .loading-card {
+        width: 420px;
+        padding: 42px 24px;
+    }
+
+    .loading-icon-wrapper {
+        position: relative;
+        width: 90px;
+        height: 90px;
+        margin: 0 auto 24px;
+        background: radial-gradient( circle at center, rgba(0, 170, 150, 0.18) 0%, rgba(0, 170, 150, 0.12) 25%, rgba(0, 170, 150, 0.06) 45%, rgba(0, 170, 150, 0.02) 65%, transparent 80% );
+    }
+
+    .loading-icon {
+        position: absolute;
+        inset: 0;
+        background: #e6f6f2;
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        z-index: 2;
+    }
+
+    /* Rings animation */
+    .loading-rings {
+        position: absolute;
+        inset: -10px;
+        border-radius: 50%;
+        border: 2px dashed rgba(13, 148, 136, 0.4);
+        animation: spin 6s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Dots */
+    .loading-dots {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 18px;
+    }
+
+        .loading-dots span {
+            width: 6px;
+            height: 6px;
+            background: #0d9488;
+            border-radius: 50%;
+            animation: blink 1.4s infinite both;
+        }
+
+            .loading-dots span:nth-child(2) {
+                animation-delay: .2s;
+            }
+
+            .loading-dots span:nth-child(3) {
+                animation-delay: .4s;
+            }
+
+    @@keyframes blink {
+        0% {
+            opacity: .2;
+        }
+
+        20% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: .2;
+        }
+    }
+
+    .success-icon-wrapper {
+        position: relative;
+        width: 160px;
+        height: 160px;
+        margin: 0 auto 30px;
+    }
+
+    /* Soft Glow */
+    .success-glow {
+        position: absolute;
+        width: 130px;
+        height: 130px;
+        background: rgba(13,148,136,0.08);
+        border-radius: 50%;
+        filter: blur(40px);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+
+
+    .tick-check {
+        stroke: #fff;
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 50;
+        stroke-dashoffset: 50;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 10px 22px;
+        border-radius: 10px;
+        border: none;
+        background: rgba(13,148,136,0.1);
+        color: #0D9488;
+        font-weight: 600;
+        font-size: 17px;
+    }
+
+        .status-badge:hover {
+            color: #fff;
+            background: #0D9488;
+        }
+    /* Shield Shape */
+    .shield1 {
+        position: absolute;
+        width: 100px;
+        height: 118px;
+        background: rgba(13,148,136,0.12);
+        clip-path: polygon( 50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25% );
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .shield2 {
+        position: absolute;
+        width: 86px;
+        height: 103px;
+        background: rgba(13,148,136,0.12);
+        clip-path: polygon( 50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25% );
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .layer-1 {
+        transform: translate(-50%, -50%) rotate(12deg);
+        background: rgba(13,148,136,0.10);
+    }
+
+    .layer-2 {
+        transform: translate(-50%, -50%) rotate(-6deg);
+        background: rgba(13,148,136,0.18);
+    }
+    /* Shield Base Animation */
+    .shield1 {
+        opacity: 1;
+        animation: shieldFadeIn 0.5s ease forwards;
+    }
+
+    .shield2 {
+        opacity: 0;
+        animation: shieldFadeIn 0.5s ease forwards;
+    }
+
+    /* Layer 1 animation */
+    .layer-1 {
+        animation: shieldLayer1 0.8s ease forwards;
+    }
+
+    /* Layer 2 animation */
+    .layer-2 {
+        animation: shieldLayer2 0.8s ease forwards;
+    }
+
+    #successModal.show-success .shield {
+        animation: shieldFadeIn 0.5s ease forwards;
+    }
+
+    #successModal.show-success .layer-1 {
+        animation: shieldLayer1 0.8s ease forwards;
+    }
+
+    #successModal.show-success .layer-2 {
+        animation: shieldLayer2 0.8s ease forwards;
+    }
+
+    /* Center Card */
+    .success-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        width: 70px;
+        height: 70px;
+        border-radius: 14px;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.08);
+        animation: popIn 0.4s ease forwards;
+    }
+
+    .success-svg {
+        width: 60px;
+        height: 60px;
+    }
+
+
+
+    #successModal.show-success .tick-check {
+        animation: drawCheck 0.5s 0.3s ease forwards;
+    }
+
+    /* Animations */
+    @@keyframes drawCheck {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @@keyframes popIn {
+        to {
+            transform: translate(-50%, -50%) scale(1);
+        }
+    }
+
+    @@keyframes shieldFadeIn {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.7);
+        }
+
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+    }
+
+    @@keyframes shieldLayer1 {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(30deg) scale(0.8);
+        }
+
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(12deg) scale(1);
+        }
+    }
+
+    @@keyframes shieldLayer2 {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(-25deg) scale(0.8);
+        }
+
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(-6deg) scale(1);
+        }
+    }
+
+    @@keyframes floatShield {
+        0%, 100% {
+            transform: translate(-50%, -50%) rotate(12deg);
+        }
+
+        50% {
+            transform: translate(-50%, -52%) rotate(12deg);
+        }
+    }
+
+    #successModal.show-success .layer-1 {
+        animation: shieldLayer1 0.8s ease forwards, floatShield 4s ease-in-out 1s infinite;
+    }
+
+    .layer-1 {
+        animation: rotateLayer1 6s linear infinite;
+    }
+
+    .layer-2 {
+        animation: rotateLayer2 8s linear infinite;
+    }
+
+    @@keyframes rotateLayer1 {
+        from {
+            transform: translate(-50%, -50%) rotate(12deg);
+        }
+
+        to {
+            transform: translate(-50%, -50%) rotate(372deg); /* 360 + 12 */
+        }
+    }
+
+    @@keyframes rotateLayer2 {
+        from {
+            transform: translate(-50%, -50%) rotate(-6deg);
+        }
+
+        to {
+            transform: translate(-50%, -50%) rotate(354deg); /* 360 - 6 */
+        }
+    }
+
+    .drive-btn-container {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    }
+</style>
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+    <div class="col-md-12">
+        <div id="create">
+
+            <div class="d-flex align-items-center gap-3 mb-3">
+
+                <div>
+                    <h1 class="fw-bold page-title" style="font-size:36px;">Drive Integration</h1>
+                    <p class="text-muted mb-0 subtitle">
+                        Seamlessly upload documents by integrating with your preferred cloud drives
+                    </p>
+                </div>
+            </div>
+            <br>
+            <div class="cloud-wrapper">
+                <div class="cloud-grid">
+
+                    <!-- GOOGLE DRIVE -->
+                    @if (Model.GoogleDrive)
+                    {
+                        <div id="googleDriveCard"
+                             data-storage-card="@Model.GoogleDriveStorage.StorageName"
+                             data-linked="@Model.GoogleDriveStorage.IsLinked.ToString().ToLower()"
+                             class="drive-card-ui @(Model.GoogleDriveStorage.IsLinked ? "linked-card" : "")">
+
+                            @if (Model.GoogleDriveStorage.IsLinked)
+                            {
+                                @if (Model.GoogleDriveStorage.Active)
+                                {
+                                    <div class="linked-ribbon" data-storage-ribbon="@Model.GoogleDriveStorage.StorageName">Linked & Active Storage</div>
+                                }
+                                else
+                                {
+                                    <div class="linked-ribbon" data-storage-ribbon="@Model.GoogleDriveStorage.StorageName">Linked</div>
+                                }
+
+                            }
+
+                            <div style="margin: 1rem 1rem 1rem 1rem;">
+                                <img src="~/images/google-drive.jpg" style="width: 34%;" />
+                            </div>
+
+                            <h4 class="drive-title">Google Drive</h4>
+                            @if (Model.GoogleDriveStorage.IsLinked)
+                            {
+                                <div class="status-pill active google-valid-pill">Valid till: @Model.GoogleDriveStorage.ExpiryDate.ToString("dd-MM-yyyy")</div>
+
+
+                            }
+                            <div class="drive-features google">
+                                <div><span><i class="fa fa-link" aria-hidden="true"></i></span> Link your account</div>
+                                <div><span><i class="fa fa-check-circle" aria-hidden="true"></i></span> Select documents</div>
+                                <div><span><i class="fa fa-save"></i></span> Auto-save signed</div>
+                                <div><span><i class="fa-solid fa-folder"></i> </span> Unified storage </div>
+                            </div>
+
+                            <p class="drive-desc">
+                                Instantly import your Google Docs, Sheets, and PDFs directly from your personal or team workspace.
+                            </p>
+
+                            @if (!Model.GoogleDriveStorage.IsLinked)
+                            {
+                                <button class="drive-connect-btn google-btn"
+                                        id="googleConnectBtn"
+                                        onclick="confirmLinkStorage('@Model.GoogleDriveStorage.StorageName')">
+                                    Connect Google
+                                </button>
+                            }
+                            else
+                            {
+
+                                <div class="drive-btn-container">
+                                    <button class="drive-connect-btn unlink-btn"
+                                            onclick="confirmUnlinkStorage('@Model.GoogleDriveStorage.StorageName')">
+                                        Unlink Google
+                                    </button>
+                                    <button type="button"
+                                            class="drive-connect-btn google-btn link-button set-storage-btn"
+                                            style="display:@(Model.GoogleDriveStorage.Active ? "none" : "inline-block")"
+                                            onclick="confirmSetStorageDrive('@Model.GoogleDriveStorage.StorageName')">
+                                        Set as storage Drive
+                                    </button>
+                                    @if (Model.GoogleDriveStorage.Active)
+                                    {
+                                        <button type="button"
+                                                class="drive-connect-btn unlink-btn unset-storage-btn"
+                                                onclick="confirmUnsetStorageDrive('@Model.GoogleDriveStorage.StorageName')">
+                                            Unset storage drive
+                                        </button>
+                                    }
+                                </div>
+
+
+
+                            }
+
+                        </div>
+                    }
+
+                    <!-- ONE DRIVE -->
+                    @if (Model.OneDrive)
+                    {
+                        <div id="oneDriveCard"
+                             data-storage-card="@Model.OneDriveStorage.StorageName"
+                             data-linked="@Model.OneDriveStorage.IsLinked.ToString().ToLower()"
+                             class="drive-card-ui @(Model.OneDriveStorage.IsLinked ? "linked-card" : "")">
+
+                            @if (Model.OneDriveStorage.IsLinked)
+                            {
+                                @if (!Model.OneDriveStorage.Active)
+                                {
+                                    <div class="linked-ribbon" data-storage-ribbon="@Model.OneDriveStorage.StorageName">Linked</div>
+                                }
+                                else
+                                {
+                                    <div class="linked-ribbon" data-storage-ribbon="@Model.OneDriveStorage.StorageName">Linked & Active Storage</div>
+                                }
+
+                            }
+
+                            <div style="margin: 1rem 1rem 1rem 1rem;">
+                                <img src="~/images/onedrive.png" style="width: 34%;" />
+                            </div>
+                            <h4 class="drive-title">OneDrive</h4>
+
+                            @if (Model.OneDriveStorage.IsLinked)
+                            {
+                                <div class="status-pill active onedrive-valid-pill">Valid till: @Model.OneDriveStorage.ExpiryDate.ToString("dd-MM-yyyy")</div>
+
+
+                            }
+                            <div class="drive-features onedrive">
+                                <div><span><i class="fa fa-link" aria-hidden="true"></i></span> Link your account</div>
+                                <div><span><i class="fa fa-check-circle" aria-hidden="true"></i></span> Select documents</div>
+                                <div><span><i class="fa fa-save"></i></span> Auto-save signed</div>
+                                <div><span><i class="fa-solid fa-folder"></i> </span> Unified storage </div>
+                            </div>
+
+                            <p class="drive-desc">
+                                Sync seamlessly with Microsoft 365. Keep your enterprise documents unified and easily accessible.
+                            </p>
+
+                            @if (!Model.OneDriveStorage.IsLinked)
+                            {
+                                <button class="drive-connect-btn onedrive-btn"
+                                        id="oneDriveConnectBtn"
+                                        onclick="confirmLinkStorage('@Model.OneDriveStorage.StorageName')">
+                                    Connect OneDrive
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="drive-btn-container">
+                                    <button class="drive-connect-btn unlink-btn"
+                                            onclick="confirmUnlinkStorage('@Model.OneDriveStorage.StorageName')">
+                                        Unlink OneDrive
+                                    </button>
+                                    <button class="drive-connect-btn onedrive-btn link-button set-storage-btn" onclick="confirmSetStorageDrive('@Model.OneDriveStorage.StorageName')" style="display:@(Model.OneDriveStorage.Active ? "none" : "inline-block")">Set as storage Drive</button>
+                                    @if (Model.OneDriveStorage.Active)
+                                    {
+                                        <button type="button"
+                                                class="drive-connect-btn unlink-btn unset-storage-btn"
+                                                onclick="confirmUnsetStorageDrive('@Model.OneDriveStorage.StorageName')">
+                                            Unset storage drive
+                                        </button>
+                                    }
+                                </div>
+
+                            }
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+</div>
+<!-- Storage Modal (Single) -->
+<div id="storageModal" class="modal-overlay">
+    <div class="modal-card">
+
+        <!-- ===== CONFIRM STATE ===== -->
+        <div id="storageConfirmView">
+
+            <div class="modal-icon">
+                <img id="storageProviderIcon" src="~/img/icon/one_drive_link.png" />
+
+            </div>
+
+            <h3 class="modal-title">Confirm Storage Drive</h3>
+            <p class="modal-desc">
+                Set <b id="storageDriveName"></b> as your primary storage to automatically save signed files in your drive.
+            </p>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancelStorageModal">Cancel</button>
+                <button class="btn-confirm" id="confirmStorageModal">
+                    Proceed
+                </button>
+            </div>
+
+            <div class="modal-footer d-none">
+                🔒 Secure Integration
+            </div>
+
+        </div>
+
+        <!-- ===== LOADING STATE ===== -->
+        <div id="storageLoadingView" style="display:none">
+
+            <div class="loading-icon-wrapper" id="modalIcon">
+                <img  id="driveIcon" />
+                <svg id="successTick" viewBox="0 0 52 52">
+                    <circle class="tick-circle" cx="26" cy="26" r="25" fill="none" />
+                    <path class="tick-check" fill="none" d="M14 27l7 7 16-16" />
+                </svg>
+            </div>
+
+
+            <h3 class="modal-title">Connecting Your Storage Drive…</h3>
+
+            <p class="modal-desc">
+                A real-time secure connection is being established.
+            </p>
+
+            <div class="lsm-footer">
+                <div class="loading-dots"> <span></span><span></span><span></span> </div>
+            </div>
+
+        </div>
+        <!-- ===== SUCCESS STATE ===== -->
+        <div id="successModal" style="display:none;">
+
+            <div class="success-icon-wrapper">
+
+                <!-- Soft Glow -->
+                <div class="success-glow"></div>
+
+                <!-- Layered Shield Shapes -->
+                <div class="shield1 layer-1"></div>
+                <div class="shield2 layer-2"></div>
+
+                <!-- Center Icon -->
+                <div class="success-icon">
+                    <svg viewBox="0 0 52 52" class="success-svg">
+                        <circle cx="26" cy="26" r="17" fill="#0D9488"></circle>
+
+                        <path class="tick-check"
+                              d="M21 27l4 4 9-9"
+                              fill="none"
+                              stroke="#ffffff"
+                              stroke-width="3.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round" />
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+
+            <h3 class="modal-title">
+                Storage Setup Completed
+            </h3>
+
+            <p class="modal-desc" id="successMessage">
+                Data integrity is ensured for your<br />
+                storage drive.
+            </p>
+
+            <button class="status-badge" onclick="handlereload()">
+                Ok
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+<script>
+    let selectedStorageName = "";
+    let currentActionType = ""; // 'link', 'unlink', 'unset', 'setStorage'
+    const storageProviders = {
+        ONE_DRIVE: {
+            icon: "/img/icon/one_drive_link.png",
+            loader: "/img/onedrive_connecting_loader_apng.png",
+            name: "OneDrive"
+        },
+        GOOGLE_DRIVE: {
+            icon: "/img/icon/google_drive_link.png",
+            loader: "/img/google_connecting_loader__apng.png",
+            name: "Google Drive"
+        }
+    };
+
+    $(document).ready(function () {
+        $('#Integration').addClass('active');
+        $('#networkOverlay').hide();
+    });
+
+    function confirmLinkStorage(storageName) {
+        currentActionType = "link";
+        selectedStorageName = storageName;
+        $("#storageDriveName").text(storageName.replace(/_/g, " "));
+        setStorageProvider(storageName);
+
+        // Show confirm view
+        $("#storageLoadingView").hide();
+        $("#storageConfirmView").show();
+
+        // Update modal title and description for link action
+        var driveName = storageName === "GOOGLE_DRIVE" ? "Google Drive" : "OneDrive";
+        $("#storageModal .modal-title").text("Link Account");
+        $("#storageModal .modal-desc").html("Are you sure you want to link this drive?");
+
+        $("#storageModal")
+            .css("display", "flex")
+            .hide()
+            .fadeIn(200);
+    }
+
+    function LinkStorage(storageName) {
+        var dataToSend = { storageName: storageName };
+
+        $.ajax({
+            url: '@Url.Action("GetStorageAuthenticationUrl", "Integration")',
+            type: "GET",
+            data: dataToSend,
+            dataType: 'json',
+            beforeSend: function () {
+                $('#overlay').show();
+            },
+            complete: function () {
+                $('#overlay').hide();
+            }
+        }).done(function (response) {
+            if (response.status == "Success") {
+                // window.open(response.data.url);
+                window.location.href = response.data.url;
+            }
+            else if (response.status == "Failed") {
+                swal({ type: 'error', title: "Error", text: response.message });
+            }
+        });
+    }
+
+    function confirmUnlinkStorage(storageName) {
+        currentActionType = "unlink";
+        selectedStorageName = storageName;
+
+        // Show confirm view
+        $("#storageLoadingView").hide();
+        $("#storageConfirmView").show();
+
+        // Update modal title and description for unlink action
+        var driveName = storageName === "GOOGLE_DRIVE" ? "Google Drive" : "OneDrive";
+        $("#storageModal .modal-title").text("Unlink Account");
+        $("#storageModal .modal-desc").html("Are you sure you want to unlink this drive?");
+
+        // Use a generic icon for unlink
+        $("#storageProviderIcon").attr("src", "/img/icon/one_drive_link.png");
+
+        $("#storageModal")
+            .css("display", "flex")
+            .hide()
+            .fadeIn(200);
+    }
+
+    function UnLinkStorage(storageName) {
+        var dataToSend = { storageName: storageName };
+
+        $.ajax({
+            url: '@Url.Action("UnlinkStorage", "Integration")',
+            type: "GET",
+            data: dataToSend,
+            dataType: 'json',
+            beforeSend: function () {
+                $('#overlay').show();
+            },
+            complete: function () {
+                $('#overlay').hide();
+            }
+        }).done(function (response) {
+            if (response.status == "Success") {
+
+                swal({
+                    type: 'success', title: "Success", text: response.message
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        window.location.reload();
+                    }
+                });
+            }
+            else if (response.status == "Failed") {
+                swal({ type: 'error', title: "Error", text: response.message });
+            }
+        }).always(function () {
+            $('#overlay').hide();
+        });
+
+
+    }
+    function setStorageProvider(type) {
+
+        const provider = storageProviders[type];
+
+        if (!provider) return;
+
+        $("#storageProviderIcon").attr("src", provider.icon);
+        $("#driveIcon").attr("src", provider.loader);
+
+    }
+
+     function confirmSetStorageDrive(storageName) {
+        currentActionType = "setStorage";
+        selectedStorageName = storageName;
+        $("#storageDriveName").text(storageName.replace(/_/g, " "));
+        setStorageProvider(storageName);
+        // Show confirm view
+        $("#storageLoadingView").hide();
+        $("#storageConfirmView").show();
+
+        // Restore modal to SetStorage title/desc
+        $("#storageModal .modal-title").text("Confirm Storage Drive");
+        $("#storageModal .modal-desc").html("Set <b id=\"storageDriveName\"></b> as your storage to automatically save signed files in your drive.").find("#storageDriveName").text(storageName.replace(/_/g, " "));
+
+        $("#storageModal")
+            .css("display", "flex")
+            .hide()
+            .fadeIn(200);
+    }
+
+    function switchToLoadingState() {
+        $("#storageConfirmView").hide();
+        $("#storageLoadingView").show();
+
+    }
+    function switchtosuccessstate(message) {
+        $("#storageLoadingView").hide();   // hide old confirm
+        $("#successMessage").html(message);
+        $("#successModal")
+            .addClass("show-success");
+        $("#successModal").fadeIn(200);
+
+    }
+    function handlereload(){
+        window.location.reload();
+    }
+    function closeStorageModal() {
+        $("#storageModal").fadeOut(200, function () {
+            $(this).css("display", "none");
+
+            // reset state
+            $("#storageLoadingView").hide();
+            $("#storageConfirmView").show();
+        });
+    }
+
+    /* Cancel button */
+    $("#cancelStorageModal").on("click", closeStorageModal);
+
+    /* Confirm button - routes to appropriate action */
+    $("#confirmStorageModal").on("click", function () {
+        switch(currentActionType) {
+            case "link":
+                LinkStorage(selectedStorageName);
+                break;
+            case "unlink":
+                closeStorageModal();
+                UnLinkStorage(selectedStorageName);
+                break;
+            case "unset":
+                closeStorageModal();
+                UnsetStorageDrive(selectedStorageName);
+                break;
+            case "setStorage":
+                switchToLoadingState();
+                SetStorageDrive(selectedStorageName);
+                break;
+            default:
+                closeStorageModal();
+        }
+    });
+
+    /* Outside click — ONLY allowed in confirm state */
+    $("#storageModal").on("click", function (e) {
+        if (
+            e.target.id === "storageModal" &&
+            $("#storageConfirmView").is(":visible")
+        ) {
+            closeStorageModal();
+        }
+    });
+
+
+    function SetStorageDrive(storageName) {
+        var dataToSend = { storageName: storageName };
+
+
+        $.ajax({
+            url: '@Url.Action("SetStorageDrive", "Integration")',
+            type: "GET",
+            data: dataToSend,
+            dataType: 'json',
+
+        }).done(function (response) {
+
+            if (response.status == "Success") {
+                //$('#overlay').hide();
+                //swal({ type: 'success', title: "Success", text: response.message });
+                //window.location.reload();
+                // swal({
+                //     type: 'success', title: "Success", text: response.message
+                // }, function (isConfirm) {
+                //     if (isConfirm) {
+                //         window.location.reload();
+                //     }
+                // });
+                switchtosuccessstate(response.message);
+            }
+            else if (response.status == "Failed") {
+                swal({ type: 'error', title: "Error", text: response.message });
+            }
+        }).always(function () {
+            $('#overlay').hide();
+        });
+    }
+
+    function updateUnsetStorageDriveState(storageName) {
+        const card = $('[data-storage-card="' + storageName + '"]');
+        if (!card.length) {
+            return;
+        }
+
+        card.attr('data-active', 'false');
+
+        const ribbon = card.find('[data-storage-ribbon="' + storageName + '"]');
+        if (ribbon.length) {
+            ribbon.text('Linked');
+        }
+
+        const unsetButton = card.find('.unset-storage-btn');
+        if (unsetButton.length) {
+            unsetButton.remove();
+        }
+
+        const setButton = card.find('.set-storage-btn');
+        if (setButton.length) {
+            setButton.css('display', 'inline-block');
+        }
+    }
+
+    function confirmUnsetStorageDrive(storageName) {
+        currentActionType = "unset";
+        selectedStorageName = storageName;
+
+        // Show confirm view
+        $("#storageLoadingView").hide();
+        $("#storageConfirmView").show();
+
+        // Update modal title and description for unset action
+        var driveName = storageName === "GOOGLE_DRIVE" ? "Google Drive" : "OneDrive";
+        $("#storageModal .modal-title").text("Unset Storage Drive");
+        $("#storageModal .modal-desc").html("Are you sure you want to unset this as your storage drive?");
+
+        // Use a generic icon for unset
+        $("#storageProviderIcon").attr("src", "/img/icon/one_drive_link.png");
+
+        $("#storageModal")
+            .css("display", "flex")
+            .hide()
+            .fadeIn(200);
+    }
+
+    function UnsetStorageDrive(storageName) {
+        var dataToSend = { storageName: storageName };
+
+        $.ajax({
+            url: '@Url.Action("UnsetStorageDrive", "Integration")',
+            type: "GET",
+            data: dataToSend,
+            dataType: 'json',
+            beforeSend: function () {
+                $('#overlay').show();
+            }
+        }).done(function (response) {
+            const status = response.status || response.Status;
+            const message = response.message || response.Message;
+
+            if (status == "Success") {
+                updateUnsetStorageDriveState(storageName);
+                swal({ type: 'success', title: "Success", text: message });
+            }
+            else if (status == "Failed") {
+                swal({ type: 'error', title: "Error", text: message });
+            }
+        }).always(function () {
+            $('#overlay').hide();
+        });
+    }
+</script>

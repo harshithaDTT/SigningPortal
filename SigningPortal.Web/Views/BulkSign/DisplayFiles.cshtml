@@ -1,0 +1,375 @@
+﻿@model SigningPortal.Web.ViewModels.BulkSign.FilesListViewModel
+@{
+    var list = @Model.FileNamesList;
+    var sourcepath = @Model.sourcePath;
+}
+
+<style>
+    tbody tr td:first-child {
+        text-align: left !important;
+    }
+
+    .table {
+        backgroundColor: white;
+        border: none
+    }
+
+    .headCell {
+        color: #777777;
+        font-weight: bold
+    }
+
+    .tableBody {
+        &>tr:first-child
+
+    {
+        border-left: 4px solid #fff;
+        border-right: 4px solid #fff;
+        border-top: 0px;
+        background-color: #fff;
+        height: theme.spacing(1)
+    }
+
+    .card-content {
+        overflow-y: auto !important;
+        max-height: 645px !important;
+    }
+
+    .viewPdfContainer {
+        height: 70%;
+    }
+
+    @@media (min-width:480px) {
+        .viewPdfContainer {
+            height: 92%;
+        }
+    }
+
+</style>
+
+
+
+
+
+<div class="row">
+    @Html.AntiForgeryToken()
+    <div class="col-md-12 pl-0 pr-0 pl-md-3 pr-md-3">
+        <div class="card c-main">
+            <div class="card-content background-image">
+                <div class="card-body ">
+                    <div class="row">
+
+                        <div class="col-12 col-lg-5">
+                            <div class="card" style="margin-top:18px;">
+                                <div class="card-body ">
+                                    <!-- Table to Display Template Details -->
+                                    <div class="row" style="box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 10px;margin-top:-34px;margin-left:-35px;margin-right:-34px;border-radius:10px">
+                                        <div className="col-sm" id="fileCountDisplay" style=" margin-left: 15px ;margin-bottom: 10px ; margin-top: 20px;font-weight:700 ">
+                                            Total Documents : 0
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <div class="ml-xl-0 mr-xl-0" style="margin-left:-20px;margin-right:-20px;">
+                                        <table class="table" id="filestable" style="width:100%;">
+                                            <thead>
+                                                <tr>
+                                                    <th style=" background-color:rgb(235, 237, 239);"></th>
+                                                    <th class="headCell" align="left" style="font-weight:700; background-color:rgb(235, 237, 239); width:100%;">
+                                                        File Name
+                                                    </th>
+                                                    <th class="headCell" align="left" style="font-weight:700; background-color:rgb(235, 237, 239); width:100%;">
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="tableBody">
+                                                @if (list != null && list.Count != 0)
+
+                                                {
+                                                    foreach (var item in list)
+                                                    {
+                                                        <tr>
+                                                            <td></td>
+                                                            <td class="headCell fileNameCell" align="left" data-fullname="@item">
+                                                                @item
+                                                            </td>
+                                                            <td class="headCell" align="right">
+                                                                <button type="button" id="view" style="background-color:#acc33e ; color:white; height:40px; width:100px; margin-right:20px; border:none; border-radius:5px;" onclick="getDocumentdata('@item')">
+                                                                    View File
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-7 p-0">
+                            <div class="card-body" id="viwer">
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="p-2 p-md-3" style=" border: 1px solid rgb(204, 204, 204); margin-bottom: 20px; height: 564px;">
+                                            <div style="display: flex; align-items: center;">
+                                                <h4 style="font-size: 18px; font-weight: bold; color: rgb(51, 51, 51); margin: 0px;">Document Name:</h4>
+                                                <p id="documentname" style="font-size: 16px; color: rgb(85, 85, 85); margin: 10px 0px 0px 11px;"></p>
+                                            </div>
+                                            <div class="viewPdfContainer" style="border: 1px solid #ccc; flex: 2;padding:0;overflow-y:auto;margin-right:auto;justify-content:center;height:92%;">
+
+                                                <div class="well form-box" style="display: flex;flex-flow: wrap; justify-content: space-between; height: 8%;width: 100%;background: #f9f9f9; border-radius: 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                                </div>
+                                                <div style=" overflow-y: auto; display: flex;justify-content: center; height: 92%;border-top: 1px solid #ccc;background: #f4f6f9; box-shadow: inset 0 1px 4px rgba(0,0,0,0.1);">
+                                                    <div id="pdf-container" style="width: 80%; box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); border-radius: 4px; background: white;"></div>
+                                                </div>
+
+                                            </div>
+                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <input type="hidden" id="filebase64" name="filebase64" value="" />
+</div>
+
+@section scripts {
+
+    <link rel="stylesheet" href="~/local-cdns/Shared/fontawesome/6.0.0-beta3/css/all.min.css">
+    <script src="~/local-cdns/Shared/sweetalert2/11/sweetalert2.min.js"></script>
+    <script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+    <script src="~/local-cdns/Shared/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="~/local-cdns/Shared/pdf-lib/1.16.0/pdf-lib.min.js"></script>
+    <script>
+        var currentlist = @Html.Raw(Json.Serialize(Model.FileNamesList));
+        var orgiginallist = @Html.Raw(Json.Serialize(Model.FileNamesList));
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+        if (!pdfjsLib) {
+            console.error('PDF.js library is not loaded.');
+        } else {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '@Url.Content("~/local-cdns/Shared/pdfjs/2.10.377/pdf.worker.min.js")';
+        }
+
+        const pdfContainer = document.getElementById('pdf-container');
+
+        function cropFileNames(full) {
+            let start = 15, end = 15;
+            if (full && full.length > start + end) {
+                return full.slice(0, start) + '...' + full.slice(-end);
+            } else {
+                return full;
+            }
+        }
+
+        function Get(filename) {
+            var FileName = filename;
+            var source = '@sourcepath';
+            var documentname = document.getElementById('documentname');
+
+            if (FileName.length > 30) {
+                documentname.textContent = cropFileNames(FileName);
+                documentname.title = FileName;
+                documentname.style.cursor = "pointer";
+            } else {
+                documentname.textContent = FileName;
+            }
+        }
+
+        function base64ToBlob(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; ++i) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return new Blob([bytes], { type: 'application/pdf' });
+        }
+
+        function handleSearch(event) {
+            var searchvalue = event.target.value;
+            var list = fileList.filter(item =>
+                item.toLowerCase().startsWith(searchvalue.toLowerCase())
+            );
+            currentlist = list;
+        }
+
+        $(document).ready(function () {
+
+            document.querySelectorAll(".fileNameCell").forEach(function (cell) {
+                const fullName = cell.getAttribute("data-fullname");
+                if (fullName.length > 30) {
+                    cell.textContent = cropFileNames(fullName);
+                    cell.title = fullName;
+                    cell.style.cursor = "pointer";
+                }
+            });
+
+            $('#BulkSign').addClass('active');
+            document.getElementById("networkOverlay").style.display = "none";
+
+            var firstFileName =
+        @Html.Raw(Json.Serialize(Model.FileNamesList.FirstOrDefault()));
+
+            if (firstFileName.length > 30) {
+                documentname.textContent = cropFileNames(firstFileName);
+                documentname.title = firstFileName;
+                documentname.style.cursor = "pointer";
+            } else {
+                documentname.textContent = firstFileName;
+            }
+
+            if (firstFileName) {
+                getDocumentdata(firstFileName);
+            }
+
+            var fileCountDisplay = document.getElementById('fileCountDisplay');
+            fileCountDisplay.textContent =
+                'Total Documents Uploaded : ' + orgiginallist.length;
+        });
+
+        function getDocumentdata(filename) {
+            $('#overlay').show();
+
+            var url = '@Url.Action("GetFileBlob", "BulkSign")';
+            var FileName = filename;
+            var source = '@sourcepath';
+
+            var documentname = document.getElementById('documentname');
+            if (FileName.length > 30) {
+                documentname.textContent = cropFileNames(FileName);
+                documentname.title = FileName;
+                documentname.style.cursor = "pointer";
+            } else {
+                documentname.textContent = FileName;
+            }
+
+            var datavalue = {
+                "fileName": FileName,
+                "destinationPath": source
+            };
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                headers: {
+
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                },
+                contentType: 'application/json',
+                data: JSON.stringify(datavalue),
+
+                success: function (resp) {
+                    if (resp.success) {
+
+                        Documentbase64 = resp.result;
+
+                        var blobdata = base64ToBlob(Documentbase64);
+                        globalblobdata = blobdata;
+
+                        var reader = new FileReader();
+                        reader.readAsDataURL(blobdata);
+                        reader.onloadend = function () {
+                            document.getElementById('filebase64').value =
+                                reader.result.split(',')[1];
+                        };
+
+                        const pdfArrayBuffer = base64ToArrayBuffer(Documentbase64);
+
+                        pdfjsLib.getDocument({ data: pdfArrayBuffer }).promise.then(pdf => {
+                            renderPDF(pdf);
+                        }).catch(error => {
+                            console.error('Error loading PDF:', error);
+                        });
+
+                    } else {
+                        $('#overlay').hide();
+                        swal({
+                            title: 'Error',
+                            text: resp.message,
+                            type: 'error',
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href =
+                                    '@Url.Action("Index", "Template")';
+                            }
+                        });
+                    }
+                },
+
+                error: ajaxErrorHandler
+            });
+        }
+
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function renderPDF(pdf) {
+            pdfContainer.innerHTML = '';
+            const numPages = pdf.numPages;
+
+            for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                pdf.getPage(pageNum).then(page => {
+
+                    const scale = 1.5;
+                    const viewport = page.getViewport({ scale });
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    canvas.style.width = '100%';
+
+                    const pageContainer = document.createElement('div');
+                    pageContainer.className = 'pdf-page';
+                    pageContainer.style.position = 'relative';
+                    pageContainer.appendChild(canvas);
+
+                    pdfContainer.appendChild(pageContainer);
+
+                    const renderContext = {
+                        canvasContext: ctx,
+                        viewport: viewport
+                    };
+
+                    page.render(renderContext).promise.then(() => {
+
+                        const annotationLayer = document.createElement('div');
+                        annotationLayer.className = 'annotation-layer';
+                        annotationLayer.style.position = 'absolute';
+                        annotationLayer.style.top = '0';
+                        annotationLayer.style.left = '0';
+                        annotationLayer.style.width = '100%';
+                        annotationLayer.style.height = '100%';
+                        annotationLayer.style.pointerEvents = 'none';
+
+                        pageContainer.appendChild(annotationLayer);
+                    });
+                });
+            }
+
+            $('#overlay').hide();
+        }
+    </script>
+
+}
+
+

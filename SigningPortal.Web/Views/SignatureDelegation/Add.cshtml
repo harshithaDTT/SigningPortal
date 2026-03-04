@@ -1,0 +1,330 @@
+﻿@model SigningPortal.Web.ViewModels.SignatureDelegation.AddDelegationViewModel
+@using System.Security.Claims;
+
+@{
+    // Get the current date and time in the format "yyyy-MM-ddTHH:mm"
+    string minDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm");
+}
+
+<style>
+    #custom-alert {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        border: 1px solid #ccc;
+        padding: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        max-width: 500px;
+        border-radius: 5px;
+    }
+
+        #custom-alert #alert-message {
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        #custom-alert #ok-button {
+            background-color: #acc33e;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            #custom-alert #ok-button:hover {
+                background-color: #99b32c;
+            }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card-custom background-image">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3>Create Delegations</h3>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Start Date:</label>
+                            <div class="col-sm-6">
+                                <input asp-for="StartDateTime"  autocomplete="off" class="datetimepicker form-control" required min="@minDateTime" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">End Date:</label>
+                            <div class="col-sm-6">
+                                <input asp-for="EndDateTime" class="datetimepicker form-control"  autocomplete="off" required min="@minDateTime" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Delegate List:</label>
+                            <div class="col-sm-7">
+                                <input id="delgateeEmail" type="email" class="form-control" placeholder="E-Mail">
+                            </div>
+                            <div class="col-sm-1">
+                                <button class="btn btn-danger" id="removeDiv_0" style="display: none"><i class="fa fa-minus" aria-hidden="true"></i></button>
+                            </div>
+                            <div class="col-sm-1">
+                                <button class="btn btn-primary org-pluse-button" id="addDiv_0" style="display: block"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-6">
+                        <button class="btn btn-primary submit-button" id="submitButton">Submit</button>
+                    </div>
+                </div>
+            </div>
+
+            @* Custom Alert *@
+            <div id="custom-alert" style="display: none; background:red; color:white;margin-top:-250px">
+                <div id="alert-message" style="display: inline-block; margin-left:10px"></div>
+                <button id="ok-button" style="display: inline-block; margin-left: 10px;  background:red">X</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+
+@section Scripts {
+
+    <script>
+
+        var userEmail = '@User.FindFirst(ClaimTypes.Email).Value';
+        var viewmodel = @Html.Raw(Json.Serialize(Model));
+        var emailInput;
+        var delegateEmails = [];
+
+        $(document).ready(function () {
+            document.getElementById("navigationNetworkOverlay").style.display = "none";
+
+            $('#networkOverlay').hide();
+            $('#SignatureDelegationMenu').addClass('active');
+            var actWidth = $(".nav-tabs").find(".active").parent("li").width();
+            var actPosition = $(".nav-tabs .active").position();
+            $(".slider").css({ "left": 0, /* + actPosition.left, */ "width": $(".nav-tabs .active").parent("li").width() });
+
+            var startDateTime = document.getElementsByName('StartDateTime')[0].value = 'DD/MM/YY HH:MM';
+            var endDateTime = document.getElementsByName('EndDateTime')[0].value = 'DD/MM/YY HH:MM';
+        });        
+
+        // Custom Alert Function
+        function showCustomAlert(message) {
+            // Set the alert message
+            document.getElementById('alert-message').innerText = message;
+
+            // Show the alert box
+            document.getElementById('custom-alert').style.display = 'block';
+
+            // Add some additional styles to the custom alert box
+            document.getElementById('custom-alert').style.animation = 'fadeIn 0.3s';
+            document.getElementById('custom-alert').style.animationFillMode = 'forwards';
+
+            // Add a click event listener to the OK button
+            document.getElementById('ok-button').addEventListener('click', function () {
+                // Hide the alert box when the OK button is clicked
+                document.getElementById('custom-alert').style.animation = 'fadeOut 0.3s';
+                document.getElementById('custom-alert').style.animationFillMode = 'forwards';
+
+                setTimeout(function () {
+                    document.getElementById('custom-alert').style.display = 'none';
+                }, 300);
+            });
+            setTimeout(function () {
+                if (document.getElementById('custom-alert').style.display === 'block') {
+                    document.getElementById('custom-alert').style.animation = 'fadeOut 0.3s';
+                    document.getElementById('custom-alert').style.animationFillMode = 'forwards';
+
+                    setTimeout(function () {
+                        document.getElementById('custom-alert').style.display = 'none';
+                    }, 300);
+                }
+            }, 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Function to compare start and end dates
+            function validateDateTime() {
+                var startDateTime = document.getElementsByName('StartDateTime')[0].value;
+                var endDateTime = document.getElementsByName('EndDateTime')[0].value;
+
+                // Convert to Date objects and compare
+                if (new Date(startDateTime) >= new Date(endDateTime)) {
+                    showCustomAlert('End date should be higher than start date.');
+                    // Clear the EndDateTime input field
+                    document.getElementsByName('EndDateTime')[0].value = '';
+                    return false;
+                }
+                return true;
+            }
+            // Attach the validation function to the end date input's change event
+            document.getElementsByName('EndDateTime')[0].addEventListener('change', validateDateTime);
+        });
+
+       
+        $(".org-pluse-button").click(function () {
+            
+            emailInput = $("#delgateeEmail");
+            if (emailInput.length > 0 && emailInput.val().trim() === '') {
+                showCustomAlert('Please enter an email');
+                return; // Exit the function if email field is empty
+            }
+
+            if (emailInput.val().trim() === userEmail) {
+                showCustomAlert('You cannot assign yourself as a delegatee');
+                return; // Exit the function if email field is equal to userEmail
+            }
+
+            if (Array.isArray(viewmodel.emails) && viewmodel.emails.some(email => email === emailInput.val().trim())) {
+
+                var emailFieldsCount = $(this).parent().siblings('.form-group.row').length; // Count existing email fields
+                if (emailFieldsCount >= 0) {
+                    $('#removeDiv').css("display", "block");
+                    $('#plusDiv').css("display", "none");
+                }
+
+                if (emailFieldsCount < 3) { // Check if less than three email fields
+                    var newEmailField = '<div class="form-group row">' +
+                        '<label class="col-sm-3 col-form-label"></label>' + // Add empty label to match the structure
+                        '<div class="col-sm-7">' +
+                        '<input type="email" class="form-control" placeholder="E-Mail">' +
+                        '</div>' +
+                        '<div class="col-sm-1">' +
+                        '<button class="btn btn-danger"><i class="fa fa-minus" aria-hidden="true"></i></button>' +
+                        '</div>' +
+                        '<div class="col-sm-1">' +
+                        '<button class="btn btn-primary org-pluse-button"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>' +
+                        '</div>' +
+                        '</div>';
+                    $(this).parent().parent().after(newEmailField); // Add new email field after the parent div
+
+                    var email = emailInput.val().trim();
+                    if (email) {
+                        // Ensure viewmodel.Email is initialized as an array
+                        if (!viewmodel.Email) {
+                            viewmodel.Email = [];
+                        }
+                        // Push the email value to the viewmodel.Email array
+                        viewmodel.Email.push(email);
+                    }
+
+
+                    $(this).css("display", "none");
+                }
+            } else {
+                showCustomAlert('This email does not belong to logged in organization subscribers');
+                return; // Exit the function if email field is already in the viewmodel
+            }
+        });
+
+        //Minus Button Click
+        $(document).on('click', '#removeDiv', function () {
+            $(this).parent().parent().remove(); // Remove the entire email field group
+            emailFieldsCount--; // Decrease the count of email fields
+            if (emailFieldsCount < 3) {
+                $('.org-plus-button').css("display", "block"); // Show plus button if count is less than 3
+            }
+            if (emailFieldsCount === 1) {
+                $('#removeDiv').css("display", "none"); // Hide minus button if only one field is left
+            }
+        });
+
+        // Submit Button Click
+        $('#submitButton').click(function () {
+            
+
+            emailInput = $("#delgateeEmail");
+            if (emailInput.length > 0 && emailInput.val().trim() === '') {
+                showCustomAlert('Please enter an email');
+                return; // Exit the function if email field is empty
+            }
+
+            if (emailInput.val().trim() === userEmail) {
+                showCustomAlert('You cannot assign yourself as a delegatee');
+                return; // Exit the function if email field is equal to userEmail
+            }
+
+            var email = emailInput.val().trim();
+            if (email) {
+                // Ensure viewmodel.Email is initialized as an array
+                if (!viewmodel.Email) {
+                    viewmodel.Email = [];
+                }
+                // Push the email value to the viewmodel.Email array
+                viewmodel.Email.push(email);
+            }
+
+            var model = {
+                StartDateTime: $('#StartDateTime').val(),
+                EndDateTime: $('#EndDateTime').val(),
+                Emails: delegateEmails,
+
+            }
+
+            // Perform AJAX request when the "Submit" button is clicked
+            $.ajax({
+                url: '@Url.Action("AddDelegation", "SignatureDelegation")', // URL to your controller action method
+                type: 'POST', // HTTP method (POST, GET, etc.)
+                data: JSON.stringify(model), // Convert model object to JSON string
+                contentType: 'application/json',
+                beforeSend: function () {
+                    $('#overlay').show();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                },
+                success: function (response) {
+                    if (response.status == "Failed") {
+                        swal({
+                                title: 'Server response',
+                                text: response.message,
+                                type: 'info',
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                window.location.href = '@Url.Action("List", "SignatureDelegation")';
+                                }
+                        });                       
+                    }
+                    else {
+                        swal({
+                                title: 'Success',
+                                text: response.message,
+                                type: 'success',
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                window.location.href = '@Url.Action("List", "SignatureDelegation")';
+                                }
+                        });
+
+                    }
+                },
+                error: ajaxErrorHandler
+            });
+        });
+        
+    </script>
+}
+

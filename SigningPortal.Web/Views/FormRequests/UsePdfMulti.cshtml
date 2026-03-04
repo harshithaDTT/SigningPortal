@@ -1,0 +1,458 @@
+﻿@model SigningPortal.Web.ViewModels.DigitalForms.FillFormData;
+
+@{
+    var AccountType = User.FindFirst("AccountType").Value;
+    var userrolemodel = Model.UserRole;
+    var signStatus = Model.Status;
+    var flag = Model.flag;
+    var forweb = Model.pdfschma;
+}
+
+<style>
+    /* ========================================
+           MODERN UI DESIGN SYSTEM - UsePdfMulti
+           Aligned with UsePdfForm.cshtml theme
+           ======================================== */
+    :root {
+        --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        --primary-green: #10b981;
+        --primary-green-dark: #059669;
+        --primary-green-light: #d1fae5;
+        --accent-blue: #3b82f6;
+        --accent-purple: #8b5cf6;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --bg-page: #f8fafc;
+        --bg-card: #ffffff;
+        --bg-section: #f7f8fa;
+        --border-color: #e2e8f0;
+        --border-light: #f1f5f9;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 20px;
+        --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ========================================
+           Card & Container Styling
+           ======================================== */
+    .card.background-image {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 0px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .well.form-box {
+        background: #ebedef !important;
+        border-bottom: 1px solid var(--border-light);
+        padding: 16px 24px;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+
+        .well.form-box h4 {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+    /* ========================================
+           Button Styling
+           ======================================== */
+    #save, #fill {
+        background: #0E7C5A;
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        width: auto;
+        min-width: 160px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        transition: all var(--transition-smooth);
+        gap: 10px;
+    }
+
+        #save:hover, #fill:hover {
+            background: linear-gradient(135deg, var(--primary-green-dark), #047857);
+            transform: translateY(-2px);
+        }
+
+        #fill {
+            background: #F6FFFB;
+            border: 2px solid #9AD1BC;
+            color: #0F7A55;
+        }
+
+            #fill i {
+                color: #0F7A55;
+            }
+
+            #fill:hover {
+                background: #ECFDF5;
+            }
+
+            #fill:active {
+                background: #D1FAE5;
+            }
+
+    /* ========================================
+           PDF Container & Page Styling
+           ======================================== */
+    .pdf-page {
+        width: 100%;
+        position: relative;
+        display: inline-block;
+        margin: 12px 0;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        background: var(--bg-card);
+    }
+
+    #pdf-container {
+        padding: 20px;
+    }
+
+    .viewPdfContainer {
+        background: var(--bg-page);
+    }
+
+    /* ========================================
+           Form Field Styling
+           ======================================== */
+    .input-field {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-sizing: border-box;
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-base);
+        padding: 8px 12px;
+        min-height: 40px;
+        font-size: 0.875rem;
+        background-color: #d8d7d78a;
+        color: #636161;
+    }
+
+        .input-field.has-value {
+            align-items: unset;
+            justify-content: unset;
+            background-color: transparent;
+            color: var(--text-primary);
+            outline: none;
+            text-align: left;
+            border-color: var(--primary-green);
+        }
+
+    .annotated input[type="text"] {
+        border: none;
+        background: var(--text-primary);
+        color: white;
+        width: 100px;
+        height: 32px;
+        padding: 6px 10px;
+        box-sizing: border-box;
+        font-size: 0.875rem;
+        text-align: center;
+        border-radius: var(--radius-sm);
+    }
+
+    #fields-list {
+        margin-top: 24px;
+    }
+
+    .field-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 12px;
+        background: var(--bg-section);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-light);
+    }
+
+        .field-item input {
+            margin-right: 12px;
+            flex: 1;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            transition: all var(--transition-base);
+        }
+
+            .field-item input:focus {
+                border-color: var(--primary-green);
+                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+                outline: none;
+            }
+
+    .editable-text {
+        min-height: 20px;
+        width: 100px;
+        cursor: text;
+    }
+
+    .draggable {
+        position: absolute;
+        padding: 0.48%;
+        cursor: move;
+        background: transparent;
+        border: 2px dashed transparent;
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-fast);
+    }
+
+        .draggable:hover {
+            border-color: var(--primary-green);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+    /* ========================================
+           Image Container Styling
+           ======================================== */
+    .image-container {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: var(--text-secondary);
+        border: 2px dashed var(--primary-green);
+        position: relative;
+        width: 150px;
+        height: 170px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-base);
+    }
+
+        .image-container:hover {
+            background-color: rgba(16, 185, 129, 0.15);
+            border-color: var(--primary-green-dark);
+        }
+
+    .image-upload {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .uploaded-image {
+        display: none;
+        width: 100%;
+        height: 100%;
+        object-fit: fill;
+    }
+
+    .placeholder-text {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .remove-image-btn {
+        display: none;
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: rgba(255, 255, 255, 0.95);
+        color: #ef4444;
+        font-size: 18px;
+        border: none;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: 50%;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+
+        .remove-image-btn:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+
+    .image-container:hover .remove-image-btn.uploaded {
+        display: block;
+    }
+
+    /* ========================================
+           Layout Containers
+           ======================================== */
+    .auto-fill-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start !important;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .viewPdfContainer {
+        height: 88%;
+    }
+
+    @@media screen and (min-width:470px) {
+        .auto-fill-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between !important;
+            align-items: center;
+        }
+    }
+
+    /* ========================================
+           Responsive Adjustments
+           ======================================== */
+    @@media (max-width: 768px) {
+        #save, #fill {
+            min-width: 130px;
+            font-size: 0.85rem;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .well.form-box h4 {
+            font-size: 1rem;
+            margin-left: 1% !important;
+        }
+
+        .card.background-image {
+            padding: 0 !important;
+        }
+
+        .viewPdfContainer {
+            height: 85%;
+        }
+
+        #pdf-container {
+            width: 100% !important;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        #save, #fill {
+            min-width: 100px;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.6rem;
+        }
+
+        .auto-fill-container {
+            gap: 8px;
+            padding: 0.5rem !important;
+        }
+
+        .well.form-box h4 {
+            font-size: 0.9rem;
+        }
+
+        .viewPdfContainer {
+            height: 82%;
+        }
+
+        #save img, #fill img {
+            width: 12px !important;
+            height: 12px !important;
+            margin-right: 3px !important;
+        }
+    }
+</style>
+
+
+<link rel="stylesheet" href="~/local-cdns/Shared/fontawesome/6.0.0-beta3/css/all.min.css">
+<script src="~/local-cdns/Shared/sweetalert2/11/sweetalert2.min.js"></script>
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+<script src="~/local-cdns/Shared/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="~/local-cdns/Shared/pdf-lib/1.16.0/pdf-lib.min.js"></script>
+
+<div class="row m-0">
+    <div class="col-md-12 p-0" style="height:100vh">
+        <div class="card background-image p-0 p-md-3 p-lg-4" style="height:100%">
+
+            <div class="card-body" style="padding:0;height:100%;border:1px solid #ccc;border-radius:0.25rem;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);">
+
+                <div class="well form-box auto-fill-container" style='width:100%;background:#ebedef;border-radius:3px;'>
+                    <h4 style="margin-left:2%;margin-top:auto;margin-bottom:auto"><b>Fill Form</b></h4>
+                    <div style="display:flex;flex-direction:row;margin-top:auto;margin-bottom:auto;gap:1rem">
+                        @*    <button id="fill" style="box-shadow:0 0px 6px 0 rgb(0 0 0 / 20%)">
+                                    <img src="~/assets/images/fillform.svg" style="width: 15px; height: 15px; margin-right: 5px;filter: invert(1);" />&nbsp; Auto Fill
+                                </button> *@
+                        <button id="fill" style="box-shadow:0 0px 6px 0 rgb(0 0 0 / 20%); visibility:@(signStatus == "In Progress" ? "hidden" : "unset");">
+                            <img src='@Url.Content("~/assets/images/fillform.svg")' asp-append-version="true" style="width: 15px; height: 15px; margin-right: 5px; filter: invert(1);" />Auto Fill
+                        </button>
+
+                        <button id="save" style="box-shadow:0 0px 6px 0 rgb(0 0 0 / 20%)">
+                            <img src='@Url.Content("~/assets/images/saveandsign.svg")' asp-append-version="true" style="width: 17px; height: 17px; margin-right: 5px;filter: invert(1);" />Save & Sign
+                        </button>
+                    </div>
+
+
+                </div>
+
+
+                <div class="row viewPdfContainer" style="overflow-y:auto; width:100%;margin-left:auto;margin-right:auto;justify-content:center">
+
+                    <div class="col-md-9" id="pdf-container" style="width:80%"></div>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+        </div>
+    </div>
+
+    <input type="hidden" id="filebase64" name="filebase64" value="@Model.pdfblob" />
+    <input type="hidden" id="pdfschema" name="pdfschema" value="@Model.htmlschma" />
+    <input type="hidden" id="autodata" name="autodata" value="@Model.autofilldata" />
+    <input type="hidden" id="pdfschemabyweb" name="pdfschemabyweb" value="@Model.pdfschma" />
+
+
+</div>
+
+
+
+<script>
+    var loggedAccountType = '@AccountType';
+    var userrole = '@userrolemodel';
+    var status1 = '@signStatus';
+    var secondsign = "";
+    var flag1 = "@flag";
+    var forweb1 = "@forweb";
+    var SaveandSignUrl="@Url.Action("SaveandSign", "FormRequests")";
+    var FormRequestsIndexUrl='@Url.Action("Index", "DigitalForms")';
+    var docFileName="@Model.filename";
+    var tempid="@Model.tempid";
+    var DocumentId="@Model.DocumentId";
+</script>
+
+@if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    <script src="~/js/FormRequests/UsePdfMulti.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+else
+{
+    <script src="~/dist/FormRequests/UsePdfMulti.min.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+

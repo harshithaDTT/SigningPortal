@@ -1,0 +1,2115 @@
+/* ============================================================
+   RESPONSIVE LAYOUT SYSTEM
+   A unified responsive CSS for the SignPortal layout
+   Supports: Desktop (>1024px), Tablet (768px-1024px), Mobile (<768px)
+   Production-Ready v2.0
+   ============================================================ */
+
+/* ============================================================
+   CSS VARIABLES FOR CONSISTENT THEMING
+   ============================================================ */
+@import url('model.css');
+:root {
+    /* Layout */
+    --sidebar-width: 300px;
+    --sidebar-collapsed-width: 72px;
+    --sidebar-bg: hsl(0, 0%, 98%);
+    --sidebar-border: rgba(0, 0, 0, 0.08);
+    --mobile-header-height: 60px;
+    --overlay-bg: rgba(0, 0, 0, 0.5);
+    /* Transitions */
+    --transition-speed: 0.3s;
+    --transition-fast: 0.15s;
+    --transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    /* Brand Colors */
+    --uae-gold: #C9A961;
+    --uae-navy: #1E3A5F;
+    --primary-color: #0B2343;
+    --accent-color: #059669;
+    /* Modern Theme Colors */
+    --primary-blue: #2563eb;
+    --primary-purple: #7c3aed;
+    --accent-green: #10b981;
+    --dark-green: #16a34a;
+    /* Text Colors */
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    /* Background Colors */
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-light-blue: #f0f9ff;
+    --bg-light-green: #ecfdf3;
+    /* Border & Shadow */
+    --border-color: #e2e8f0;
+    --border-light: #f1f5f9;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+}
+
+/* ============================================================
+   BASE LAYOUT RESET
+   ============================================================ */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+    /* Prevent body scroll when sidebar is open on mobile */
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+/* ============================================================
+   PAGE WRAPPER - MAIN LAYOUT CONTAINER
+   ============================================================ */
+.page-wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ============================================================
+   MOBILE HEADER - VISIBLE ONLY ON TABLET/MOBILE
+   ============================================================ */
+.mobile-header {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--mobile-header-height);
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--sidebar-border);
+    z-index: 1000;
+    padding: 0 1rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mobile-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.mobile-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Hamburger Button */
+.hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.2s ease;
+}
+
+    .hamburger-btn:hover {
+        background: rgba(10, 31, 68, 0.05);
+    }
+
+    .hamburger-btn:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+
+.hamburger-icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    gap: 5px;
+}
+
+    .hamburger-icon span {
+        display: block;
+        width: 20px;
+        height: 2px;
+        background-color: var(--primary-color);
+        border-radius: 2px;
+        transition: all var(--transition-speed) var(--transition-easing);
+        transform-origin: center;
+    }
+
+/* Hamburger animation when open */
+body.sidebar-open .hamburger-icon span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+body.sidebar-open .hamburger-icon span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+
+body.sidebar-open .hamburger-icon span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile Logo/Branding */
+.mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mobile-brand-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #0A1F44 0%, #059669 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .mobile-brand-icon i {
+        font-size: 1rem;
+        color: white;
+    }
+
+.mobile-brand-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+/* ============================================================
+   SIDEBAR OVERLAY - FOR MOBILE CLOSE-ON-OUTSIDE-CLICK
+   ============================================================ */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--overlay-bg);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-speed) var(--transition-easing), visibility var(--transition-speed) var(--transition-easing);
+    z-index: 1049;
+}
+
+/* ============================================================
+   SIDEBAR - RESPONSIVE BEHAVIOR
+   ============================================================ */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    min-height: 0; /* allow child flex items to shrink and scroll */
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    padding: 0;
+    position: relative;
+    transition: width var(--transition-speed) var(--transition-easing), transform var(--transition-speed) var(--transition-easing);
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--sidebar-border);
+}
+
+.sidebar-nav {
+    flex: 1 1 auto;
+    min-height: 0; /* necessary so this flex child can scroll inside the sidebar */
+    overflow-y: auto; /* scrolling only for menu/content area */
+    -webkit-overflow-scrolling: touch;
+    padding: 0 1rem;
+}
+
+/* ============================================================
+   SIDEBAR BRAND HEADER - With Collapse Toggle
+   ============================================================ */
+.sidebar-brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 1.25rem 0.75rem 1.25rem 0;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--sidebar-border);
+    position: relative;
+}
+
+.sidebar-brand-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.sidebar-icon-wrapper {
+    width: 2.5rem;
+    height: 2.5rem;
+    min-width: 2.5rem;
+    background: linear-gradient(135deg, #0A1F44 0%, #059669 100%);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sidebar-icon {
+    font-size: 1.125rem;
+    color: white;
+}
+
+.sidebar-title-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    transition: opacity var(--transition-speed) ease, width var(--transition-speed) ease;
+}
+
+.sidebar-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0b2343;
+    white-space: nowrap;
+}
+
+.sidebar-subtitle {
+    color: #7d8da5;
+    font-size: 0.75rem;
+    margin-top: 0;
+    display: block;
+    white-space: nowrap;
+}
+
+/* Sidebar Collapse Button - Deprecated, use sidebar-toggle-collapse instead */
+.sidebar-collapse-btn {
+    display: none;
+}
+
+/* Collapsed State Toggle - Deprecated */
+.sidebar-collapsed-toggle {
+    display: none;
+}
+
+/* Unified Toggle Button - Desktop Only */
+.sidebar-toggle-collapse {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    background: #f1f5f9;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--transition-fast) ease;
+    flex-shrink: 0;
+}
+
+    .sidebar-toggle-collapse:hover {
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+    }
+
+    .sidebar-toggle-collapse i {
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+        transition: transform var(--transition-speed) var(--transition-easing);
+    }
+
+/* ============================================================
+   SIDEBAR COLLAPSED STATE - Clean Icon-Only Rail
+   ============================================================ */
+.sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
+    min-width: var(--sidebar-collapsed-width);
+    max-width: var(--sidebar-collapsed-width);
+    overflow-x: hidden;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+    /* Prevent horizontal scrollbar on page */
+    .sidebar.collapsed,
+    .sidebar.collapsed * {
+        box-sizing: border-box;
+    }
+
+        /* Brand header transforms to compact in collapsed state - Hide logo, show expand icon */
+        .sidebar.collapsed .sidebar-brand-header {
+            padding: 1rem 0.5rem;
+            justify-content: center;
+            border-bottom: 1px solid var(--sidebar-border);
+            position: relative;
+            min-height: 64px;
+        }
+
+        /* Hide entire brand content (logo + text) in collapsed state */
+        .sidebar.collapsed .sidebar-brand-content {
+            display: none !important;
+        }
+
+        .sidebar.collapsed .sidebar-title-group {
+            display: none !important;
+            width: 0;
+            overflow: hidden;
+        }
+
+        /* Hide icon wrapper in collapsed state */
+        .sidebar.collapsed .sidebar-icon-wrapper {
+            display: none !important;
+        }
+
+        /* Show toggle button as the only element in collapsed header - centered expand icon */
+        .sidebar.collapsed .sidebar-toggle-collapse {
+            position: static;
+            transform: none;
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            box-shadow: none;
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: 10px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .sidebar.collapsed .sidebar-toggle-collapse i {
+                transform: rotate(180deg);
+                font-size: 0.875rem;
+                color: var(--text-primary);
+            }
+
+            .sidebar.collapsed .sidebar-toggle-collapse:hover {
+                background: #e2e8f0;
+                border-color: #cbd5e1;
+            }
+
+        /* Hide section headers in collapsed state */
+        .sidebar.collapsed .sidebar-section-header {
+            display: none !important;
+        }
+
+        /* Hide text labels in collapsed state */
+        .sidebar.collapsed .nav-text {
+            display: none !important;
+        }
+
+        /* Hide sidebar group padding labels */
+        .sidebar.collapsed [data-sidebar="group"] > .px-3.py-2 {
+            display: none !important;
+        }
+
+        /* Collapsed sidebar nav container */
+        .sidebar.collapsed .sidebar-nav {
+            padding: 0.5rem 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+            scrollbar-width: none;
+        }
+
+            /* Center nav links when collapsed */
+            .sidebar.collapsed .sidebar-nav .nav-link {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 44px;
+                height: 44px;
+                padding: 0 !important;
+                margin: 4px auto;
+                border-radius: 12px !important;
+                position: relative;
+                gap: 0 !important;
+            }
+
+                /* Icon sizing in collapsed state */
+                .sidebar.collapsed .sidebar-nav .nav-link i {
+                    margin: 0 !important;
+                    font-size: 1.125rem;
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                /* Hover state in collapsed mode - remove transform that causes layout issues */
+                .sidebar.collapsed .sidebar-nav .nav-link:hover {
+                    background: rgba(11, 35, 67, 0.06);
+                    transform: none;
+                }
+
+                /* Active state in collapsed mode */
+                .sidebar.collapsed .sidebar-nav .nav-link.active {
+                    background: #0B2343 !important;
+                    box-shadow: 0 2px 8px rgba(11, 35, 67, 0.25);
+                }
+
+                    .sidebar.collapsed .sidebar-nav .nav-link.active i {
+                        color: white !important;
+                    }
+
+        /* Remove sidebar group dividers/gaps in collapsed */
+        .sidebar.collapsed [data-sidebar="group"] {
+            padding-bottom: 0.5rem !important;
+            margin-bottom: 0;
+        }
+
+        /* ============================================================
+   COLLAPSED SIDEBAR FOOTER - Preserved & Never Cut Off
+   ============================================================ */
+        .sidebar.collapsed .sidebar-footer {
+            padding: 0.75rem 0.5rem;
+            border-top: 1px solid var(--sidebar-border);
+            display: flex;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: auto;
+            min-height: 64px;
+        }
+
+            .sidebar.collapsed .sidebar-footer .profile-menu-container {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+            }
+
+            .sidebar.collapsed .sidebar-footer .user-box {
+                justify-content: center;
+                padding: 0;
+            }
+
+            .sidebar.collapsed .sidebar-footer .user-box-left {
+                justify-content: center;
+                flex: none;
+            }
+
+            .sidebar.collapsed .sidebar-footer .user-box-right,
+            .sidebar.collapsed .sidebar-footer .user-info,
+            .sidebar.collapsed .sidebar-footer .notification-bell-wrapper,
+            .sidebar.collapsed .sidebar-footer .user-menu-button {
+                display: none !important;
+            }
+
+            /* Avatar in collapsed mode */
+            .sidebar.collapsed .sidebar-footer .avatar-wrapper {
+                width: 40px;
+                height: 40px;
+                margin: 0;
+            }
+
+            .sidebar.collapsed .sidebar-footer .avatar-trigger {
+                width: 45px;
+                height: 44px;
+                border-radius: 12px;
+            }
+
+            /* Profile dropdown in collapsed mode */
+            .sidebar.collapsed .sidebar-footer .profile-dropdown {
+                position: fixed;
+                left: calc(var(--sidebar-collapsed-width) + 8px);
+                bottom: 1rem;
+                right: auto;
+                width: 280px;
+                min-width: 260px;
+                max-width: 280px;
+            }
+
+/* Sidebar Close Button - Only visible on mobile/tablet */
+.sidebar-close-btn {
+    display: none;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    background: rgba(10, 31, 68, 0.05);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    z-index: 10;
+}
+
+    .sidebar-close-btn:hover {
+        background: rgba(10, 31, 68, 0.1);
+    }
+
+    .sidebar-close-btn i {
+        font-size: 1.25rem;
+        color: var(--primary-color);
+    }
+
+/* ============================================================
+   MAIN CONTENT WRAPPER
+   ============================================================ */
+.main-content-wrapper {
+    flex-grow: 1;
+    height: 100vh;
+    overflow-y: auto;
+    transition: margin-left var(--transition-speed) var(--transition-easing);
+}
+
+/* ============================================================
+   SCROLLBAR STYLING
+   ============================================================ */
+.sidebar-nav::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+    .sidebar-nav::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+.sidebar-nav {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+/* ============================================================
+   TABLET BREAKPOINT (768px - 1024px)
+   ============================================================ */
+@media (max-width: 1024px) {
+    /* Show mobile header */
+    .mobile-header {
+        display: flex;
+    }
+
+    /* Offset main content for mobile header */
+    .main-content-wrapper {
+        margin-top: var(--mobile-header-height);
+        height: calc(100vh - var(--mobile-header-height));
+    }
+
+    /* Transform sidebar into overlay */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        transform: translateX(-100%);
+        box-shadow: none;
+        will-change: transform;
+    }
+
+    /* Sidebar open state */
+    body.sidebar-open .sidebar {
+        transform: translateX(0);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Show close button */
+    .sidebar-close-btn {
+        display: flex;
+    }
+
+    /* Hide desktop branding in sidebar header */
+    .sidebar-header .custom-sidebar-header {
+        padding-right: 2.5rem; /* Make room for close button */
+    }
+}
+
+/* ============================================================
+   MOBILE BREAKPOINT (<768px)
+   ============================================================ */
+@media (max-width: 768px) {
+    /* Full width sidebar on very small screens */
+    .sidebar {
+        width: 85%;
+        max-width: 300px;
+    }
+
+    /* Adjust mobile header padding */
+    .mobile-header {
+        padding: 0 0.75rem;
+    }
+
+    /* Smaller hamburger */
+    .hamburger-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Smaller brand icon */
+    .mobile-brand-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+        .mobile-brand-icon i {
+            font-size: 0.875rem;
+        }
+
+    .mobile-brand-title {
+        font-size: 0.9rem;
+    }
+
+    /* Tighter sidebar nav padding */
+    .sidebar-nav {
+        padding: 0 0.75rem;
+    }
+
+    /* Adjust sidebar header */
+    .sidebar-header {
+        padding: 1.25rem;
+    }
+}
+
+/* ============================================================
+   SMALL MOBILE BREAKPOINT (<480px)
+   ============================================================ */
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+        max-width: none;
+    }
+
+    .mobile-brand-title {
+        display: none;
+    }
+
+    .mobile-header {
+        height: 54px;
+    }
+
+    .main-content-wrapper {
+        margin-top: 54px;
+        height: calc(100vh - 54px);
+    }
+}
+
+/* ============================================================
+   SIDEBAR FOOTER RESPONSIVE ADJUSTMENTS
+   ============================================================ */
+@media (max-width: 1024px) {
+    .sidebar-footer {
+        padding: 1rem;
+        padding-right: 0.5rem;
+    }
+
+    .user-box {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .avatar-wrapper {
+        width: 42px;
+        height: 42px;
+    }
+
+    .avatar-trigger {
+        width: 42px;
+        height: 42px;
+    }
+
+    .user-name {
+        font-size: 12px;
+    }
+
+    .user-email {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar-footer {
+        padding: 0.875rem;
+    }
+
+    .user-box-left {
+        gap: 0.5rem;
+    }
+
+    .user-box-right {
+        gap: 0.35rem;
+    }
+
+    .avatar-wrapper {
+        width: 38px;
+        height: 38px;
+    }
+
+    .avatar-trigger {
+        width: 38px;
+        height: 38px;
+    }
+
+    .notification-bell-wrapper {
+        width: 32px;
+        height: 32px;
+    }
+
+    .notification-bell-icon {
+        width: 16px;
+        height: 16px;
+        font-size: 16px;
+    }
+
+    /* Notification drawer adjustments for mobile */
+    .notification-drawer {
+        max-width: 280px;
+        left: auto;
+        right: 0;
+    }
+
+    .profile-dropdown {
+        max-width: 280px;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-info {
+        max-width: 100px;
+    }
+
+    .user-name {
+        font-size: 11px;
+    }
+
+    .user-email {
+        font-size: 9px;
+    }
+
+    /* Full width dropdowns on very small screens */
+    .notification-drawer,
+    .profile-dropdown {
+        position: fixed;
+        left: 1rem;
+        right: 1rem;
+        bottom: auto;
+        top: 50%;
+        transform: translateY(-50%);
+        max-width: none;
+        max-height: 80vh;
+    }
+
+        .notification-drawer.is-open,
+        .profile-dropdown.is-open {
+            transform: translateY(-50%);
+        }
+}
+
+/* ============================================================
+   OVERLAY & SPINNER RESPONSIVE ADJUSTMENTS
+   ============================================================ */
+@media (max-width: 768px) {
+    .spinner {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .u-swal-modal {
+        width: 90%;
+        margin: 1rem;
+    }
+
+    .u-swal-body {
+        padding: 20px 25px;
+        font-size: 15px;
+    }
+}
+
+/* ============================================================
+   NAVIGATION LINKS RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+    .sidebar .nav-link {
+        padding: 10px 12px !important;
+        font-size: 0.875rem;
+    }
+
+        .sidebar .nav-link i {
+            font-size: 1rem;
+            width: 1.25rem;
+        }
+
+    .tracking-wider {
+        letter-spacing: 0.03em;
+    }
+
+    .px-3 {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+
+    .py-2 {
+        padding-top: 0.375rem !important;
+        padding-bottom: 0.375rem !important;
+    }
+}
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+@media print {
+    .sidebar,
+    .mobile-header,
+    .sidebar-overlay {
+        display: none !important;
+    }
+
+    .main-content-wrapper {
+        margin: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    body.sidebar-open {
+        overflow: visible;
+    }
+}
+
+/* ============================================================
+   ACCESSIBILITY - REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .sidebar,
+    .sidebar-overlay,
+    .hamburger-icon span,
+    .notification-drawer,
+    .profile-dropdown {
+        transition: none !important;
+    }
+}
+
+/* ============================================================
+   HIGH CONTRAST MODE SUPPORT
+   ============================================================ */
+@media (prefers-contrast: high) {
+    .sidebar {
+        border-right-width: 2px;
+    }
+
+    .mobile-header {
+        border-bottom-width: 2px;
+    }
+
+    .hamburger-icon span {
+        height: 3px;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE UTILITY CLASSES
+   ============================================================ */
+
+/* Hide/Show utilities */
+.hide-mobile {
+    display: block;
+}
+
+.hide-tablet {
+    display: block;
+}
+
+.hide-desktop {
+    display: none;
+}
+
+.show-mobile {
+    display: none;
+}
+
+.show-tablet {
+    display: none;
+}
+
+.show-desktop {
+    display: block;
+}
+
+@media (max-width: 1024px) {
+    .hide-tablet {
+        display: none;
+    }
+
+    .show-tablet {
+        display: block;
+    }
+
+    .hide-desktop {
+        display: block;
+    }
+
+    .show-desktop {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none;
+    }
+
+    .show-mobile {
+        display: block;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE TYPOGRAPHY
+   ============================================================ */
+h1, .h1 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+h2, .h2 {
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+h3, .h3, .page-title, .common-heading-color {
+    font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+}
+
+h4, .h4 {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 1.25rem !important;
+    }
+
+    .page-subtitle {
+        font-size: 0.875rem !important;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE CONTAINERS & LAYOUT
+   ============================================================ */
+.page-container {
+    padding: clamp(0.75rem, 3vw, 2rem);
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+
+
+
+/* Responsive row/column layouts */
+.row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+@media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+    }
+
+        .row > [class*="col-"] {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+    .pl-0, .pr-0, .pl-md-2, .pr-md-2 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE TABLES
+   ============================================================ */
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+table.dataTable,
+.table {
+    width: 100% !important;
+    max-width: 100%;
+}
+
+@media (max-width: 1024px) {
+    .dataTables_wrapper {
+        overflow-x: auto;
+    }
+
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_length {
+            text-align: left !important;
+            float: none !important;
+            margin-bottom: 0.75rem;
+        }
+
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            float: none !important;
+            text-align: center !important;
+            margin-top: 0.75rem;
+        }
+}
+
+@media (max-width: 768px) {
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_filter input {
+            width: 100% !important;
+            min-width: unset !important;
+            margin: 0.5rem 0 !important;
+        }
+
+    .dataTables_wrapper .dataTables_paginate {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.5rem 0.75rem !important;
+            margin: 0.125rem !important;
+        }
+
+    table.dataTable thead th,
+    table.dataTable tbody td {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.8125rem !important;
+    }
+
+    /* Stack table cells on mobile for better readability */
+    table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control,
+    table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control {
+        padding-left: 30px !important;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE FORMS
+   ============================================================ */
+.form-control,
+.form-select,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.625rem 0.875rem;
+    box-sizing: border-box;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+    .form-group.row {
+        flex-wrap: wrap;
+    }
+
+@media (max-width: 768px) {
+    .form-group.row {
+        flex-direction: column;
+    }
+
+        .form-group.row > .col-form-label,
+        .form-group.row > [class*="col-"] {
+            width: 100%;
+            max-width: 100%;
+            flex: 0 0 100%;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+    .col-form-label {
+        margin-bottom: 0.375rem;
+        text-align: left !important;
+    }
+
+    /* Stack form rows */
+    .form-inline {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+        .form-inline .form-control {
+            width: 100%;
+        }
+}
+
+/* ============================================================
+   RESPONSIVE BUTTONS
+   ============================================================ */
+.btn {
+    min-height: 44px;
+    padding: 0.625rem 1rem;
+    font-size: clamp(0.8125rem, 2vw, 0.9375rem);
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.btn-group {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .btn {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-group {
+        width: 100%;
+    }
+
+        .btn-group > .btn {
+            flex: 1 1 auto;
+        }
+
+    /* Stack action buttons on mobile */
+    .action-buttons,
+    .button-group,
+    .df-header {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .submit-button,
+    .df-primary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE MODALS
+   ============================================================ */
+
+.modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header,
+.modal-footer {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 0;
+        max-width: 100%;
+        min-height: 100vh;
+    }
+
+        .modal-dialog.modal-lg,
+        .modal-dialog.modal-xl {
+            max-width: 100%;
+        }
+
+    .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+
+    .modal-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: inherit;
+    }
+
+    .modal-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        background: inherit;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE CARDS
+   ============================================================ */
+.storage-card,
+.role-card {
+    padding: clamp(1rem, 3vw, 2rem);
+}
+
+@media (max-width: 768px) {
+    .storage-card {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .card-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE GRIDS
+   ============================================================ */
+.upload-grid,
+.template-layout {
+    display: grid;
+    gap: clamp(1rem, 3vw, 1.5rem);
+}
+
+@media (min-width: 1024px) {
+    .upload-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .template-layout {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+}
+
+@media (max-width: 1024px) {
+    .upload-grid,
+    .template-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE TABS
+   ============================================================ */
+.nav-tabs {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+    .nav-tabs .nav-link {
+        padding: 0.625rem 1rem;
+        font-size: clamp(0.75rem, 2vw, 0.875rem);
+        white-space: nowrap;
+    }
+
+@media (max-width: 768px) {
+    .nav-tabs {
+        flex-direction: column;
+        border-bottom: none;
+    }
+
+        .nav-tabs .nav-item {
+            width: 100%;
+        }
+
+        .nav-tabs .nav-link {
+            width: 100%;
+            text-align: left;
+            border-radius: 8px;
+            margin-bottom: 0.25rem;
+        }
+
+    .df-tabbar {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .df-tab {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE DROPZONE
+   ============================================================ */
+
+.dropzone-icon {
+    width: clamp(60px, 15vw, 84px);
+    height: clamp(60px, 15vw, 84px);
+    font-size: clamp(1.5rem, 5vw, 2rem);
+}
+
+.dropzone-title {
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+}
+
+.dropzone-subtitle {
+    font-size: clamp(0.8rem, 2vw, 0.95rem);
+}
+
+@media (max-width: 768px) {
+    .dropzone {
+        padding: 1.5rem 1rem;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE PDF VIEWER & TOOLBAR
+   ============================================================ */
+.viewer-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem;
+}
+
+    .viewer-toolbar .zoom-controls,
+    .viewer-toolbar .page-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+@media (max-width: 768px) {
+    .viewer-toolbar {
+        justify-content: center;
+    }
+
+        .viewer-toolbar button.toolbar-btn {
+            padding: 0.5rem;
+            min-width: 44px;
+        }
+
+            .viewer-toolbar button.toolbar-btn span {
+                display: none;
+            }
+}
+
+/* ============================================================
+   RESPONSIVE SIDEBAR PANELS
+   ============================================================ */
+.configurationContainer {
+    min-width: unset;
+    max-width: 100%;
+    width: 100%;
+}
+
+.modern-signatories-panel {
+    padding: clamp(0.875rem, 3vw, 1.25rem);
+}
+
+.field-chip {
+    padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 2vw, 1.25rem);
+    font-size: clamp(0.8125rem, 2vw, 0.9375rem);
+}
+
+#toolbar {
+    display: grid;
+    gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+    #toolbar {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    #toolbar {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+        #toolbar button {
+            padding: 0.625rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+    .configurationContainer {
+        order: -1;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE STEPPER
+   ============================================================ */
+.stepper {
+    flex-wrap: wrap;
+}
+
+    .stepper .circle {
+        width: clamp(36px, 8vw, 44px);
+        height: clamp(36px, 8vw, 44px);
+        font-size: clamp(0.875rem, 2vw, 1rem);
+    }
+
+.step-line {
+    flex: 1;
+    min-width: 20px;
+}
+
+@media (max-width: 480px) {
+    .stepper {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .step-line {
+        width: 4px;
+        height: 20px;
+        margin: 0 auto;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE DIGITAL FORMS DASHBOARD
+   ============================================================ */
+.digital-forms-dashboard {
+    padding: clamp(1rem, 4vw, 2.5rem) clamp(0.75rem, 3vw, 2.25rem);
+}
+
+.df-header {
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.df-icon {
+    width: clamp(48px, 10vw, 64px);
+    height: clamp(48px, 10vw, 64px);
+    font-size: clamp(1.25rem, 4vw, 1.875rem);
+    border-radius: clamp(12px, 3vw, 20px);
+}
+
+.df-heading h3 {
+    font-size: clamp(1.25rem, 4vw, 2rem);
+}
+
+.df-heading p {
+    font-size: clamp(0.875rem, 2vw, 1rem);
+}
+
+@media (max-width: 768px) {
+    .df-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .df-heading {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .df-icon {
+        margin: 0 auto;
+    }
+
+    .df-primary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE FORM REQUESTS
+   ============================================================ */
+@media (max-width: 768px) {
+    .status-container .popup {
+        position: fixed;
+        left: 50%;
+        right: auto;
+        bottom: auto;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        max-width: calc(100vw - 2rem);
+        z-index: 10001;
+    }
+
+    .popup::after {
+        display: none;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE DOCUMENT STATUS
+   ============================================================ */
+.document-container {
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.document-image {
+    width: clamp(60px, 15vw, 80px);
+    max-height: clamp(75px, 20vw, 100px);
+}
+
+.container .steps {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .document-container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .document-details {
+        align-items: center;
+    }
+
+    .container .steps {
+        justify-content: center;
+    }
+
+    .container .qwer {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE STATUS BADGES
+   ============================================================ */
+.status-badge,
+.badge {
+    padding: 0.375rem 0.75rem;
+    font-size: clamp(0.6875rem, 2vw, 0.8125rem);
+    white-space: nowrap;
+}
+
+/* ============================================================
+   RESPONSIVE ALERTS & TOASTS
+   ============================================================ */
+.modern-toast-stack {
+    max-width: calc(100vw - 2rem);
+    right: 1rem;
+    left: 1rem;
+}
+
+.modern-toast {
+    min-width: auto;
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .modern-toast-stack {
+        top: calc(var(--mobile-header-height, 60px) + 1rem);
+    }
+
+    .modern-toast {
+        padding: 0.875rem 1rem;
+    }
+
+        .modern-toast .toast-icon {
+            width: 2.25rem;
+            height: 2.25rem;
+            font-size: 1.125rem;
+        }
+
+        .modern-toast .toast-title {
+            font-size: 0.9375rem;
+        }
+
+        .modern-toast .toast-message {
+            font-size: 0.8125rem;
+        }
+}
+
+/* ============================================================
+   RESPONSIVE FLEX UTILITIES
+   ============================================================ */
+@media (max-width: 768px) {
+    .d-flex {
+        flex-wrap: wrap;
+    }
+
+    .flex-column-mobile {
+        flex-direction: column !important;
+    }
+
+    .gap-responsive {
+        gap: 0.75rem !important;
+    }
+
+    .w-100-mobile {
+        width: 100% !important;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE SPACING UTILITIES
+   ============================================================ */
+@media (max-width: 768px) {
+    .p-responsive {
+        padding: 0.75rem !important;
+    }
+
+    .m-responsive {
+        margin: 0.75rem !important;
+    }
+
+    .mb-responsive {
+        margin-bottom: 1rem !important;
+    }
+
+    .mt-responsive {
+        margin-top: 1rem !important;
+    }
+}
+
+/* ============================================================
+   PREVENT HORIZONTAL OVERFLOW
+   ============================================================ */
+html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+.main-content-wrapper {
+    overflow-x: hidden;
+}
+
+img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ============================================================
+   TOUCH-FRIENDLY INTERACTIONS
+   ============================================================ */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase touch targets */
+    .btn,
+    .nav-link,
+    .form-control,
+    .form-select,
+    input,
+    select,
+    button {
+        min-height: 44px;
+    }
+
+        /* Remove hover effects on touch devices */
+        .btn:hover,
+        .nav-link:hover,
+        .card:hover {
+            transform: none;
+        }
+
+    /* Improve scrolling */
+    .sidebar-nav,
+    .step-content,
+    .modal-body,
+    .card-content {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* ============================================================
+   LANDSCAPE ORIENTATION FIXES
+   ============================================================ */
+@media (max-height: 500px) and (orientation: landscape) {
+    .sidebar {
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    .modal-content {
+        max-height: 95vh;
+    }
+
+    .page-container {
+        min-height: auto;
+    }
+}
+
+/* ============================================================
+   SAFE AREA INSETS (NOTCH SUPPORT)
+   ============================================================ */
+@supports (padding: env(safe-area-inset-top)) {
+    .mobile-header {
+        padding-top: env(safe-area-inset-top);
+        height: calc(var(--mobile-header-height) + env(safe-area-inset-top));
+    }
+
+    .sidebar {
+        padding-left: env(safe-area-inset-left);
+    }
+
+    .main-content-wrapper {
+        padding-right: env(safe-area-inset-right);
+    }
+
+    @media (max-width: 768px) {
+        .modal-footer {
+            padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+        }
+    }
+}
+
+.pdf-page {
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================================
+   GLOBAL MODAL LAYOUT SYSTEM
+   Ensures proper header, scrollable body, and always-visible footer
+   Applied automatically to all Bootstrap modals in the application
+   ============================================================ */
+
+/* Base modal backdrop styling */
+.modal {
+    padding: 0 !important;
+}
+
+/* Modal dialog - flex container for vertical centering */
+.modal-dialog {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 1rem);
+    margin: 0.5rem auto;
+    padding: 0.5rem;
+    max-width: 500px;
+}
+
+.modal-dialog-centered {
+    min-height: calc(100% - 1rem);
+}
+
+/* Size variants */
+.modal-dialog.modal-sm {
+    max-width: 350px;
+}
+
+.modal-dialog.modal-lg {
+    max-width: 800px;
+}
+
+.modal-dialog.modal-xl {
+    max-width: 1140px;
+}
+
+/* Modal content - the main flexbox container */
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-height: calc(100vh - 2rem);
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 25px 60px rgba(16, 24, 40, 0.2);
+    background: #ffffff;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Modal header - fixed at top, never scrolls */
+.modal-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    background: #ebedef;
+    border-bottom: 1px solid #e2e8f0;
+    border-radius: 16px 16px 0 0;
+    min-height: 60px;
+}
+
+    .modal-header .modal-title,
+    .modal-header h3,
+    .modal-header h4,
+    .modal-header h5,
+    .modal-header p {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .modal-header .btn-close,
+    .modal-header .close {
+        padding: 0.5rem;
+        margin: -0.5rem -0.5rem -0.5rem auto;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+
+        .modal-header .btn-close:hover,
+        .modal-header .close:hover {
+            opacity: 1;
+        }
+
+/* Modal body - scrollable content area */
+.modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1.5rem;
+    background: #ffffff;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+    /* Custom scrollbar for modal body */
+    .modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .modal-body::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 3px;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+/* Modal footer - fixed at bottom, never scrolls, always visible */
+.modal-footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 16px 16px;
+    min-height: 60px;
+}
+
+    /* Modal footer button styling */
+    .modal-footer .btn {
+        border-radius: 10px;
+        padding: 0.625rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        transition: all 0.25s ease;
+        min-width: 100px;
+    }
+
+        .modal-footer .btn-primary,
+        .modal-footer .btn[style*="background-color: #acc33e"],
+        .modal-footer .btn[style*="background-color:#acc33e"] {
+            background: #059669 !important;
+            border: none !important;
+            color: white !important;
+        }
+
+            .modal-footer .btn-primary:hover,
+            .modal-footer .btn[style*="background-color: #acc33e"]:hover,
+            .modal-footer .btn[style*="background-color:#acc33e"]:hover {
+                transform: translateY(-2px);
+            }
+
+        .modal-footer .btn-danger,
+        .modal-footer .btn[style*="background-color: #dc143c"],
+        .modal-footer .btn[style*="background-color:#dc143c"] {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            border: none !important;
+            color: white !important;
+        }
+
+            .modal-footer .btn-danger:hover,
+            .modal-footer .btn[style*="background-color: #dc143c"]:hover,
+            .modal-footer .btn[style*="background-color:#dc143c"]:hover {
+                transform: translateY(-2px);
+            }
+
+    .modal-footer .btn-secondary,
+    .modal-footer .btn-outline-secondary {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+    }
+
+        .modal-footer .btn-secondary:hover,
+        .modal-footer .btn-outline-secondary:hover {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+            color: #334155;
+        }
+
+/* ============================================================
+   MODAL RESPONSIVE BEHAVIOR
+   ============================================================ */
+
+/* Tablet screens */
+@media (max-width: 991px) {
+    .modal-dialog {
+        max-width: calc(100% - 2rem);
+        margin: 1rem;
+    }
+
+        .modal-dialog.modal-lg,
+        .modal-dialog.modal-xl {
+            max-width: calc(100% - 2rem);
+        }
+}
+
+/* Mobile screens */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+        min-height: calc(100% - 1rem);
+        padding: 0;
+    }
+
+    .modal-content {
+        max-height: calc(100vh - 1rem);
+        border-radius: 16px;
+    }
+
+    .modal-header {
+        padding: 1rem 1.25rem;
+        border-radius: 16px 16px 0 0;
+    }
+
+        .modal-header .modal-title,
+        .modal-header h3,
+        .modal-header h4,
+        .modal-header h5,
+        .modal-header p {
+            font-size: 1.125rem;
+        }
+
+    .modal-body {
+        padding: 1rem 1.25rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.25rem;
+        flex-direction: column-reverse;
+        gap: 0.5rem;
+        border-radius: 0 0 16px 16px;
+    }
+
+        .modal-footer .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+        }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+    .modal-dialog {
+        margin: 0.25rem;
+        max-width: calc(100% - 0.5rem);
+    }
+
+    .modal-content {
+        max-height: calc(100vh - 0.5rem);
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 0.875rem 1rem;
+    }
+}
+
+/* Landscape orientation on small devices */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-content {
+        max-height: 95vh;
+    }
+
+    .modal-body {
+        max-height: calc(95vh - 140px);
+    }
+}
+
+/* ============================================================
+   MODAL ANIMATION ENHANCEMENTS
+   ============================================================ */
+.modal.fade .modal-dialog {
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* ============================================================
+   OVERRIDE INLINE STYLES THAT BREAK MODAL LAYOUT
+   Using !important to ensure these rules take precedence
+   ============================================================ */
+
+/* Remove problematic fixed heights from modal-content */
+.modal-content[style*="height"] {
+    height: auto !important;
+    max-height: calc(100vh - 2rem) !important;
+}
+
+/* Ensure modal-content with padding:0 still works */
+.modal-content[style*="padding: 0"],
+.modal-content[style*="padding:0"] {
+    padding: 0 !important;
+}
+
+/* Fix for modals with inline margin-top */
+.modal-dialog[style*="margin-top"] {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+}
+.modal-footer {
+    visibility:visible;
+}

@@ -1,0 +1,3153 @@
+﻿@using System.Security.Claims;
+@using Newtonsoft.Json;
+
+@{
+    var documentStatusOptions = new List<(string Id, string Display)>
+    {
+        ("All", "All"),
+        ("In Progress","Signatures Pending"),
+        ("Completed", "Completed"),
+        ("Expired", "Expired"),
+        ("Recalled", "Recalled"),
+        ("Declined", "Declined")
+    };
+    var signingStatusOptions = new List<(string Id, string Display)>
+    {
+        ("All", "All"),
+        ("Need to sign","Need to Sign"),
+        ("Signed","Signed"),
+        ("Signing_in_Progress", "Signing in Progress"),
+        ("Failed","Failed"),
+        ("Rejected","Rejected"),
+        ("Waiting_for_Others","Waiting for Others")
+
+    };
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var AccountType = User.FindFirst("AccountType").Value;
+    var OrganizationUid = "";
+    if (AccountType != "Self")
+    {
+
+        OrganizationUid = User.FindFirst("OrganizationUid").Value;
+    }
+}
+<style>
+    .shimmer-wrapper .shimmer-item {
+        height: 80px;
+        margin: 10px;
+        border-radius: 8px;
+        background: #f3f3f3;
+        position: relative;
+        overflow: hidden;
+    }
+
+        /* Shimmer band */
+        .shimmer-wrapper .shimmer-item::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient( to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100% );
+            animation: shimmer-horizontal 1.6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+
+
+    @@keyframes shimmer-horizontal {
+        0% {
+            left: -100%;
+        }
+
+        100% {
+            left: 100%;
+        }
+    }
+
+
+    .hidden {
+        display: none !important;
+    }
+
+
+    .viewbutton {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        background: #d1f4e0;
+        color: #198754;
+        font-size: 16px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .viewbutton:hover {
+            background: #0ea66b;
+            border-color: #0ea66b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2);
+        }
+
+    .inprogressclassstatus {
+        background: #ebe9e9;
+        padding: 2px 4px;
+        padding: 4px 8px !important;
+        border-radius: 12px !important;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    #draftCardsScrollArea {
+        overflow-y: auto;
+        padding-right: 8px;
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .onhoverclass:hover {
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
+        transform: scale(1.0125); /* slight zoom */
+    }
+
+    #draftCardsScrollArea::-webkit-scrollbar {
+        display: none; /* Chrome, Edge, Safari */
+    }
+
+    /* ------------------------------
+                                                                           DOCUMENT CARD CONTAINER
+                                                                        ------------------------------- */
+    .document-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 22px;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e0dfdf;
+        margin-bottom: 16px;
+        transition: box-shadow .2s ease;
+    }
+
+        .document-card:hover {
+            box-shadow: box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+    /* ------------------------------
+                                                                           LEFT SIDE : ICON + FILE INFO
+                                                                        ------------------------------- */
+    .doc-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .doc-icon-wrapper {
+        width: 55px;
+        height: 55px;
+        min-width: 55px;
+        border-radius: 50%;
+        background: #e4f2d2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+        .doc-icon-wrapper img {
+            width: 28px;
+            height: 28px;
+        }
+
+    /* Document Title */
+    .doc-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    /* Created / Expires Line */
+    .doc-meta {
+        margin: 4px 0 0;
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    /* ------------------------------
+                                                                           MIDDLE STATUS BLOCK
+                                                                        ------------------------------- */
+    .doc-status-block {
+        text-align: left;
+        min-width: 180px;
+    }
+
+    .doc-status-heading {
+        text-transform: uppercase;
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 12px;
+        margin-bottom: 3px;
+    }
+
+    .doc-status-text {
+        font-size: 15px;
+        font-weight: 600;
+        color: #ff7d00; /* Orange like screenshot */
+    }
+
+    /* My Sign Status */
+    .my-sign-status {
+        font-size: 15px;
+        font-weight: 600;
+        color: #dc2626; /* Red for Failed */
+    }
+
+    /* ------------------------------
+                                                                           RETRY / VIEW BUTTON
+                                                                        ------------------------------- */
+    .doc-action-btn {
+        background: #88b04b;
+        color: #fff;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        padding: 7px 22px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .doc-action-btn:hover {
+            background: #7aa43f;
+        }
+
+        .doc-action-btn i {
+            font-size: 15px;
+        }
+
+    /* ------------------------------
+                                                                           SHOW MORE BUTTON
+                                                                        ------------------------------- */
+    .show-more-wrapper {
+        padding: 14px 0 5px;
+        text-align: center;
+    }
+
+
+    .show-more-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        color: #4976af;
+        background-color: #dbeafe;
+        border: none;
+        border-radius: 0.25rem;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+        .show-more-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        }
+
+
+    .status-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .popup {
+        display: none;
+        position: absolute;
+        min-width: 280px;
+        padding: 15px;
+        background-image: linear-gradient(90deg, #30b6ac, #81bc73);
+        color: #000;
+        border-radius: 6px;
+        box-shadow: 0 0 24px rgba(0, 0, 0, .25);
+        font-size: 80%;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s, visibility 0.3s;
+        bottom: 100%;
+        right: 0;
+        transform: translateX(0) translateY(-10px);
+    }
+
+    .status-container:hover .popup {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .popup::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        /*/ Position the arrow / */
+        right: 20px;
+        /*/ Adjust arrow to align with the popup /*/
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        /*/ Transparent left side /*/
+        border-top: 10px solid #81bc73;
+        /*/ Visible top side /*/
+    }
+
+    .popup .header {
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+    .popup .headersp {
+        padding-bottom: 5px;
+        border-bottom: 1px solid;
+    }
+
+    .popup .row {
+        display: contents;
+    }
+
+    .popup p {
+        line-height: 1 !important;
+        margin-bottom: 0;
+        padding-bottom: 5px;
+        color: #fff;
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .popup ul {
+        padding-left: 0;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        /*/ Ensure vertical alignment /*/
+        list-style: none;
+    }
+
+        .popup ul li {
+            font-size: 14px;
+            font-weight: 600;
+            position: relative;
+            margin-bottom: 0;
+        }
+
+            .popup ul li.first-email::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 14px;
+                height: 14px;
+                background-color: transparent;
+                border: 2px solid #fff;
+                border-radius: 50%;
+            }
+
+            .popup ul li.first-email::after {
+                content: "";
+                width: 6px;
+                height: 6px;
+                background-color: #fff;
+                border-radius: 50%;
+                position: absolute;
+                top: 50%;
+                left: 7px;
+                transform: translate(-50%, -50%);
+            }
+
+            .popup ul li.no-bullet,
+            .popup ul li.delegator-section {
+                padding-left: 0;
+                list-style-type: none;
+                margin-left: 0;
+                /*/ Reset margin for left alignment /*/
+            }
+
+    /*/ Ensure alignment of items in the popup /*/
+    .popup ul {
+        padding-left: 0;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        list-style: none;
+    }
+
+    .inprogressbtn {
+        color: #f57c00;
+        text-align: left;
+    }
+
+    .Declinedbtn {
+        color: red;
+        text-align: left;
+    }
+
+    .completebtn {
+        color: #4caf50 !important;
+        text-align: left;
+    }
+
+    .otherbtn {
+        color: #bdbdbd;
+        text-align: left;
+    }
+
+    .signingstats-heading {
+        font-family: 'Arial', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .docstats-heading {
+        font-family: 'Arial', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .text-muted {
+        color: #919aa3 !important;
+        margin-bottom: 3px;
+    }
+
+    .gap-1 {
+        gap: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Custom Styling for Radio Buttons */
+    .custom-radio input[type="radio"] {
+        display: none; /* Hide the default radio button */
+    }
+
+        /* Label Styling */
+        .custom-radio input[type="radio"] + label {
+            position: relative;
+            padding-left: 25px; /* Space for the custom radio button circle */
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1.5;
+            color: black;
+            /* color: #555; */
+            transition: color 0.3s ease;
+            margin-bottom: 5px;
+            white-space: nowrap;
+        }
+
+    @@media screen and (max-width:576px) {
+        .custom-radio input[type="radio"] + label {
+            padding-left: 25px;
+            white-space: normal;
+        }
+    }
+
+    /* Custom Radio Button Circle (Initial State) */
+    .custom-radio input[type="radio"] + label::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        border: 2px solid #bbb; /* Grey border */
+        border-radius: 50%; /* Circle */
+        background-color: #fff; /* White background */
+        transition: all 0.3s ease; /* Smooth transition for border and background */
+    }
+
+    /* Active (Checked) State */
+    .custom-radio input[type="radio"]:checked + label::before {
+        background-color: #198754;
+        border: 0.5px solid #198754;
+        width: 16px;
+        height: 16px;
+        /* box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);  */
+    }
+
+    /* Inner White Circle when Active */
+    .custom-radio input[type="radio"]:checked + label::after {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        background-color: #fff;
+        border-radius: 50%;
+        border: 0.5px solid #198754;
+    }
+
+
+
+    .custom-label {
+        font-weight: 600;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1rem;
+    }
+
+        .custom-label i {
+            font-size: 17px;
+            color: #0d6efd; /* Bootstrap primary */
+        }
+
+    .custom-select {
+        width: auto;
+        min-width: 180px;
+        display: inline-block;
+        margin-left: 0px;
+        height: 30px;
+        min-height: 40px;
+        font-size: 14px;
+    }
+    /* Tooltip */
+    .tooltip-message {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        background-color: #333;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        top: 35px;
+        left: 100px;
+        transform: translateX(-50%);
+        font-size: 12px;
+        white-space: nowrap;
+        transition: opacity 0.2s;
+        z-index: 1;
+    }
+
+    .custom-checkbox-wrapper.disabled:hover .tooltip-message {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .custom-checkbox {
+        width: 13px;
+        height: 35px;
+    }
+
+    /* ─── Screenshot-1 unified search style ─── */
+    .df-search-bar {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        height: 44px;
+        padding: 0 4px 0 8px;
+    }
+
+        .df-search-bar:hover {
+            border-color: rgba(0, 0, 0, 0.15);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+
+    .df-search-icon-btn {
+        border: none;
+        background: transparent;
+        color: #9ca3af;
+        font-size: 0.9375rem;
+        padding: 0 8px 0 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        transition: color 0.15s ease;
+    }
+
+        .df-search-icon-btn:hover {
+            color: #6b7280;
+        }
+
+    .df-search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 0 0.5rem;
+        font-size: 0.9375rem;
+        color: #1e293b;
+    }
+
+        .df-search-input::placeholder {
+            color: #94a3b8;
+        }
+
+    .df-search-clear-btn {
+        border: none;
+        background: transparent;
+        color: #94a3b8;
+        font-size: 0.8125rem;
+        padding: 0 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        transition: color 0.15s ease;
+    }
+
+        .df-search-clear-btn:hover {
+            color: #64748b;
+        }
+
+
+    /* ================================
+                                                           STAT CARDS (REM BASED)
+                                                           ================================ */
+    .statics-container {
+        display: flex;
+        gap: 1.25rem; /* 20px */
+        padding: 1.25rem 0; /* 20px 0 */
+        flex-wrap: wrap;
+    }
+
+    /* Each Stat Card */
+    .stat-card {
+        flex: 1 1 calc(25% - 1.25rem);
+        min-width: 10rem;
+        background: #ffffff;
+        border-radius: 0.625rem;
+        padding: 1.25rem 2.25rem 1rem 1rem;
+        box-shadow: 0 0.625rem 0.75rem rgba(0,0,0,0.07);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+
+        /* Hover Lift */
+        .stat-card:hover {
+            transform: scale(1.05); /* slight zoom */
+            box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.12);
+        }
+
+    /* Header Row (Label + Icon Right) */
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Label */
+    .stat-label {
+        font-size: 1rem; /* 16px */
+        font-weight: 600;
+        letter-spacing: 0.0625rem; /* 1px */
+        color: #6b7280;
+    }
+
+    .stat-card:hover .stat-label-text-total {
+        color: #2563eb;
+    }
+
+    .stat-card:hover.totalcard {
+        box-shadow: inset 0 0 0 2px #2563eb, 0 0.5rem 1.25rem rgba(0,0,0,0.12);
+    }
+
+    .stat-card:hover.progresscard {
+        box-shadow: inset 0 0 0 2px #d97706, 0 0.5rem 1.25rem rgba(0,0,0,0.12);
+    }
+
+    .stat-card:hover.expiredcard {
+        box-shadow: inset 0 0 0 2px #6b7280, 0 0.5rem 1.25rem rgba(0,0,0,0.12);
+    }
+
+    .stat-card:hover.completedcard {
+        box-shadow: inset 0 0 0 2px #059669, 0 0.5rem 1.25rem rgba(0,0,0,0.12);
+    }
+
+    .stat-card .stat-label-text-completed:hover {
+        color: #059669;
+    }
+
+    .stat-card:hover .stat-label-text-progress {
+        color: #d97706;
+    }
+
+    .stat-card:hover .stat-label-text-completed {
+        color: #059669;
+    }
+
+    .stat-card:hover .stat-label-text-expired {
+        color: #6b7280;
+    }
+
+
+    /* Icon Circle */
+    .stat-icon {
+        width: 2.625rem; /* 42px */
+        height: 2.625rem; /* 42px */
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem; /* 20px */
+        color: white;
+    }
+
+    /* Value Number */
+    .stat-value {
+        margin-top: 0.25rem; /* 4px */
+        font-size: 1.5625rem; /* 25px */
+        font-weight: 700;
+        color: #111827;
+    }
+
+    /* ================================
+                                                           COLORS
+                                                        ================================ */
+
+    /* Icon Backgrounds */
+    .stat-icon.total {
+        background: #2563eb;
+    }
+
+    .stat-icon.progress {
+        background: #d97706;
+    }
+
+    .stat-icon.completed {
+        background: #059669;
+    }
+
+    .stat-icon.expired {
+        background: #6b7280;
+    }
+
+    .total-text {
+        color: #2563eb;
+    }
+    /* Number Colors */
+    .progress-text {
+        color: #d97706;
+    }
+
+    .completed-text {
+        color: #059669;
+    }
+
+    .expired-text {
+        color: #6b7280;
+    }
+
+
+    /* =================================
+                                                           RESPONSIVE BEHAVIOR
+                                                        ================================= */
+    @@media (max-width: 768px) {
+        .stat-card {
+            padding: 1rem 1.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            font-size: 1.15rem;
+        }
+    }
+
+    @@media (max-width: 767px) and (min-width: 567px) {
+
+        .stat-card {
+            flex: 1 1 calc(50% - 1.25rem); /* 2 per row */
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+        }
+
+        .stat-icon {
+            width: 2.3rem;
+            height: 2.3rem;
+            font-size: 1.1rem;
+        }
+    }
+    /* Final number styling */
+    .stat-number {
+        font-size: 1.875rem;
+        font-weight: 700;
+        display: inline-block;
+        margin-bottom: 0.25rem;
+        line-height: 1.875rem;
+        height: 1.875rem;
+    }
+
+        /* Shimmer loading state */
+        .stat-number.loading {
+            width: 48px; /* slightly wider than typical 2–3 digit numbers */
+            background: linear-gradient(90deg, #f3f4f6 0%, #e2e8f0 50%, #f3f4f6 100%);
+            border-radius: 6px;
+            animation: shimmer 1.2s infinite;
+            color: transparent !important;
+        }
+    /* ---------- RESPONSIVE FIX FOR HEADER BAR ---------- */
+    @@media (max-width: 767px) {
+
+        .header-responsive-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .left-responsive-wrap {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        #docsSearchContainer {
+            width: 100%;
+        }
+
+        .df-search-bar {
+            width: 100%;
+        }
+
+        .filter-responsive {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+        }
+    }
+
+
+    @@media screen and (min-width: 1200px) {
+        .stats-container {
+            min-width: 130px;
+        }
+    }
+    /* Show group button styling */
+
+    /* Shimmer animation */
+    @@keyframes shimmer {
+        0% {
+            background-position: -100px 0;
+        }
+
+        100% {
+            background-position: 100px 0;
+        }
+    }
+
+    .doc-stats-container {
+        margin-left: auto; /* push stats to right */
+    }
+
+    .doc-col {
+        width: 170px; /* SAME start point */
+        text-align: left;
+    }
+
+        .doc-col + .doc-col {
+            margin-left: 40px; /* space between columns */
+        }
+
+    /* Action button column */
+    .doc-stats-container .px-3 {
+        width: 110px;
+        display: flex;
+        justify-content: flex-end;
+    }
+    /* CARD */
+    .nd-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 18px 22px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 9px rgba(25,135,84,0.2);
+        border: 1px solid #e6f2ec;
+        position: relative;
+    }
+
+    .nd-mobile-action {
+        display: none;
+    }
+
+    /* ROW */
+    .nd-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    /* LEFT */
+    .nd-left {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* ICON */
+    .nd-icon {
+        width: 42px;
+        height: 42px;
+        background: #0f6b5f;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 18px;
+    }
+
+    /* INFO */
+    .nd-info {
+        min-width: 0;
+    }
+
+    .nd-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #0b1f33;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 420px;
+    }
+
+    .nd-dates {
+        font-size: 14px;
+        font-weight: 500;
+        color: #919aa3;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .nd-dot {
+        margin: 0 4px;
+    }
+
+    /* RIGHT */
+    .nd-right {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+    }
+
+    /* STATUS COL */
+    .nd-col {
+        width: 152px;
+    }
+
+    .nd-head {
+        font-size: 12px;
+        font-weight: 600;
+        color: #7b8794;
+        margin-bottom: 4px;
+    }
+
+    .nd-val {
+        font-weight: 600;
+    }
+
+    .nd-val {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    /* ACTION */
+    .nd-action {
+        width: 90px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* MOBILE STATUS */
+    .nd-mobile-status {
+        display: none;
+        margin-top: 6px;
+        font-size: 13px;
+    }
+
+    .nd-label {
+        color: #333;
+        font-weight: 500;
+    }
+
+    .nd-value {
+        font-weight: 600;
+        margin-left: 4px;
+    }
+
+    .nd-mobile-action,
+    .nd-mobile-action-bottom {
+        display: none;
+    }
+
+    .checkboxContainer.custom-checkbox-wrapper {
+        flex-shrink: 0;
+    }
+
+    .nd-left {
+        align-items: flex-start;
+    }
+
+    /* RESPONSIVE */
+    @@media (max-width: 768px) {
+
+        .nd-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .nd-right {
+            display: none;
+        }
+
+        .nd-mobile-status {
+            display: block;
+            width: 100%;
+        }
+
+        .nd-title {
+            max-width: 85%;
+        }
+
+
+
+        .nd-mobile-action {
+            display: block;
+            position: absolute;
+            top: 2.5rem;
+            right: 1rem;
+        }
+        /* hide bottom button at this size */
+        .nd-mobile-action-bottom {
+            display: none;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        /* hide top button */
+        .nd-mobile-action {
+            display: none;
+        }
+        /* show bottom button */
+        .nd-mobile-action-bottom {
+            display: block;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+            .nd-mobile-action-bottom button,
+            .nd-mobile-action-bottom .btn,
+            .nd-mobile-action-bottom a {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+
+        .nd-mobile-status > div {
+            display: flex;
+        }
+
+        .nd-title {
+            max-width: 100%;
+        }
+    }
+
+    @@media (max-width: 480px) {
+
+        .nd-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nd-left {
+            width: 100%;
+        }
+
+        .nd-info {
+            width: 100%;
+        }
+        /* title wrap instead of ellipsis */
+        .nd-title {
+            white-space: normal;
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+
+        .nd-dates {
+            font-size: 12px;
+            gap: 2px;
+        }
+
+        .nd-mobile-status > div {
+            display: inline-grid;
+            width: 100%;
+        }
+        /* button at bottom full width */
+        .nd-mobile-action-bottom {
+            width: 100%;
+            margin-top: 12px;
+        }
+
+            .nd-mobile-action-bottom button,
+            .nd-mobile-action-bottom .btn,
+            .nd-mobile-action-bottom a {
+                width: 100%;
+            }
+        /* reduce padding so card fits better */
+        .nd-card {
+            padding: 14px;
+        }
+
+        .nd-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 15px;
+        }
+
+        .checkboxContainer.custom-checkbox-wrapper {
+            margin-top: 2px;
+        }
+
+        .nd-left {
+            gap: 10px;
+        }
+    }
+
+    #showMoreBtnDraft {
+        color: #0ea66b;
+        background: #F6F7FB;
+        border: 1px solid #0ea66b;
+    }
+
+        #showMoreBtnDraft:hover {
+            background: #0ea66b;
+            color: #fff;
+            border: none;
+        }
+</style>
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+    @Html.AntiForgeryToken()
+    <!-- Header Row -->
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="fw-bold" style="font-size: 36px; color:#1a1a1a;">My Documents</h1>
+            <small class="text-muted" style="font-size: 15px;">Documents you've created for signing</small>
+        </div>
+
+        <button id="createDocumentBtn" class="btn btn-success rounded-3 py-2 fw-semibold" style="font-size:15px;">
+            <i class="fa fa-plus me-2"></i> New Document
+        </button>
+    </div>
+
+    <div class="statics-container">
+
+        <div class="stat-card totalcard">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label stat-label-text-total">Total</div>
+                    <div class="stat-value total-text ">
+                        <div id="Totalcount" class="stat-number  loading">
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="stat-icon total">
+                    <i class="far fa-file-lines"></i>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card progresscard">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label stat-label-text-progress">In Progress</div>
+                    <div class="stat-value progress-text">
+                        <div id="InProgresscount" class="stat-number  loading">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-icon progress">
+                    <i class="far fa-clock"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card completedcard">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label stat-label-text-completed">Completed</div>
+                    <div class="stat-value completed-text">
+                        <div id="Completedcount" class="stat-number  loading">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-icon completed">
+                    <i class="far fa-check-circle"></i>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="stat-card expiredcard">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label stat-label-text-expired">Expired</div>
+                    <div class="stat-value expired-text">
+                        <div id="expiredcount" class="stat-number  loading">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-icon expired">
+                    <i class="fa fa-circle-exclamation"></i>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Search + Filters + OLD UI MERGED -->
+    <div class="bg-white border rounded-4 p-3 mb-4 shadow-sm">
+
+        <!-- HEADER ROW -->
+        <!-- HEADER ROW -->
+        <div class="header-responsive-row d-flex flex-wrap align-items-center gap-3">
+
+
+            <!-- LEFT AREA: Checkbox + ShowGroup + Search -->
+            <div class="col-md-7 d-flex align-items-center left-responsive-wrap" style="gap:10px;">
+
+
+                <!-- Select All Checkbox (NOW FIRST) -->
+                <div id="selectAllCheckboxContainer" style="display:none;">
+                    <input type="checkbox" class="custom-checkbox" id="selectAllCheckbox" style="margin-top:6px;">
+                    <label for="selectAllCheckbox" class="custom-checkmark">
+                        <svg class="check-icon" viewBox="0 0 24 24">
+                            <path d="M20 6L9 17l-5-5" fill="none" stroke="white" stroke-width="3" />
+                        </svg>
+                    </label>
+                </div>
+
+                <!-- Show Group Button -->
+                @if (AccountType.ToString().ToLower() != "self")
+                {
+                    <button id="toggleCheckboxesBtn" class="submit-button rounded-3"
+                            title="Click here for multiple selection mode"
+                            style="font-size:15px !important; padding:5px 11px !important; background-color:rgba(0,0,0,0.07) !important;color:black;border:none;">
+                        <i id="checkboxToggleIcon" class="fa fa-list"></i>
+                    </button>
+                }
+                else
+                {
+                    <button id="toggleCheckboxesBtn" class="submit-button rounded-3" style="display:none;"
+                            title="Click here for multiple selection mode"
+                            style="font-size:15px !important; padding:5px 11px !important; background-color:rgba(0,0,0,0.07) !important;color:black;border:none;">
+                        <i id="checkboxToggleIcon" class="fa fa-list"></i>
+                    </button>
+                }
+
+                <!-- Search Bar -->
+                <div id="docsSearchContainer" class="flex-grow-1">
+                    <div class="df-search-bar">
+                        <button class="df-search-icon-btn" id="searchButton" type="button" title="Search">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <input type="text" class="df-search-input" id="searchInput" placeholder="Search documents..." />
+                        <button class="df-search-clear-btn" id="searchClearBtn" type="button" title="Clear" style="display:none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT AREA: Filter Button -->
+            <div class="filter-responsive ms-auto">
+
+                <button id="filterDataBtn"
+                        class="btn border rounded-3 filter-btn" style="box-shadow: 0 5px 6px rgba(0, 0, 0, 0.07);background-color:rgba(0,0,0,0.07);">
+                    <i class="fa fa-filter" id="filterIcon"></i> Filter
+                </button>
+            </div>
+
+        </div> <!-- END HEADER ROW -->
+        <!-- FILTER BAR -->
+        <div class="mt-4 d-flex flex-wrap align-items-center gap-3">
+
+            <!-- Select All Checkbox -->
+            <div id="selectAllCheckboxContainer" style="display:none;">
+                <input type="checkbox" class="custom-checkbox" id="selectAllCheckbox">
+                <label for="selectAllCheckbox" class="custom-checkmark">
+                    <svg class="check-icon" viewBox="0 0 24 24">
+                        <path d="M20 6L9 17l-5-5" fill="none" stroke="white" stroke-width="3" />
+                    </svg>
+                </label>
+            </div>
+
+            <!-- Applied Filters Label -->
+            <div style="font-weight:600; font-size:15px; color:#555;">
+                Applied Filters:
+            </div>
+
+            <!-- Filter Days -->
+            <div id="filterDaysStatusContainer"
+                 style="background-color: rgba(0,0,0,0.05); color:#555; font-size:14px; border-radius:28px;"
+                 class="btn no-hover">
+                <i id="timePeriodIcon" class="bi bi-calendar-date" style="color:black;"></i>
+                <span id="filterdays" class="ms-2">Last 90 Days</span>
+            </div>
+
+            <!-- Document Status -->
+            <div id="documentStatusContainer"
+                 style="display:none;background-color:rgba(0,0,0,0.05); font-size:14px; border-radius:28px;"
+                 class="btn no-hover">
+                Document Status:
+                <span id="filterDocumentStatusText" class="ms-1">All</span>
+            </div>
+
+            <!-- Signing Status -->
+            <div id="signingStatusContainer"
+                 style="display:none;background-color:rgba(0,0,0,0.05); font-size:14px; border-radius:28px;"
+                 class="btn no-hover">
+                Signing Status:
+                <span id="filterSigningStatusText" class="ms-1">All</span>
+            </div>
+
+            <!-- Sign Selected Button -->
+            <div id="signingButtonGroup" style="display:none;">
+                <button class="btn btn-success rounded-3 py-2 fw-semibold" id="signSelectedBtn"
+                        style="font-size:15px !important; padding:3px 7px !important;">
+                    Sign Selected
+                    <span id="selectedCount"
+                          style="font-size:14px; font-weight:500; color:white"></span>
+                </button>
+            </div>
+
+        </div>
+        <!-- END FILTER BAR -->
+
+    </div>
+
+
+    <div class="modal fade" id="Filter_Modal" role="dialog" aria-labelledby="digitalFormModalLabel" aria-hidden="false" data-backdrop="static" style="display:none;opacity: 1;background-color: rgba(0, 0, 0, 0.2);">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:580px;">
+            <div class="modal-content" style="max-height:80vh;overflow-y:auto;">
+                <div class="modal-header pt-1 pb-1" style="display:flex;justify-content:space-between;align-items:center;padding-left:30px;">
+                    <h4 class="modal-title" id="filterModalLabel">Document Filters</h4>
+                    <i id="closeFilterIcon" class="bi bi-x" style="color: gray; margin-left: 10px; font-size: 35px;cursor:pointer;"></i>
+                </div>
+                <div class="modal-body" style="padding-left:30px;height:80%;overflow-y:auto;">
+
+
+
+                    <div class="mb-3 bg-gray-50 p-2 p-md-3 rounded-lg border border-gray-200" style="background-color:#FAFAFB;">
+                        <label class="custom-label mb-4">
+                            <i id="timeIcon" class="bi bi-calendar-date" style="color:#198754"></i>
+                            <i id="latestCountIcon" style="display:none;color:#198754;" class="bi bi-list-ol"></i>Filter by
+                            <select class="form-select custom-select" id="filterSelector">
+                                <option value="time">Days/Year</option>
+                                <option value="latest">Count</option>
+                            </select>
+                        </label>
+                        <!-- Filter by Days -->
+                        <div id="daysFilterSection" class="row ml-1 ml-md-2">
+                            <div class="col-6 col-sm-4">
+                                <div class="form-check custom-radio p-0">
+                                    <input class="form-check-input" type="radio" name="filterDays" id="days30" value="last30days">
+                                    <label class="form-check-label" for="days30">Last 30 Days</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4">
+                                <div class="form-check custom-radio p-0 ">
+                                    <input class="form-check-input" type="radio" name="filterDays" id="days90" value="last90days" checked>
+                                    <label class="form-check-label" for="days90">Last 90 Days</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Filter by latest Documents -->
+                        <div class="row ml-1 ml-md-2" id="docsFilterSection">
+                            <div class="col-6">
+                                <div class="form-check custom-radio p-0">
+                                    <input class="form-check-input" type="radio" name="filterCount" id="latest30" value="latest30">
+                                    <label class="form-check-label" for="latest30">Latest 30 Documents</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check custom-radio p-0 ">
+                                    <input class="form-check-input" type="radio" name="filterCount" id="latest50" value="latest50" checked>
+                                    <label class="form-check-label" for="latest50">Latest 50 Documents</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="mb-3 bg-gray-50 p-2 p-md-3 rounded-lg border border-gray-200" style="background-color:#FAFAFB;">
+                        <label class="custom-label mb-3" style="font-weight:600;font-size:16px;">
+                            <i class="bi bi-file-earmark-text pr-2" style="color:#198754"></i>
+                            Document Status
+                        </label>
+
+                        <div class="row ml-1 ml-md-2">
+                            @foreach (var status in documentStatusOptions)
+                            {
+                                <div class="col-6 col-sm-4">
+                                    <div class="form-check custom-radio p-0">
+                                        <input class="form-check-input"
+                                               type="radio"
+                                               name="filterDocumentStatus"
+                                               id="docstatus_@status.Id"
+                                               value="@status.Id"
+                                               @(status.Id == "All" ? "checked" : "") />
+
+                                        <label class="form-check-label" for="docstatus_@status.Id">
+                                            @status.Display
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                    </div>
+                    <div class="bg-gray-50 p-2 p-md-3 rounded-lg border border-gray-200" style="background-color:#FAFAFB;">
+                        <label class="form-label mb-3" style="font-weight:600;font-size:16px;">
+                            <i class="bi bi-pencil me-1 pr-1" style="color:#198754"></i> My Sign Status
+                        </label>
+                        <div class="row ml-1 ml-md-2">
+                            @foreach (var status in signingStatusOptions)
+                            {
+                                <div class="col-6 col-sm-4">
+                                    <div class="form-check custom-radio p-0">
+                                        <input class="form-check-input"
+                                               type="radio"
+                                               name="filterSigningStatus"
+                                               id="signingStatus_@status.Id"
+                                               value="@status.Id"
+                                               @(status.Id == "All" ? "checked" : "") />
+
+                                        <label class="form-check-label" for="signingStatus_@status.Id">
+                                            @status.Display
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    @* <button type="button" class="btn btn-secondary" style="text-transform: none;" data-bs-dismiss="modal" onclick="closefilter()">Cancel</button> *@
+                    <button id="applyFilterBtn" type="button" class="btn" style="text-transform: none;background-color: #198754;color:white;"><i class="bi bi-funnel" style="color:white;"></i>Apply</button>
+                    <button id="resetFilterBtn" type="button" class="btn btn-secondary" style="text-transform: none;"><i class="fas fa-rotate-left"></i>Reset</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- No Data Message -->
+    <div id="noDataMessageDraft" style="display:none;">
+        <div class="text-center py-5"
+             style="border-radius: 12px; background:#f9fafb; margin-top:20px;">
+
+            <!-- Icon Circle -->
+            <div style="
+            width:80px;
+            height:80px;
+            margin:0 auto 20px auto;
+            background:#eef1f5;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">
+                <i class="fa-regular fa-file-lines"
+                   style="font-size:32px; color:#6b7280;"></i>
+            </div>
+
+            <!-- Main Title -->
+            <h4 style="font-weight:600; color:#1f2937; margin-bottom:8px;">
+                No documents found
+            </h4>
+
+            <!-- Subtitle -->
+            <p style="color:#6b7280; font-size:15px; margin:0;">
+                Upload your first document to get your first sign
+            </p>
+
+        </div>
+    </div>
+
+
+    <!-- Cards / Table -->
+    <div id="draftCardsOuterCard" class="card shadow-sm border rounded-4 p-3">
+
+        <!-- Scrollable area -->
+        <div id="draftCardsScrollArea"
+             style="overflow-y: visible; padding-right: 8px;">
+
+            <div id="draftCardsContainer" class="space-y-4" style="margin:9px;"></div>
+
+        </div>
+
+        <div class="d-flex justify-content-center mt-4">
+            <div id="allDocsLoadedMsgDraft"
+                 class="docs-message text-center"
+                 style="display:none; width:70%;">
+
+                <!-- Top Divider with Text -->
+                <div style="display:flex; align-items:center; justify-content:center; gap:15px; margin-bottom:8px;">
+                    <div style="flex:1; height:1px; background:#dcdcdc;"></div>
+                    <span style="font-size:12px; letter-spacing:1px; color:#6c7a89; font-weight:600;">
+                        SHOWING <span id="showingCount"></span> OF <span id="totalCount"></span>
+                    </span>
+                    <div style="flex:1; height:1px; background:#dcdcdc;"></div>
+                </div>
+
+                <!-- Bottom Text -->
+                <div style="font-size:13px; color:#8a97a6;">
+                    You've reached the end of your documents
+                    (<span id="bottomShowingCount"></span>/<span id="bottomTotalCount"></span>)
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="d-flex justify-content-end w-100">
+            <button id="showMoreBtnDraft"
+                    type="button"
+                    class="btn btn-outline-primary rounded-3 me-4"
+                    style="display:none;padding:6px 12px;float:right;margin-right:75px;font-size:14px;">
+                Show More <i class="fas fa-chevron-down"></i>
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+
+</div>
+
+<script>
+    var loginEmail = '@userEmail';
+    var loginorgUid = '@OrganizationUid';
+    var loginSuid = '@Suid';
+    var loginAccounttype = '@AccountType';
+    var CreateDocuments = '@Url.Action("CreateDocuments", "Documents")';
+    var GetMydocumentsStatstics = '@Url.Action("GetMyDocumentsStatistics", "Documents")';
+    var GetDraftDocuments = '@Url.Action("GetDraftDocuments", "Documents")';
+    var draftDocuments = '@Url.Action("draft", "Documents")';
+    var IsDocumentBlocked = '@Url.Action("IsDocumentBlocked", "Documents")';
+    var SignActionConfigByDocId = '@Url.Action("SignActionConfigByDocId", "Documents")';
+    var IndexDocuments = '@Url.Action("Index", "Documents")';
+    var GetOrganizationStatusUrl = '@Url.Action("GetOrganizationStatus", "Documents")';
+    var DocumentDetailsByIdUrl = '@Url.Action("DocumentDetailsById", "Documents")';
+    var GetDelegationbyorgidsuidUrl = '@Url.Action("GetDelegationbyorgidsuid", "Documents")';
+
+    var GroupSigningStatus = '@Url.Action("GroupSigningStatus", "GroupSigning")';
+    var PerformGroupSigning = '@Url.Action("PerformGroupSigning", "GroupSigning")';
+
+    var documentsobjectslist = [];
+    var previousDocNo = parseInt(localStorage.getItem("CurrentDocNo")) || 0;
+    var previousTotalDocs = parseInt(localStorage.getItem("TotalDocs")) || 0;
+    var updatedPageLength = 0;
+    var updatedStart = 0;
+
+    var scrollToDocNo = previousDocNo;
+    var shimmer;
+
+
+    var currentPage = 0;
+    var pageSize = 5;
+    var totalRecords = 0;
+    var selectedFilterTab = localStorage.getItem("selectedFilterTab");
+    var selectedDocumentDays = localStorage.getItem("selectedDocumentDays");
+    var selectedDocumentCount = localStorage.getItem("selectedDocumentCount");
+    var selectedDocumentStatus = localStorage.getItem("selectedDocumentStatus");
+    var selectedSigningStatus = localStorage.getItem("selectedSigningStatus");
+    let initialLoading = true;
+    let currentSentAjaxRequest = null;
+    var activeTab = "";
+    var initialFilterActiveTab = "";
+    var initialFilterdaysVal = "";
+    var initialFilterCountVal = "";
+    var initialFilterDocumentStatusVal = "";
+    var initialFilterSigningStatusVal = "";
+    var documentFilterActiveTab = "timePeriod";
+    var selectedIdListData = [];
+    const currentYear = new Date().getFullYear();
+    const container = document.getElementById('daysFilterSection');
+    let isAllSelected = false; // Global flag
+
+
+    const filterSelector = document.getElementById("filterSelector");
+    const daysFilterSection = document.getElementById("daysFilterSection");
+    const docsFilterSection = document.getElementById("docsFilterSection");
+    let isDown = false;
+    let startY;
+    let scrollTop;
+
+    const scrollArea = document.getElementById("draftCardsScrollArea");
+
+    scrollArea.addEventListener("mousedown", (e) => {
+        isDown = true;
+        scrollArea.classList.add('active');
+        startY = e.pageY - scrollArea.offsetTop;
+        scrollTop = scrollArea.scrollTop;
+    });
+
+    scrollArea.addEventListener("mouseleave", () => {
+        isDown = false;
+    });
+
+    scrollArea.addEventListener("mouseup", () => {
+        isDown = false;
+    });
+
+    scrollArea.addEventListener("mousemove", (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const y = e.pageY - scrollArea.offsetTop;
+        const walk = (y - startY) * 1; // Scroll speed multiplier
+        scrollArea.scrollTop = scrollTop - walk;
+    });
+
+    $(document).ready(function () {
+        $('#draftCardsContainer').empty();
+        localStorage.setItem("selectedFilterTab", "time");
+        localStorage.setItem("selectedDocumentDays", "last90days");
+        localStorage.setItem("selectedDocumentCount", "latest50");
+        localStorage.setItem("selectedDocumentStatus", "All");
+        localStorage.setItem("selectedSigningStatus", "All");
+        document.getElementById("searchInput").value = "";
+        document.getElementById("docsSearchContainer").style.display = "flex";
+        document.getElementById("searchInput").value = "";
+        const currentDocNo = localStorage.getItem("CurrentDocNo");
+        if (currentDocNo !== null) {
+            document.getElementById("searchInput").value = localStorage.getItem("DocumentsSearchValue")?.trim() || '';
+        }
+        else {
+            localStorage.removeItem("DocumentsSearchValue");
+        }
+        // Sync clear button visibility on load
+        if (document.getElementById("searchInput").value) {
+            document.getElementById("searchClearBtn").style.display = "flex";
+        }
+        $("#createDocumentBtn").on("click", handlecreateDocument);
+        $("#filterDataBtn").on("click", function (e) {
+            FilterData();
+        });
+        $("#closeFilterIcon").on("click", function () {
+            closefilter();
+        });
+
+        $("#applyFilterBtn").on("click", function () {
+            applyfilter();
+        });
+
+        $("#resetFilterBtn").on("click", function () {
+            ResetFilter();
+        });
+        $("#selectAllCheckbox").on("change", function () {
+            toggleSelectAll(this);
+        });
+
+        $("#toggleCheckboxesBtn").on("click", function () {
+            toggleCheckboxes();
+        });
+        $("#signSelectedBtn").on("click", function () {
+            performGroupSigningAction();
+        });
+        // To SHOW shimmer loader
+        function showShimmer(count) {
+            let shimmerHtml = `<div class="shimmer-wrapper">`;
+            for (let i = 0; i < count; i++) {
+                shimmerHtml += `<div class="shimmer-item"></div>`;
+            }
+            shimmerHtml += `</div>`;
+            const $shimmer = $(shimmerHtml);
+            $('#draftCardsContainer').append($shimmer);
+
+            // Scroll to the bottom of the shimmer once added
+            if (currentPage != 0 && scrollToDocNo == 0) {
+                setTimeout(() => {
+                    $shimmer[0]?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }, 10);
+            }
+
+
+            return $shimmer;
+        }
+
+        getstatstics();
+        // 📌 LOAD DOCUMENTS FIRST TIME
+        loadDraftDocuments();
+
+
+        // 📌 SHOW MORE BUTTON CLICK
+        $("#showMoreBtnDraft").on("click", function () {
+            currentPage++;
+            $('#showMoreBtnDraft').hide();
+            loadDraftDocuments();
+        });
+
+
+        $(document).on("click", ".redirect-doc", function () {
+            const id = $(this).data("id");
+            redirectToDocumentDetails(id); // This can be a normal function in your JS file
+        });
+
+
+        $(document).on("click", ".sign-button", function (event) {
+            event.stopPropagation();
+            const id = $(this).data("id");
+            const currentDocNo = $(this).data("current");
+            const totalDocs = $(this).data("total");
+
+            signActionConfigByDocIdOnclick(id, currentDocNo, totalDocs);
+        });
+
+
+        $(document).on("click", ".checkboxContainer", function (event) {
+            event.stopPropagation();
+            const checkbox = $(this).find("input")[0];
+            toggleRowHighlight(checkbox);
+        });
+
+
+
+
+    });
+    function getstatstics() {
+        $.ajax({
+            url: GetMydocumentsStatstics,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                console.log(response);
+                if (response.success) {
+                    document.getElementById("Totalcount").classList.remove("loading");
+                    $('#Totalcount').text(response.result.total);
+                    document.getElementById("InProgresscount").classList.remove("loading");
+                    $('#InProgresscount').text(response.result.inProgress);
+                    document.getElementById("Completedcount").classList.remove("loading");
+                    $('#Completedcount').text(response.result.completed);
+                    document.getElementById("expiredcount").classList.remove("loading");
+                    $('#expiredcount').text(response.result.expired);
+
+
+                } else {
+                    swal({
+                        type: 'error',
+                        title: 'Error',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+            },
+            error: function (xhr, status, error) {
+                ajaxErrorHandler(xhr, status, error);
+            }
+        });
+
+    }
+    $('#searchButton').on('click', function () {
+        const searchValue = $('#searchInput').val();
+
+        const val = searchValue.trim();
+        if (val === "") {
+            toastr.error('Please enter at least one character');
+            return; // Stop execution if input is empty
+        }
+        localStorage.setItem("DocumentsSearchValue", searchValue);
+        currentPage = 0;
+        $('#draftCardsContainer').empty();
+        $('#allDocsLoadedMsgDraft').hide();
+        $('#noDataMessageDraft').hide();
+        $('#showMoreBtnDraft').hide();
+        loadDraftDocuments();
+    });
+
+    // Show/hide clear button as user types
+    $('#searchInput').on('input', function () {
+        $('#searchClearBtn').toggle(this.value.length > 0);
+    });
+
+    // Enter key triggers search
+    $('#searchInput').on('keypress', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); $('#searchButton').trigger('click'); }
+    });
+
+    // Clear button: reset search and reload
+    $('#searchClearBtn').on('click', function () {
+        $('#searchInput').val('');
+        $(this).hide();
+        localStorage.removeItem("DocumentsSearchValue");
+        currentPage = 0;
+        $('#draftCardsContainer').empty();
+        $('#allDocsLoadedMsgDraft').hide();
+        $('#noDataMessageDraft').hide();
+        $('#showMoreBtnDraft').hide();
+        loadDraftDocuments();
+    });
+    function loadDraftDocuments() {
+        selectedFilterTab = localStorage.getItem("selectedFilterTab") || "time";
+        selectedDocumentDays = localStorage.getItem("selectedDocumentDays") || "last90days";
+        selectedDocumentCount = localStorage.getItem("selectedDocumentCount") || "latest50";
+        selectedDocumentStatus = localStorage.getItem("selectedDocumentStatus") || "All";
+        selectedSigningStatus = localStorage.getItem("selectedSigningStatus") || "All";
+        shimmer = showShimmer(pageSize);
+
+        if (previousDocNo !== 0) {
+            currentPage = Math.floor((previousDocNo - 1) / pageSize);
+            updatedStart = 0;
+            updatedPageLength = (currentPage + 1) * pageSize;
+        }
+
+        if (currentSentAjaxRequest) {
+            currentSentAjaxRequest.abort();
+        }
+       
+        currentSentAjaxRequest = $.ajax({
+            url: GetDraftDocuments,
+            type: 'POST',
+            dataType: 'json',
+            headers: {
+
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+            },
+            data: {
+                start: previousDocNo != 0 ? updatedStart : currentPage * pageSize,
+                length: previousDocNo != 0 ? updatedPageLength : pageSize,
+                documentFilter: selectedFilterTab === "time" ? selectedDocumentDays : selectedDocumentCount,
+                documentStatus: selectedDocumentStatus,
+                signingStatus: selectedSigningStatus,
+                searchValue: localStorage.getItem("DocumentsSearchValue")?.trim() || ''
+            },
+
+            success: function (res) {
+                totalRecords = res.recordsFiltered;
+                if (previousTotalDocs != 0 && totalRecords != previousTotalDocs) {
+                    let delta = totalRecords - previousTotalDocs;
+                    currentPage = Math.floor((previousDocNo + delta - 1) / pageSize);
+                    updatedPageLength = (currentPage + 1) * pageSize;
+                    previousTotalDocs = totalRecords;
+                    loadDraftDocuments();
+                    return;
+                }
+
+                localStorage.removeItem("CurrentDocNo");
+                localStorage.removeItem("TotalDocs");
+                previousTotalDocs = 0;
+                previousDocNo = 0;
+
+                if (initialLoading && totalRecords > 0) {
+                    document.getElementById("docsSearchContainer").style.display = "flex";
+                }
+                initialLoading = false;
+
+                var showgroupbutton = document.getElementById('showButtonGroup');
+
+                if (res.data.length === 0 && currentPage === 0) {
+                    shimmer.remove();
+                    $('#draftCardsContainer').empty();
+                    $('#noDataMessageDraft').show();
+                    $('#draftCardsOuterCard').hide();
+                    $('#showMoreBtnDraft').hide();
+                    if (showgroupbutton) showgroupbutton.style.display = 'none';
+                    $('#allDocsLoadedMsgDraft').hide();
+                } else {
+
+                    $('#noDataMessageDraft').hide();
+                    $('#draftCardsOuterCard').show();
+                    if (showgroupbutton && (loginAccounttype.toString().toLowerCase() !== 'self')) {
+                        showgroupbutton.style.display = 'block';
+                    }
+
+                    // Append cards
+                    renderAndAppendCards(res.data, totalRecords);
+                    // All documents loaded?
+                    if ((currentPage + 1) * pageSize >= totalRecords) {
+                        $('#showMoreBtnDraft').hide();
+                        if (totalRecords > pageSize) {
+                            $('#allDocsLoadedMsgDraft').show();
+
+                            document.getElementById("showingCount").innerText = totalRecords;
+                            document.getElementById("totalCount").innerText = totalRecords;
+
+                            document.getElementById("bottomShowingCount").innerText = totalRecords;
+                            document.getElementById("bottomTotalCount").innerText = totalRecords;
+
+                        }
+                    } else {
+                        $('#showMoreBtnDraft').show();
+                        $('#allDocsLoadedMsgDraft').hide();
+                    }
+                }
+            }
+        });
+    }
+
+
+    function toggleFilterSections() {
+        const selectedValue = filterSelector.value;
+        if (selectedValue === "time") {
+            daysFilterSection.style.display = "flex";
+            docsFilterSection.style.display = "none";
+            documentFilterActiveTab = "timePeriod";
+            document.getElementById("timeIcon").style.display = "inline-block";
+            document.getElementById("latestCountIcon").style.display = "none";
+        } else {
+            daysFilterSection.style.display = "none";
+            docsFilterSection.style.display = "flex";
+            documentFilterActiveTab = "latestCount";
+            document.getElementById("timeIcon").style.display = "none";
+            document.getElementById("latestCountIcon").style.display = "inline-block";
+        }
+    }
+
+    function toggleSelectAll(masterCheckbox) {
+        const checked = masterCheckbox.checked;
+        isAllSelected = checked;
+
+        // Get only checkboxes inside visible containers
+        const visibleContainers = Array.from(document.querySelectorAll('.checkboxContainer')).filter(container => {
+            return container.offsetParent !== null; // visible on screen
+        });
+
+        let checkboxes = [];
+        visibleContainers.forEach(container => {
+            checkboxes.push(...container.querySelectorAll('.document-checkbox'));
+        });
+
+        checkboxes.forEach(checkbox => {
+            const cardElement = checkbox.closest('.card');
+
+            if (cardElement) {
+
+                if (checkbox.disabled) {
+                    checkbox.checked = false;
+                    cardElement.classList.remove('card-selected');
+                } else {
+                    checkbox.checked = checked;
+                    cardElement.classList.toggle('card-selected', checked);
+                }
+            }
+        });
+
+        updateSelectedIdList();
+    }
+
+    function applySelectAllToNewlyVisibleItems() {
+        if (!isAllSelected) return;
+
+        const checkboxes = document.querySelectorAll('.document-checkbox');
+        checkboxes.forEach(checkbox => {
+            if (!checkbox.checked) {
+                checkbox.checked = true;
+                const cardElement = checkbox.closest('.card');
+                if (cardElement) {
+                    cardElement.classList.add('card-selected');
+                }
+            }
+        });
+
+        updateSelectedIdList();
+    }
+
+    toggleFilterSections();
+    filterSelector.addEventListener("change", toggleFilterSections);
+
+    // Loop through the last 5 years and generate radio buttons
+    for (let i = 0; i < 5; i++) {
+        const year = currentYear - i;
+        const radioButtonHTML = `
+                                                                            <div class="col-6 col-sm-4">
+                                                                                <div class="form-check custom-radio p-0 ">
+                                                                                    <input class="form-check-input" type="radio" name="filterDays" id="year${year}" value="${year}">
+                                                                                    <label class="form-check-label" for="year${year}">${year}</label>
+                                                                                </div>
+                                                                            </div>
+                                                                        `;
+        container.innerHTML += radioButtonHTML; // Add radio button HTML to the container
+    }
+    //Adding all option
+    const radioButtonHTML = `
+                                                                            <div class="col-6 col-sm-4">
+                                                                                <div class="form-check custom-radio p-0 ">
+                                                                                    <input class="form-check-input" type="radio" name="filterDays" id="allYears" value="All">
+                                                                                    <label class="form-check-label" for="allYears">All</label>
+                                                                                </div>
+                                                                            </div>
+                                                                    `;
+    container.innerHTML += radioButtonHTML;
+
+
+
+    async function renderAndAppendCards(data, total) {
+        let container = $('#draftCardsContainer');
+
+        const promises = data.map((item, index) => {
+            let current = index + 1 + (currentPage * pageSize);
+            if (scrollToDocNo != 0) {
+                current = index + 1;
+            }
+            return generateDocumentCardHtml(item, loginSuid, current, total);
+        }
+        );
+
+        const cards = await Promise.all(promises);
+        shimmer.remove();
+        container.append(cards.join(''));
+
+        updateTimestamps();
+        if (scrollToDocNo != 0) {
+            requestAnimationFrame(() => {
+                const targetCard = document.getElementById(`doc-${scrollToDocNo}`);
+                if (targetCard) {
+                    targetCard.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+
+                    targetCard.classList.add("active-document");
+
+                    function handleMouseMove() {
+                        targetCard.classList.remove("active-document");
+                    }
+
+                    document.addEventListener('mousemove', handleMouseMove);
+
+
+
+                    // Add blinking effect
+                    targetCard.classList.remove('shadow-sm');
+                    targetCard.classList.add('blink-highlight');
+
+                    // Remove blinking effect after 10 seconds
+                    setTimeout(() => {
+                        targetCard.classList.remove('blink-highlight');
+                        targetCard.classList.add('shadow-sm');
+                    }, 5000);
+                }
+                scrollToDocNo = 0;
+            });
+        }
+    }
+
+
+
+
+    function toggleCheckboxes() {
+        const containers = document.querySelectorAll('.checkboxContainer');
+        const button = document.getElementById('toggleCheckboxesBtn');
+        const icon = document.getElementById('checkboxToggleIcon');
+        const signingButtonGroup = document.getElementById('signingButtonGroup');
+        const showButtonGroup = document.getElementById('showButtonGroup');
+        const anyVisible = Array.from(containers).some(container => container.style.display === 'block');
+
+        if (anyVisible) {
+            // Hide containers and uncheck all checkboxes
+            document.getElementById("selectAllCheckboxContainer").style.display = 'none';
+            document.getElementById("selectAllCheckbox").checked = false;
+            containers.forEach(container => {
+                container.style.display = 'none';
+                container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            });
+
+            if (signingButtonGroup) signingButtonGroup.style.display = 'none';
+
+            // Change icon and tooltip
+            icon.className = 'fa fa-list';
+            button.setAttribute('title', 'Click here for multiple selection mode');
+        } else {
+            // Show containers
+            document.getElementById("selectAllCheckboxContainer").style.display = 'block';
+            containers.forEach(container => container.style.display = 'block');
+
+            //if (signingButtonGroup) signingButtonGroup.style.display = 'inline-flex';
+
+            // Change icon and tooltip
+            icon.className = 'fa fa-external-link';
+            button.setAttribute('title', 'Click here for single selection mode');
+        }
+    }
+
+
+
+
+    function showShimmer(count) {
+        let shimmerHtml = `<div class="shimmer-wrapper">`;
+        for (let i = 0; i < count; i++) {
+            shimmerHtml += `<div class="shimmer-item"></div>`;
+        }
+        shimmerHtml += `</div>`;
+        const $shimmer = $(shimmerHtml);
+        $('#draftCardsContainer').append($shimmer);
+
+        // Scroll to the bottom of the shimmer once added
+        if (currentPage != 0 && scrollToDocNo == 0) {
+            setTimeout(() => {
+                $shimmer[0]?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 10);
+        }
+
+
+        return $shimmer;
+    }
+
+
+    function cropFileNames(full) {
+
+        // Adjust crop lengths based on screen width
+        let start, end;
+
+        const width = window.innerWidth;
+        console.log(width);
+        if (width >= 1300) {
+            start = 25;
+            end = 25;
+        } else if (width >= 768) {
+            start = 20;
+            end = 20;
+        } else if (width >= 460) {
+            start = 13;
+            end = 13;
+        }
+        else { // Small screens (mobiles)
+            start = 10;
+            end = 10;
+        }
+
+        if (full && full.length > start + end) {
+            return full.slice(0, start) + '...' + full.slice(-end);
+        } else {
+            return full
+        }
+
+
+
+    }
+
+
+    function fetchTooltipMessage(organizationID) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: GetOrganizationStatusUrl,
+                type: 'GET',
+                dataType: 'json',
+                data: { loginorgUid: organizationID },
+                error: function (xhr, status, error) {
+                    ajaxErrorHandler(xhr, status, error);
+                    resolve({ success: false, message: 'Error checking organization status' });
+                },
+                success: function (response) {
+                    resolve(response);
+                }
+            });
+        });
+    }
+
+
+    async function generateDocumentCardHtml(item, suid, current, total) {
+        let documentName = await cropFileNames(item.documentName);
+        let createdAt = item.createdAt || '-';
+        let expireDate = item.expireDate || '-';
+        var matchedEsealData = {};
+        var matchedSignData = {};
+        var matchedQrcodeData = {};
+
+        let docStatusHtml = renderDocumentStatusHtml(item);
+        let signingStatusHtml = renderSigningStatusHtml(item, suid);
+        let actionButtonHtml = renderActionButtonHtml(item, suid, current, total);
+        let showActionButton = !actionButtonHtml.toLowerCase().includes("view");
+        if (item.annotations != null && item.annotations != "{}") {
+            var signconfig = JSON.parse(item.annotations);
+            for (const key in signconfig) {
+                if (signconfig.hasOwnProperty(key) && key === suid) {
+                    matchedSignData[key] = signconfig[key];
+                }
+            }
+        }
+        if (item.qrcodeannotations != null && item.qrcodeannotations != "{}") {
+            var qrcodeconfig = JSON.parse(item.qrcodeannotations);
+            for (const key in qrcodeconfig) {
+                if (qrcodeconfig.hasOwnProperty(key) && key === suid) {
+                    matchedQrcodeData[key] = qrcodeconfig[key];
+                }
+            }
+        }
+        if (item.esealannotations != null && item.esealannotations != "{}") {
+
+            var esealconfig = JSON.parse(item.esealannotations);
+
+            for (const key in esealconfig) {
+                if (esealconfig.hasOwnProperty(key) && key === suid) {
+                    matchedEsealData[key] = esealconfig[key];
+                }
+            }
+
+        }
+        let docobject = {
+            id: item.id,
+            annotations: matchedSignData,
+            esealannotations: matchedEsealData,
+            qrcodeannotations: matchedQrcodeData,
+            docname: documentName
+
+        }
+        console.log(docobject);
+        var val = docobject.id;
+        if (!documentsobjectslist.some(doc => doc.id === val)) {
+            documentsobjectslist.push(docobject);
+
+        }
+        const masterCheckbox = document.getElementById('selectAllCheckbox');
+        var isAllSelected = masterCheckbox.checked;
+
+        const hasSignOrRetry =
+            actionButtonHtml.includes('sign') || actionButtonHtml.includes('retry');
+
+        var signingstatusval = signingStatusHtml.toLowerCase();
+        var docStatusHtmlval = docStatusHtml.toLocaleLowerCase();
+
+        if (signingstatusval !== 'need to sign' && signingstatusval !== 'failed' && !hasSignOrRetry) {
+            isAllSelected = false;
+        }
+        var isAllSelected = masterCheckbox.checked;
+        if (signingstatusval !== 'need to sign' && signingstatusval !== 'failed' && !hasSignOrRetry) {
+            isAllSelected = false;
+        }
+        const containers = document.querySelectorAll('.checkboxContainer');
+        const anyVisible = Array.from(containers).some(container => {
+            return container.style.display === 'block';
+        });
+
+        // var isallselectedvisible = masterCheckbox.display;
+        console.log(anyVisible);
+        var makeDisabled = false;
+        if (!hasSignOrRetry) {
+            makeDisabled = true;
+        }
+
+        var tooltipmessage = 'Document is not available';
+        if (docStatusHtmlval.includes('expired')) {
+            tooltipmessage = 'Document got expired';
+        } else if (signingstatusval.includes('signed')) {
+            tooltipmessage = 'Document is already signed';
+        } else if (docStatusHtmlval.includes('recalled')) {
+            tooltipmessage = 'Document is not available for signing';
+        } else if (signingstatusval.includes('signing in progress')) {
+            tooltipmessage = 'Document signing is already initiated';
+        } else if (signingstatusval.includes('signing')) {
+            tooltipmessage = 'Document signing is already initiated';
+        }
+        if (Object.keys(matchedEsealData).length !== 0) {
+            const orgResponse = await fetchTooltipMessage(matchedEsealData[suid].organizationID);
+            console.log(orgResponse);
+            if (!orgResponse.success) {
+                tooltipmessage = 'Organization not authorized for eSeal operation';
+                makeDisabled = true;
+            }
+        }
+
+        const id = item._id || item.id;
+        if (isAllSelected) {
+            selectedIdListData.push(id);
+        }
+
+        const selectedCountDisplay = document.getElementById('selectedCount');
+        if (selectedCountDisplay) {
+            selectedCountDisplay.innerText = `(${selectedIdListData.length})`;
+        }
+
+
+        return `
+                                <div class="nd-card onhoverclass redirect-doc" style="cursor:pointer;" id="doc-${current}" data-id="${id}">
+
+                          <div class="nd-row">
+
+                                <!-- LEFT -->
+                                <div class="nd-left">
+
+                                    <!-- CHECKBOX -->
+                                    <div style="display:${anyVisible ? "block" : "none"}; margin-top: 4px;"
+                                         class="checkboxContainer custom-checkbox-wrapper ${makeDisabled ? 'disabled' : ''}">
+
+                                        <input type="checkbox"
+                                               class="custom-checkbox document-checkbox"
+                                               id="doc_${id}"
+                                               value="${id}"
+                                               ${isAllSelected ? 'checked' : ''}
+                                               ${makeDisabled ? 'disabled' : ''}>
+
+                                        <label for="doc_${id}" class="custom-checkmark">
+                                            <svg class="check-icon" viewBox="0 0 24 24">
+                                                <path d="M20 6L9 17l-5-5"
+                                                      fill="none" stroke="white" stroke-width="3" />
+                                            </svg>
+                                        </label>
+
+                                        <div class="tooltip-message">${tooltipmessage}</div>
+                                    </div>
+
+                                    <!-- ICON -->
+                                    <div class="nd-icon">
+                                        <i class="fa-solid fa-file-lines"></i>
+                                    </div>
+
+                                    <!-- INFO -->
+                                    <div class="nd-info">
+                                        <div class="nd-title" title="${item.documentName}">
+                                            ${documentName}
+                                        </div>
+
+                                        <div class="nd-mobile-action">
+                                            ${actionButtonHtml}
+                                        </div>
+
+                                        <div class="nd-dates">
+                                            <span>Created:</span>
+                                            <span class="convert-time" data-timestamp="${createdAt}">${createdAt}</span>
+                                            <span class="nd-dot">•</span>
+                                            <span>Expires:</span>
+                                            <span class="convert-time" data-timestamp="${expireDate}">${expireDate}</span>
+                                        </div>
+
+                                        <!-- MOBILE STATUS -->
+                                        <div class="nd-mobile-status">
+
+                                            <div>
+                                                <span class="nd-label">Document Status:</span>
+                                                    <span class="nd-value docstats-text">${docStatusHtml}</span>
+                                            </div>
+
+                                            <div>
+                                                <span class="nd-label">My Sign Status:</span>
+                                                      ${signingStatusHtml}
+                                            </div>
+
+                                            <!-- BUTTON AT BOTTOM ON SMALL MOBILE -->
+                                            <div class="nd-mobile-action-bottom">
+                                                ${actionButtonHtml}
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+
+                            <!-- RIGHT (DESKTOP) -->
+                            <div class="nd-right">
+
+                              <div class="nd-col">
+                                <div class="nd-head">DOCUMENT STATUS</div>
+                                    <div class="nd-val docstats-text">${docStatusHtml}</div>
+                              </div>
+
+                              <div class="nd-col">
+                                <div class="nd-head">MY SIGN STATUS</div>
+                                    <div class="nd-val signingstats-text">${signingStatusHtml}</div>
+                              </div>
+
+                              <div class="nd-action">
+                                ${actionButtonHtml}
+                              </div>
+
+                            </div>
+
+                          </div>
+
+                        </div>
+                        `;
+
+    }
+
+    function toggleRowHighlight(checkbox) {
+        const cardElement = checkbox.closest('.card');
+        const signingStatusEl = cardElement.querySelector('.signingstats-text');
+        const signingStatus = signingStatusEl ? signingStatusEl.textContent.trim().toLowerCase() : '';
+        const docStatusEl = cardElement.querySelector('.docstats-text');
+        const docStatus = docStatusEl ? docStatusEl.textContent.trim().toLowerCase() : '';
+        // const actionContainer = cardElement.querySelector('.d-flex.align-self-center.gap-1.px-3');
+        // const actionHtml = actionContainer ? actionContainer.innerHTML.toLowerCase() : '';
+        const actionHtml = cardElement.querySelector('button');
+        // const hasSignOrRetry =
+        //     actionHtml.includes('sign') || actionHtml.includes('retry');
+        const hasSignOrRetry = actionHtml
+            ? actionHtml.textContent.toLowerCase().includes('sign') || actionHtml.textContent.toLowerCase().includes('retry')
+            : false;
+        console.log(hasSignOrRetry);
+        if (checkbox.checked && (docStatus.includes('expired'))) {
+            swal({
+                type: 'info',
+                title: 'Info',
+                text: 'This document cannot be selected as the signing deadline has passed and it is now expired.',
+                confirmButtonText: 'OK'
+            });
+
+            checkbox.checked = false;
+            return;
+        }
+        // Check if the status is not allowed
+        if (checkbox.checked && !(signingStatus.includes('need to sign') || signingStatus.includes('failed'))) {
+            // Show alert and uncheck the box
+            swal({
+                type: 'info',
+                title: 'Info',
+                text: 'Only documents that need to be signed or failed documents can be selected.',
+                confirmButtonText: 'OK'
+            });
+
+            checkbox.checked = false;
+            return; // Do not proceed with highlighting or updating
+        }
+        if (!hasSignOrRetry) {
+            swal({
+                type: 'info',
+                title: 'Info',
+                text: 'This document is currently not available for signing as others need to sign',
+                confirmButtonText: 'OK'
+            });
+
+            checkbox.checked = false;
+            return;
+        }
+
+        // Proceed with visual highlighting
+        if (checkbox.checked) {
+            cardElement.classList.add('card-selected');
+        } else {
+            cardElement.classList.remove('card-selected');
+        }
+
+        // Sync "Select All"
+        const allCheckboxes = document.querySelectorAll('.document-checkbox');
+        const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+        document.getElementById('selectAllCheckbox').checked = allChecked;
+
+        // Update selected ID list
+        updateSelectedIdList();
+    }
+
+
+    function applySelectAllToNewlyVisibleItems() {
+        const checkboxes = document.querySelectorAll('.document-checkbox');
+        checkboxes.forEach(checkbox => {
+            if (!checkbox.checked) {
+                checkbox.checked = true;
+                const cardElement = checkbox.closest('.card');
+                if (cardElement) {
+                    cardElement.classList.add('card-selected');
+                }
+            }
+        });
+
+        updateSelectedIdList();
+    }
+
+    function redirectToDocumentDetails(id) {
+        // Construct the URL for the action
+        var viewName = "MyDocuments";
+        var url = DocumentDetailsByIdUrl + '?id=' + id + '&viewName=' + viewName;
+        // Redirect to the URL
+        window.location.href = url;
+    }
+
+
+
+    window.signActionConfigByDocIdOnclick = async function (docId, currentDocNo = 0, totalDocs = 0) {
+        try {
+            const response = await $.ajax({
+                type: 'POST',
+                headers: {
+
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                },
+                url: IsDocumentBlocked,
+                data: {
+                    docId: docId,
+                }
+            });
+
+            if (!response.success) {
+                swal({
+                    type: 'info',
+                    title: 'Info',
+                    text: response.message,
+                });
+            } else {
+                var delegation_req_data = {
+                    id: loginorgUid,
+                    suid: loginSuid,
+                    email: loginEmail,
+                };
+                var hasDelegationFound = false;
+
+                // Await the response from delegation check
+                var delegation_response = await handle_delegation_orgid_suid_selfloginuser(delegation_req_data);
+
+                if (delegation_response != undefined && delegation_response.listdata.length > 0) {
+                    hasDelegationFound = true;
+                }
+
+                if (hasDelegationFound) {
+                    console.log("Delegation found. Further processing stopped.");
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: "Currently having an active delegation.\nDelegatee: " + delegation_response.swallist.join(', '),
+                    });
+                    return false; // Stop further execution
+                } else {
+                    var viewName = "MyDocuments";
+                    localStorage.setItem("CurrentDocNo", currentDocNo);
+                    localStorage.setItem("TotalDocs", totalDocs);
+                    window.location.href = SignActionConfigByDocId + '?docId=' + docId + '&viewName=' + viewName;
+                }
+            }
+        } catch (error) {
+            ajaxErrorHandler(error);
+        }
+    }
+
+    async function handle_delegation_orgid_suid_selfloginuser(delegation_req_data) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                type: "GET",
+                url: GetDelegationbyorgidsuidUrl,
+                data: {
+                    organizationId: delegation_req_data.id,
+                    suid: delegation_req_data.suid
+                },
+                beforeSend: function () {
+                    $('#overlay').show();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                },
+                success: function (response) {
+                    if (response.success === true) {
+                        var result_list = response.result;
+                        var swal_list = [];
+                        var list_data = [];
+
+                        for (var i = 0; i < result_list.length; i++) {
+                            var obj_data = {
+                                email: result_list[i].delegateeEmail,
+                                suid: result_list[i].delegateeSuid,
+                            };
+                            swal_list.push(result_list[i].delegateeEmail);
+                            list_data.push(obj_data);
+                        }
+
+                        let response_data_obj = {
+                            swallist: swal_list,
+                            listdata: list_data,
+                            delegateeid: response.result[0]?.delegationId || '',
+                        };
+
+                        resolve(response_data_obj);
+                    } else {
+                        swal({
+                            title: "Error",
+                            text: response.message || "Unknown error occurred",
+                            type: "error",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = IndexDocuments;
+                            }
+                        });
+                        resolve(false);
+                    }
+                },
+                error: function (error) {
+                    ajaxErrorHandler(error);
+                    resolve(false);
+                }
+            });
+        });
+    }
+    function handlecreateDocument() {
+        // document.getElementById("navigationNetworkOverlay").style.display = "block";
+        window.location.href = CreateDocuments;
+    }
+    function renderDocumentStatusHtml(item) {
+        let className = {
+            "Completed": "completebtn",
+            "In Progress": "inprogressbtn",
+            "Declined": "Declinedbtn"
+        }[item.status] || "otherbtn";
+
+        let popupHtml = "";
+        if (item.status === "Completed") {
+            let signers = (item.completeSignList || []).map(s =>
+                `<li class='first-email' style='display:flex;justify-content:start;'><span class='sec' style='padding-left:6%'>${s.email}</span></li>`
+            ).join('');
+            popupHtml = `
+                                                                        <div class='popup'>
+                                                                            <p class='header'><span class='headersp'>TOTAL RECIPIENTS: ${item.recepientCount}</span></p>
+                                                                            <div class='row'>
+                                                                                <p style='text-align:left'>SIGNED: ${item.completeSignList?.length || 0}</p>
+                                                                                <ul class='email-list' style='margin-bottom:0;'>${signers}</ul>
+                                                                            </div>
+                                                                        </div>`;
+        } else if (item.status === "In Progress") {
+            let pendings = (item.pendingSignList || []).map(s =>
+                `<li class='first-email' style='display:flex;justify-content:start;'><span class='sec' style='padding-left:6%'>${s.email}</span></li>`
+            ).join('');
+            popupHtml = `
+                                                                        <div class='popup'>
+                                                                            <p class='header'><span class='headersp'>TOTAL RECIPIENTS: ${item.recepientCount}</span></p>
+                                                                            <div class='row'>
+                                                                                <p style='text-align:left'>PENDING: ${item.pendingSignList?.length || 0}</p>
+                                                                                <ul class='email-list' style='margin-bottom:0;'>${pendings}</ul>
+                                                                            </div>
+                                                                        </div>`;
+        }
+
+        if (item.status == "In Progress") {
+            return `
+                                                                            <div class='status-container' style='position: relative; display: inline-block;'>
+                                                                                <span class='${className} redirect-doc' style='cursor:pointer;'  data-id="${item.id}">Signatures Pending</span>
+                                                                                ${popupHtml}
+                                                                            </div>`;
+        }
+
+        return `
+                                                                    <div class='status-container' style='position: relative; display: inline-block;'>
+                                                                        <span class='${className} redirect-doc' style='cursor:pointer;font-weight:500;' data-id="${item.id}">${item.status}</span>
+                                                                        ${popupHtml}
+                                                                    </div>`;
+    }
+
+    function renderSigningStatusHtml(item, suid) {
+        let rec = (item.recepients || []).find(r => r.suid === suid);
+        if (!rec)
+            return `<span class="otherbtn inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">Not Required</div>`;
+
+        let html;
+
+        switch (rec.status) {
+            case "Need to sign":
+                html = `<span class=" nd-value signingstats-text inprogressbtn bg-blue-100 text-blue-700" style="font-weight:500;">Need to Sign</span>`;
+                break;
+
+            case "Waiting_for_Others":
+                html = `<span class="nd-value signingstats-text inprogressbtn bg-yellow-100 text-yellow-700" style="font-weight:500;">Waiting for Others</span>`;
+                break;
+
+            case "Signing_Pending":
+            case "Signing_in_Progress":
+                html = `<span class="nd-value signingstats-text inprogressbtn bg-amber-100 text-amber-700" style="font-weight:500;">Signing in Progress</span>`;
+                break;
+
+            case "Pin_Failed":
+            case "Failed":
+                html = `<span class="nd-value signingstats-text Declinedbtn bg-red-100 text-red-700" style="font-weight:500;">Failed</span>`;
+                break;
+
+            case "Signed":
+                html = `<span class="nd-value signingstats-text completebtn bg-green-100 text-green-700" style="font-weight:500;">Signed</span>`;
+                break;
+
+            case "Rejected":
+                html = `<span class="nd-value signingstats-text Declinedbtn bg-red-100 text-red-700" style="font-weight:500;">Rejected</span>`;
+                break;
+
+            default:
+                html = `<span class="nd-value signingstats-text otherbtn bg-gray-100 text-gray-700" style="font-weight:500;">Not Required</span>`;
+        }
+
+        // Apply gray pill to Expired/Recalled
+        if (item.status === "Expired" || item.status === "Recalled") {
+            html = html.replace(/class="[^"]*"/, `class="signingstats-text nd-value otherbtn bg-gray-200 text-gray-600"`);
+        }
+
+        return html;
+    }
+
+    function renderActionButtonHtml(item, suid, currentDocNo, totalDocs) {
+        let rec = (item.recepients || []).find(r => r.suid === suid);
+        if (!rec) return "";
+
+        let baseBtn = "viewbutton rounded-3";
+        let style = "font-size:0.8rem;padding:7px 9px 9px 12px;max-width:90px;width:80px;text-transform: none !important;";
+        let id = item.id;
+
+        if (item.status === "In Progress") {
+            switch (rec.status) {
+                case "Need to sign":
+                    return `<button type='button' class='${baseBtn} sign-button' style='${style}' data-id='${id}' data-current='${currentDocNo}' data-total='${totalDocs}'>
+                                                                                            <i class='fa fa-pencil'></i> Sign</button>`;
+                case "Signing_Pending":
+                case "Signing_in_Progress":
+                case "Waiting_for_Others":
+                case "Rejected":
+                case "Signed":
+                    return `<button type='button' class='${baseBtn} redirect-doc' style='${style}' data-id="${id}">
+                                                                                            <i class='fa-regular fa-eye'></i> View</button>`;
+                case "Pin_Failed":
+                case "Failed":
+                    return `<button type='button' class='${baseBtn} sign-button' style='${style}' data-id='${id}' data-current='${currentDocNo}' data-total='${totalDocs}'>
+                                                                                            <i class='fa-solid fa-arrow-rotate-left'></i> Retry</button>`;
+                default:
+                    return `<button type='button' class='${baseBtn} redirect-doc' style='${style}' data-id="${id}">
+                                                                                            <i class='fa-regular fa-eye'></i> View</button>`;
+            }
+        }
+
+        return `<button type='button' class='${baseBtn}' style='${style}' data-id="${id}">
+                                                                                <i class='fa-regular fa-eye'></i> View</button>`;
+    }
+
+
+    function FilterData() {
+        $('#Filter_Modal').addClass('show').css('display', 'block');
+        initialFilterActiveTab = documentFilterActiveTab;
+        initialFilterdaysVal = document.querySelector('input[name="filterDays"]:checked').value;
+        initialFilterCountVal = document.querySelector('input[name="filterCount"]:checked').value;
+        initialFilterDocumentStatusVal = document.querySelector('input[name="filterDocumentStatus"]:checked').value;
+        initialFilterSigningStatusVal = document.querySelector('input[name="filterSigningStatus"]:checked').value;
+    }
+
+    function ResetFilter() {
+        $('#Filter_Modal').removeClass('show').css('display', 'none');
+
+        localStorage.setItem("selectedFilterTab", "time");
+        localStorage.setItem("selectedDocumentDays", "last90days");
+        localStorage.setItem("selectedDocumentCount", "latest50");
+        localStorage.setItem("selectedDocumentStatus", "All");
+        localStorage.setItem("selectedSigningStatus", "All");
+
+        initializeFilterRadioButtons();
+        setFilterTexts();
+        $('#draftCardsContainer').empty();
+
+        myDocument();
+
+    }
+
+    function applyfilter() {
+        $('#Filter_Modal').removeClass('show').css('display', 'none');
+
+        const filterSelector = document.getElementById("filterSelector");//values are "time", "latest"
+        const filterDaysInput = document.querySelector('input[name="filterDays"]:checked');
+        const filterCountInput = document.querySelector('input[name="filterCount"]:checked');
+        const filterDocumentStatusInput = document.querySelector('input[name="filterDocumentStatus"]:checked');
+        const filterSigningStatusInput = document.querySelector('input[name="filterSigningStatus"]:checked');
+        //store it in local storage
+        localStorage.setItem("selectedFilterTab", filterSelector.value);
+        localStorage.setItem("selectedDocumentDays", filterDaysInput.value);
+        localStorage.setItem("selectedDocumentCount", filterCountInput.value);
+        localStorage.setItem("selectedDocumentStatus", filterDocumentStatusInput.value);
+        localStorage.setItem("selectedSigningStatus", filterSigningStatusInput.value);
+
+        setFilterTexts();
+        $('#draftCardsContainer').empty();
+        myDocument();
+
+    }
+    function showInitialShimmer(count, targetSelector = '#draftCardsContainer') {
+        let shimmerHtml = `<div class="shimmer-wrapper">`;
+        for (let i = 0; i < count; i++) {
+            shimmerHtml += `<div class="shimmer-item"></div>`;
+        }
+        shimmerHtml += `</div>`;
+
+        const $shimmer = $(shimmerHtml);
+        const $target = $(targetSelector);
+
+        $target.append($shimmer);
+
+        return $shimmer;
+    }
+
+
+    function myDocument() {
+        initialLoading = true;
+        document.getElementById("docsSearchContainer").style.display = "flex";
+        const button = document.getElementById('toggleCheckboxesBtn');
+        const iconClass = 'fa-list'; // or 'fa-times' depending on mode
+
+        // Update innerHTML to include icon + text
+        button.innerHTML = `<i id="checkboxToggleIcon" class="fa ${iconClass}" aria-hidden="true"></i>`;
+
+        // Update classes
+        button.classList.remove('select-mode', 'default-mode');
+        button.classList.add('default-mode');
+
+        // Optional: Update background or tooltip
+        button.classList.remove('select-mode');
+        button.classList.add('default-mode');
+        button.title = 'Click here for multiple selection mode';
+
+
+        const containers = document.querySelectorAll('.checkboxContainer');
+        containers.forEach(container => {
+            container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            container.style.display = 'none';
+
+        });
+        const signingButtonGroup = document.getElementById('signingButtonGroup');
+        if (signingButtonGroup) signingButtonGroup.style.display = 'none';
+        const selectedCountDisplay = document.getElementById('selectedCount');
+        var initialval = 0;
+        if (selectedCountDisplay) {
+            selectedCountDisplay.innerText = `(${initialval})`;
+        }
+        selectedIdListData = [];
+        window.selectedDocumentIds = [];
+        document.getElementById("searchInput").value = "";
+        const currentDocNo = localStorage.getItem("CurrentDocNo");
+        if (currentDocNo !== null) {
+            document.getElementById("searchInput").value = localStorage.getItem("DocumentsSearchValue")?.trim() || '';
+        }
+        else {
+            localStorage.removeItem("DocumentsSearchValue");
+        }
+        const currentUrl = window.location.href.split('?')[0];
+        window.history.pushState(null, '', currentUrl);
+
+        $('#draftCardsContainer').empty();
+        $('#draftCardsContainer').css('display', 'block');
+
+        //const intialShimmer = showInitialShimmer(5, "#draftCardsContainer");
+        loadDraftDocuments();
+
+    }
+
+
+
+    function setFilterTexts() {
+        const selectedTab = localStorage.getItem("selectedFilterTab") || "time";
+        const selectedDocumentDays = localStorage.getItem("selectedDocumentDays") || "last90days";
+        const selectedDocumentCount = localStorage.getItem("selectedDocumentCount") || "latest50";
+        const selectedDocumentStatus = localStorage.getItem("selectedDocumentStatus") || "All";
+        const selectedSigningStatus = localStorage.getItem("selectedSigningStatus") || "All";
+
+        let documentFilter = "";
+
+        if (selectedTab === "time") {
+            // Get Selected Value
+            const daysInput = document.querySelector(`input[name="filterDays"][value="${selectedDocumentDays}"]`);
+            const daysLabel = document.querySelector(`label[for="${daysInput?.id}"]`);
+            documentFilter = daysLabel?.textContent.trim() || '';
+            document.getElementById("timePeriodIcon").style.display = "inline-block";
+        } else {
+            const countInput = document.querySelector(`input[name="filterCount"][value="${selectedDocumentCount}"]`);
+            const countLabel = document.querySelector(`label[for="${countInput?.id}"]`);
+            documentFilter = countLabel?.textContent.trim() || '';
+            document.getElementById("timePeriodIcon").style.display = "none";
+        }
+
+        const docStatusInput = document.querySelector(`input[name="filterDocumentStatus"][value="${selectedDocumentStatus}"]`);
+        const docStatusLabel = document.querySelector(`label[for="${docStatusInput?.id}"]`);
+
+        const signStatusInput = document.querySelector(`input[name="filterSigningStatus"][value="${selectedSigningStatus}"]`);
+        const signStatusLabel = document.querySelector(`label[for="${signStatusInput?.id}"]`);
+
+        const documentStatus = docStatusLabel ? docStatusLabel.textContent.trim() : '';
+        const signingStatus = signStatusLabel ? signStatusLabel.textContent.trim() : '';
+
+        document.getElementById("filterdays").textContent = documentFilter;
+        document.getElementById("filterDocumentStatusText").textContent = documentStatus;
+        document.getElementById("filterSigningStatusText").textContent = signingStatus;
+
+        document.getElementById("filterDaysStatusContainer").style.display = (documentFilter === "All") ? "none" : "block";
+        document.getElementById("documentStatusContainer").style.display = (documentStatus === "All") ? "none" : "block";
+        document.getElementById("signingStatusContainer").style.display = (signingStatus === "All") ? "none" : "block";
+    }
+
+
+    function initializeFilterRadioButtons() {
+        const selectedFilterTab = localStorage.getItem("selectedFilterTab");
+        const selectedDocumentDays = localStorage.getItem("selectedDocumentDays");
+        const selectedDocumentCount = localStorage.getItem("selectedDocumentCount");
+        const selectedDocumentStatus = localStorage.getItem("selectedDocumentStatus");
+        const selectedSigningStatus = localStorage.getItem("selectedSigningStatus");
+
+        // Set filterSelector dropdown
+        if (selectedFilterTab) {
+            document.getElementById("filterSelector").value = selectedFilterTab;
+
+            // Toggle visibility of day/count sections
+            if (selectedFilterTab === "time") {
+                document.getElementById("daysFilterSection").style.display = "flex";
+                document.getElementById("docsFilterSection").style.display = "none";
+            } else {
+                document.getElementById("daysFilterSection").style.display = "none";
+                document.getElementById("docsFilterSection").style.display = "flex";
+            }
+        }
+
+        // Set Days filter radio button
+        if (selectedDocumentDays) {
+            const dayRadio = document.querySelector(`input[name="filterDays"][value="${selectedDocumentDays}"]`);
+            if (dayRadio) {
+                dayRadio.checked = true;
+            }
+        }
+
+        // Set Count filter radio button
+        if (selectedDocumentCount) {
+            const countRadio = document.querySelector(`input[name="filterCount"][value="${selectedDocumentCount}"]`);
+            if (countRadio) {
+                countRadio.checked = true;
+            }
+        }
+
+        // Set Document Status filter radio button
+        if (selectedDocumentStatus) {
+            const docStatusRadio = document.querySelector(`input[name="filterDocumentStatus"][value="${selectedDocumentStatus}"]`);
+            if (docStatusRadio) {
+                docStatusRadio.checked = true;
+            }
+        }
+
+        // Set Signing Status filter radio button
+        if (selectedSigningStatus) {
+            const signStatusRadio = document.querySelector(`input[name="filterSigningStatus"][value="${selectedSigningStatus}"]`);
+            if (signStatusRadio) {
+                signStatusRadio.checked = true;
+            }
+        }
+    }
+
+
+
+    function closefilter() {
+        $('#Filter_Modal').removeClass('show').css('display', 'none');
+        const daysFilterSection = document.getElementById("daysFilterSection");
+        const docsFilterSection = document.getElementById("docsFilterSection");
+        if (initialFilterActiveTab === "latestCount") {
+            daysFilterSection.style.display = "none";
+            docsFilterSection.style.display = "flex";
+            documentFilterActiveTab = "latestCount";
+            document.getElementById("filterSelector").value = "latest";
+            document.getElementById("timeIcon").style.display = "none";
+            document.getElementById("latestCountIcon").style.display = "inline-block";
+        }
+        else {
+            daysFilterSection.style.display = "flex";
+            docsFilterSection.style.display = "none";
+            documentFilterActiveTab = "timePeriod";
+            document.getElementById("filterSelector").value = "time";
+            document.getElementById("timeIcon").style.display = "inline-block";
+            document.getElementById("latestCountIcon").style.display = "none";
+        }
+
+        document.querySelector(`input[name="filterCount"][value="${initialFilterCountVal}"]`).checked = true;
+        document.querySelector(`input[name="filterDays"][value="${initialFilterdaysVal}"]`).checked = true;
+        document.querySelector(`input[name="filterDocumentStatus"][value="${initialFilterDocumentStatusVal}"]`).checked = true;
+        document.querySelector(`input[name="filterSigningStatus"][value="${initialFilterSigningStatusVal}"]`).checked = true;
+    }
+
+
+
+    function storeFilters() {
+        if (localStorage.getItem("selectedFilterTab") === null) {
+            localStorage.setItem("selectedFilterTab", "time");
+        }
+
+        if (localStorage.getItem("selectedDocumentDays") === null) {
+            localStorage.setItem("selectedDocumentDays", "last90days");
+        }
+
+        if (localStorage.getItem("selectedDocumentCount") === null) {
+            localStorage.setItem("selectedDocumentCount", "latest50");
+        }
+
+        if (localStorage.getItem("selectedDocumentStatus") === null) {
+            localStorage.setItem("selectedDocumentStatus", "All");
+        }
+
+        if (localStorage.getItem("selectedSigningStatus") === null) {
+            localStorage.setItem("selectedSigningStatus", "All");
+        }
+
+    }
+
+    function performGroupSigningAction() {
+        if (selectedIdListData.length === 0) {
+            swal({
+                title: "Info",
+                text: "Please select documents for signing",
+                type: "info",
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    //window.location.reload();
+                }
+            });
+            return;
+        } else if (selectedIdListData.length < 2) {
+            swal({
+                title: "Info",
+                text: "Please select at least two documents to perform Group Signing, or continue with the Normal Signing process.",
+                type: "info",
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    //window.location.reload();
+                }
+            });
+            return;
+        } else if (selectedIdListData.length > 20) {
+            swal({
+                title: "Info",
+                text: "Maximum limit reached. You can select only 20 documents.",
+                type: "info",
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    //window.location.reload();
+                }
+            });
+            return;
+        }
+        document.getElementById('overlay6').style.display = 'flex';
+        $.ajax({
+            type: 'POST',
+            url: PerformGroupSigning, // Change to your endpoint
+            headers: {
+
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+            },
+            contentType: 'application/json',
+            data: JSON.stringify({ documentIds: selectedIdListData }),
+            success: function (response) {
+                document.getElementById('overlay6').style.display = 'none';
+                console.log('Success:', response);
+                if (response.success) {
+                    swal({
+                        title: "info",
+                        text: "Document Signing is initiated.",
+                        type: "info",
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.href = "/GroupSigning/DocumentsSigningStatus?groupId=" + response.result;
+                        }
+                    });
+
+                } else {
+                    swal({
+                        title: "Error",
+                        text: response.message,
+                        type: "error",
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.reload();
+                        }
+                    });
+
+                    // handle success
+                }
+
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+                // handle error
+            }
+        });
+    }
+
+
+    window.updateSelectedIdList = function () {
+        const selectedCheckboxes = document.querySelectorAll('.document-checkbox:checked');
+        const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+        console.log("Selected IDs:", selectedIds);
+
+        const buttonGroup = document.getElementById('signingButtonGroup');
+        if (buttonGroup) {
+            buttonGroup.style.display = selectedIds.length > 0 ? 'inline-flex' : 'none';
+        }
+        const selectedCountDisplay = document.getElementById('selectedCount');
+        if (selectedCountDisplay) {
+            selectedCountDisplay.innerText = `(${selectedIds.length})`;
+        }
+
+        selectedIdListData = selectedIds;
+        window.selectedDocumentIds = selectedIds;
+        const masterCheckbox = document.getElementById('selectAllCheckbox');
+        if (masterCheckbox.checked && selectedIds.length === 0) {
+            swal({
+                title: "Info",
+                text: "No documents are available for signing",
+                type: "info",
+            }, function (isConfirm) {
+
+            });
+
+            masterCheckbox.checked = false;
+
+        }
+    }
+
+
+
+</script>

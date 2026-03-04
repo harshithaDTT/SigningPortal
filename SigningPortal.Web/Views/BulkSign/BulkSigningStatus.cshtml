@@ -1,0 +1,1507 @@
+﻿@model SigningPortal.Web.ViewModels.BulkSign.BulkSignDetailsViewModel
+@{
+    var totalFileCount = 0;
+    var failedFileCount = 0;
+    var successFileCount = 0;
+    var pendingCount = 0;
+    var filesCount = 0;
+    if (Model.Result != null)
+    {
+        totalFileCount = Model.Result.TotalFileCount;
+        failedFileCount = Model.Result.FailedFileCount;
+        successFileCount = Model.Result.SuccessFileCount;
+        pendingCount = totalFileCount - failedFileCount - successFileCount;
+        filesCount = Model.Result.FileArray.Count();
+    }
+
+    var correlationId = Model.CorelationId;
+    var destination = Model.SignedPath;
+    var Status = Model.Status;
+}
+
+<style>
+    .dg-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    /* card base - enhanced with better shadows and borders */
+    .dg-stat-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 20px 21px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 8px 18px rgba(15, 23, 42, 0.04);
+        border: 1px solid #e6ebf1;
+        transition: all 0.2s ease;
+    }
+
+        .dg-stat-card:hover {
+            transform: scale(1.05); /* slight zoom */
+            box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.12);
+        }
+
+    
+
+    /* dark mode support */
+    .dark .dg-stat-card {
+        background: rgba(30, 41, 59, 0.7);
+        border-color: rgba(255,255,255,0.08);
+    }
+
+    /* text */
+    .dg-stat-title {
+        font-size: 16px;
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .dark .dg-stat-title {
+        color: #94a3b8;
+    }
+
+    .dg-stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .dark .dg-stat-value {
+        color: #e5e7eb;
+    }
+
+    /* icon bubble */
+    .dg-stat-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+    /* total */
+
+
+
+    .dark .dg-total-icon {
+        background: rgba(139,92,246,0.25);
+    }
+
+    .dg-total {
+        border-top: 4px solid #3b82f6;
+        background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+    }
+
+    .dg-total-icon {
+        background: #eaf1ff;
+        color: #3b82f6;
+    }
+
+    .dark .dg-total-icon {
+        background: rgba(59,130,246,0.25);
+    }
+
+    /* pending */
+    .dg-pending {
+        border-top: 4px solid #f39c12;
+        background: linear-gradient(135deg, #ffffff 0%, #fffbf5 100%);
+    }
+
+    .dg-pending-icon {
+        background: #fef3c7;
+        color: #f39c12;
+    }
+
+
+    .dark .dg-pending-icon {
+        background: #fef3c7;
+    }
+
+    /* signed */
+    .dg-signed {
+        border-top: 4px solid #0ea66b;
+        background: linear-gradient(135deg, #ffffff 0%, #f6fef9 100%);
+    }
+
+    .dg-signed-icon {
+        background: #eafbf2;
+        color: #0ea66b;
+    }
+
+    .dark .dg-signed-icon {
+        background: rgba(34,197,94,0.25);
+    }
+
+    /* failed */
+    .dg-failed {
+        border-top: 4px solid #ef4444;
+        background: linear-gradient(135deg, #ffffff 0%, #fff8f8 100%);
+    }
+
+    .dg-failed-icon {
+        background: #ffecec;
+        color: #ef4444;
+    }
+
+    .dark .dg-failed-icon {
+        background: rgba(239,68,68,0.25);
+    }
+
+    .dg-table-card {
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 10px 20px rgba(15, 23, 42, 0.04);
+        border: 1px solid #e6ebf1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .dark .dg-table-card {
+        background: rgba(30,41,59,0.7);
+        border-color: rgba(255,255,255,0.08);
+    }
+
+    /* ---------- Header ---------- */
+    .dg-table-header-pro {
+        padding: 20px 24px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 20px;
+        border-bottom: 1px solid #e6ebf1;
+        background: #fbfcfd;
+    }
+
+    /* TITLE */
+    .dg-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    /* SEARCH */
+    .dg-search-wrap {
+        position: relative;
+        max-width: 360px;
+        width: 100%;
+        margin-left: 6rem;
+    }
+
+        .dg-search-wrap input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+            .dg-search-wrap input:focus {
+                border-color: #3b82f6;
+                background: #fff;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+    .dg-search-ic {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 18px;
+        color: #94a3b8;
+    }
+
+    /* ACTION BUTTONS */
+    .dg-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .dg-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 4px;
+        font-size: 12px;
+        border-radius: 12px;
+        font-weight: 500;
+        background: #ffffff;
+        border: 1px solid #3F8F5C;
+        color: #3F8F5C;
+        cursor: pointer;
+        transition: 0.3s ease;
+    }
+
+        .dg-action-btn span {
+            font-size: 18px;
+        }
+
+        .dg-action-btn:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+    /* RESPONSIVE */
+    @@media (max-width: 768px) {
+        .dg-table-header-pro {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .dg-actions {
+            justify-content: flex-end;
+        }
+
+        .dg-search-wrap {
+            max-width: 100%;
+        }
+    }
+
+    .dg-table-header {
+        padding: 18px 22px;
+        display: grid;
+        grid-template-columns: auto 1fr auto; /* title | search | filter */
+        align-items: center;
+        gap: 16px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    /* center search nicely */
+    .dg-search-box {
+        max-width: 260px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* filter button look */
+    .dg-filter-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+        .dg-filter-btn:hover {
+            background: #f1f5f9;
+        }
+
+
+
+    .dark .dg-table-header {
+        border-color: rgba(255,255,255,0.08);
+    }
+
+    .dg-table-title {
+        font-size: 16px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+
+
+    /* ---------- Table ---------- */
+
+    .dg-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .dg-doc-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .dg-doc-table thead th {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: #505357;
+            padding: 14px 22px;
+            text-align: left;
+            background: #f8fafc;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+            .dg-doc-table thead th.center {
+                text-align: center;
+            }
+
+        .dg-doc-table tbody td {
+            padding: 14px 22px;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+    .dark .dg-doc-table tbody td {
+        border-color: rgba(255,255,255,0.06);
+    }
+
+    .dg-doc-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .dark .dg-doc-table tbody tr:hover {
+        background: rgba(255,255,255,0.05);
+    }
+
+    .center {
+        text-align: center;
+    }
+
+    /* status */
+
+    .dg-status-signed {
+        color: #22c55e;
+        font-size: 20px;
+    }
+
+    /* download */
+
+    .dg-download {
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .dg-download:hover {
+            color: #2563eb;
+        }
+
+    /* ---------- Footer ---------- */
+
+    .dg-table-footer {
+        padding: 16px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #e5e7eb;
+        background: #fafbfc;
+    }
+
+    .dark .dg-table-footer {
+        border-color: rgba(255,255,255,0.08);
+    }
+
+    .dg-page-text {
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    /* pagination */
+
+    .dg-pagination {
+        display: flex;
+        gap: 8px;
+    }
+
+    .dg-btn {
+        padding: 6px 14px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .dark .dg-btn {
+        background: transparent;
+        border-color: rgba(255,255,255,0.15);
+        color: #e5e7eb;
+    }
+
+    .dg-btn.primary {
+        background: #1e3a8a;
+        color: white;
+        border-color: #1e3a8a;
+    }
+
+    .dg-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .dg-chart-card {
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 10px 20px rgba(15, 23, 42, 0.04);
+        border: 1px solid #e6ebf1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .dark .dg-chart-card {
+        background: rgba(30,41,59,0.7);
+        border-color: rgba(255,255,255,0.08);
+    }
+
+    .dg-chart-title {
+        width: 100%;
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f172a;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e6ebf1;
+        margin-bottom: 8px;
+    }
+
+    /* ---------- Circle ---------- */
+    .dg-circle-wrapper {
+        width: 180px;
+        height: 180px;
+        margin: 0 auto;
+        position: relative;
+        margin-top: auto;
+    }
+
+    .dg-circle-svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+
+
+
+
+    .dg-circle-bg {
+        fill: none;
+        stroke: #eee;
+        stroke-width: 3.8px;
+    }
+
+    .dg-circle-progress {
+        fill: none;
+        stroke-width: 3.8px;
+        stroke-linecap: round;
+    }
+
+        .dg-circle-progress.signed {
+            stroke: #0ea66b;
+        }
+
+        .dg-circle-progress.pending {
+            stroke: #f39c12;
+        }
+
+        .dg-circle-progress.failed {
+            stroke: #FF8C8C;
+        }
+
+
+
+
+    .dark .dg-circle-bg {
+        stroke: #1f2933;
+    }
+
+
+
+    /* text inside circle */
+    .dg-circle-text {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dg-percent {
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .dg-subtext {
+        font-size: 12px;
+        color: #888;
+    }
+
+    /* ---------- Legend ---------- */
+
+    .dg-chart-legend {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: auto;
+    }
+
+    .dg-legend {
+        border-radius: 12px;
+        padding: 10px;
+        text-align: center;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .dark .dg-legend {
+        border-color: rgba(255,255,255,0.08);
+    }
+
+    /* colors */
+
+    .dg-legend.signed {
+        background: rgba(34,197,94,0.08);
+    }
+
+    .dg-legend.pending {
+        background: #fbf4ea;
+    }
+
+    .dg-legend.failed {
+        background: rgba(239,68,68,0.08);
+    }
+
+    .dg-legend .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-bottom: 4px;
+    }
+
+    .dg-legend.signed .dot {
+        background: #0ea66b;
+    }
+
+    .dg-legend.pending .dot {
+        background: #f39c12;
+    }
+
+    .dg-legend.failed .dot {
+        background: #ef4444;
+    }
+
+    .dg-legend .lbl {
+        font-size: 10px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+    }
+
+    .dg-legend .val {
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .dg-dashboard-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr; /* table bigger, chart smaller */
+        gap: 30px;
+        margin-top: 30px;
+        align-items: stretch;
+    }
+
+    /* left and right just for structure */
+    .dg-left-panel,
+    .dg-right-panel {
+        display: flex;
+    }
+
+    .dg-left-panel {
+        width: 100%;
+    }
+
+    .dg-right-panel {
+        justify-content: center;
+    }
+
+    /* responsive */
+    @@media (max-width: 992px) {
+        .dg-dashboard-row {
+            grid-template-columns: 1fr;
+        }
+    }
+    /* shimmer animation */
+    @@keyframes shimmer {
+        0% {
+            background-position: -400px 0;
+        }
+
+        100% {
+            background-position: 400px 0;
+        }
+    }
+
+    .dg-shimmer-row td {
+        padding: 18px 14px;
+    }
+
+    .dg-shimmer-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .dg-shimmer-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #eee;
+        background-image: linear-gradient( to right, #eee 0%, #f5f5f5 20%, #eee 40%, #eee 100% );
+        background-size: 800px 100%;
+        animation: shimmer 1.4s infinite linear;
+    }
+
+    .dg-shimmer-lines {
+        flex: 1;
+    }
+
+        .dg-shimmer-lines .line {
+            height: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background: #eee;
+            background-image: linear-gradient( to right, #eee 0%, #f5f5f5 20%, #eee 40%, #eee 100% );
+            background-size: 800px 100%;
+            animation: shimmer 1.4s infinite linear;
+        }
+
+            .dg-shimmer-lines .line.lg {
+                width: 70%;
+            }
+
+            .dg-shimmer-lines .line.sm {
+                width: 40%;
+            }
+
+    .dg-shimmer-pill {
+        width: 40px;
+        height: 14px;
+        border-radius: 20px;
+        margin: auto;
+        background: #eee;
+        background-image: linear-gradient( to right, #eee 0%, #f5f5f5 20%, #eee 40%, #eee 100% );
+        background-size: 800px 100%;
+        animation: shimmer 1.4s infinite linear;
+    }
+
+    .nd-icon {
+        width: 32px;
+        height: 32px;
+        background: #0f6b5f;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 15px;
+    }
+
+    .prevbutton {
+        background: #e4e4e4;
+        color: #101010;
+        border: 1px solid #686868;
+    }
+
+        .prevbutton:hover {
+            color: black;
+            background: #686868;
+            border: none;
+        }
+
+    .nextbutton {
+        background: #eafbf2;
+        color: #0ea66b;
+        border: 1px solid #0ea66b;
+    }
+
+        .nextbutton:hover {
+            color: #eafbf2;
+            background: #0ea66b;
+            border: none;
+        }
+
+    .dg-actions {
+        position: relative;
+        display: inline-block;
+    }
+
+    /* Button */
+    
+        .dg-action-btn:hover {
+            background: #3F8F5C;
+            color: #ffffff;
+        }
+
+    /* Dropdown */
+    .custom-dropdown-menu {
+        position: absolute;
+        top: 110%;
+        right: 0;
+        min-width: 180px;
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e5e5e5;
+        padding: 8px 0;
+        display: none;
+        z-index: 1000;
+    }
+
+        /* Show state */
+        .custom-dropdown-menu.show {
+            display: block;
+        }
+
+        /* List */
+        .custom-dropdown-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .custom-dropdown-menu li {
+            padding: 10px 15px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+            .custom-dropdown-menu li:hover {
+                background: #F1F8F5;
+            }
+
+    .dg-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 350px;
+        background: #f9fafb;
+        border-radius: 14px;
+        text-align: center;
+        margin: 20px;
+    }
+
+    .dg-empty-icon {
+        font-size: 60px;
+        color: #94a3b8;
+        margin-bottom: 16px;
+    }
+
+    .dg-empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .dg-empty-sub {
+        font-size: 14px;
+        color: #6b7280;
+        margin-top: 6px;
+    }
+
+</style>
+<div class="container-fluid" style="background:#F6F7FB; min-height:100vh;padding:2rem !important">
+    @Html.AntiForgeryToken()
+    <div class="dg-stat-grid">
+        <div class="dg-stat-card dg-total">
+            <div>
+                <div class="dg-stat-title">Total</div>
+                <div class="dg-stat-value" id="totalcount">3</div>
+            </div>
+            <div class="dg-stat-icon dg-total-icon">
+                <span class="material-symbols-outlined">
+                    <i class="bi bi-files"></i>
+                </span>
+            </div>
+        </div>
+        <div class="dg-stat-card dg-pending">
+            <div>
+                <div class="dg-stat-title">Pending</div>
+                <div class="dg-stat-value" id="pendingcount">0</div>
+            </div>
+            <div class="dg-stat-icon dg-pending-icon">
+                <span class="material-symbols-outlined">  <i class="bi bi-clipboard-check"></i></span>
+            </div>
+        </div>
+
+        <div class="dg-stat-card dg-signed">
+            <div>
+                <div class="dg-stat-title">Signed</div>
+                <div class="dg-stat-value" id="signedcount">3</div>
+            </div>
+            <div class="dg-stat-icon dg-signed-icon">
+                <span class="material-symbols-outlined"><i class="bi bi-patch-check-fill"></i></span>
+            </div>
+        </div>
+
+        <div class="dg-stat-card dg-failed">
+            <div>
+                <div class="dg-stat-title">Failed</div>
+                <div class="dg-stat-value" id="failedcount">0</div>
+            </div>
+            <div class="dg-stat-icon dg-failed-icon">
+                <span class="material-symbols-outlined"> <i class="bi bi-exclamation-circle-fill"></i></span>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="dg-dashboard-row">
+
+        <!-- LEFT : TABLE -->
+        <div class="dg-left-panel">
+            <div class="dg-table-card border">
+
+                <!-- Header -->
+                <div class="dg-table-header-pro">
+
+                    <!-- LEFT : TITLE -->
+                    <div class="dg-title">
+                        Document Status
+                    </div>
+
+                    <!-- CENTER : SEARCH -->
+                    <div class="dg-search-wrap">
+                        <span class="material-symbols-outlined dg-search-ic"><i class="fa fa-search"></i></span>
+                        <input type="text" id="docSearchInput" placeholder="Quick search documents..." />
+
+                    </div>
+
+                    <!-- RIGHT : ACTIONS -->
+                    <div class="dg-actions position-relative">
+
+                        <button class="dg-action-btn" id="filterToggle">
+                            <i class="fa fa-filter" style="font-size:0.8rem;"></i>
+                            Filter
+                            <i class="fa fa-caret-down ms-1"></i>
+                        </button>
+
+                        <div class="custom-dropdown-menu" id="filterDropdown">
+                            <ul>
+                                <li onclick="handleFilter('all')">
+                                    <img src='@Url.Content("~/img/allicon.png")' width="18">
+                                    All
+                                </li>
+
+                                <li onclick="handleFilter('complete')">
+                                    <img src='@Url.Content("~/img/completeicon.png")' width="15">
+                                    Completed
+                                </li>
+
+                                <li onclick="handleFilter('notstarted')">
+                                    <img src='@Url.Content("~/img/inprogressicon.png")' width="15">
+                                    Not Started
+                                </li>
+
+                                <li onclick="handleFilter('fail')">
+                                    <img src='@Url.Content("~/img/failicon.png")' width="15">
+                                    Failed
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- Table -->
+                <div class="dg-table-wrapper">
+                    <table class="dg-doc-table" id="listpart">
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th class="center">Status</th>
+                                <th class="center">Download</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shimmerBody">
+
+                            <!-- shimmer row 1 -->
+                            <tr class="dg-shimmer-row">
+                                <td>
+                                    <div class="dg-shimmer-cell">
+                                        <div class="dg-shimmer-avatar"></div>
+                                        <div class="dg-shimmer-lines">
+                                            <div class="line lg"></div>
+                                            <div class="line sm"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="center">
+                                    <div class="dg-shimmer-pill"></div>
+                                </td>
+                                <td class="center">
+                                    <div class="dg-shimmer-pill"></div>
+                                </td>
+                            </tr>
+
+                            <!-- shimmer row 2 -->
+                            <tr class="dg-shimmer-row">
+                                <td>
+                                    <div class="dg-shimmer-cell">
+                                        <div class="dg-shimmer-avatar"></div>
+                                        <div class="dg-shimmer-lines">
+                                            <div class="line lg"></div>
+                                            <div class="line sm"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="center">
+                                    <div class="dg-shimmer-pill"></div>
+                                </td>
+                                <td class="center">
+                                    <div class="dg-shimmer-pill"></div>
+                                </td>
+                            </tr>
+
+                            <!-- shimmer row 3 -->
+                            <tr class="dg-shimmer-row">
+                                <td>
+                                    <div class="dg-shimmer-cell">
+                                        <div class="dg-shimmer-avatar"></div>
+                                        <div class="dg-shimmer-lines">
+                                            <div class="line lg"></div>
+                                            <div class="line sm"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="center">
+                                    <div class="dg-shimmer-pill"></div>
+                                </td>
+                                <td class="center">
+                                    <div class="dg-shimmer-pill"></div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+
+                        <tbody id="realTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="dg-empty-state" style="display:none;">
+                    <div class="dg-empty-icon">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <div class="dg-empty-title">No documents found</div>
+                    <div class="dg-empty-sub">
+                        filtered documents will appear here.
+                    </div>
+                </div>
+
+                <!-- Footer / Pagination -->
+                <div class="dg-table-footer">
+                    <div class="dg-page-text" id="pageInfo"></div>
+                    <div class="dg-pagination" id="paginationpart">
+                        <button class="dg-btn prevbutton" id="prevBtn">Prev</button>
+                        <button class="dg-btn nextbutton" id="nextBtn">
+                            Next
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT : PIE CHART -->
+        <div class="dg-right-panel">
+            <div class="dg-chart-card border">
+
+                <div class="dg-chart-title">Pictorial Representation</div>
+
+
+                <div style="margin:15% auto">
+                    <!-- Centering the canvas -->
+                    <div style="display: flex; justify-content: center;">
+                        <canvas id="myChart" width="277" height="277"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+@section scripts {
+    <script>
+        let allFiles = [];
+        let filteredFiles = [];
+        let currentPage = 1;
+        let rowsPerPage = 4;
+
+        var myChart;
+        var intervalId;
+        var totalCount1 = '@totalFileCount';
+        var pendingCount1 = @pendingCount;
+        var failedFileCount1 = @failedFileCount;
+        var successFileCount1 = @successFileCount;
+        var CorelationId = '@correlationId';
+        var SignedPath = '@destination';
+        var statusvalue = '@Status';
+        var filesCount = @filesCount;
+        var filelist;
+        var allfilelist;
+        var completefilelist;
+        var failfilelist;
+        var pendingfilelist;
+        var pending = `<span class="material-symbols-outlined">  <i class="bi bi-clipboard-check" style="font-size: 1.25rem;color: #f39c12;"></i></span>`;
+        var success = `<span class="material-symbols-outlined"><i class="bi bi-patch-check-fill" style="font-size: 1.25rem;color: #0ea66b;"></i></span>`;
+        var fail = `<span class="material-symbols-outlined"> <i class="bi bi-exclamation-circle-fill" style="font-size: 1.25rem;color: #ef4444;"></i></span>`;
+        var yValues = [successFileCount1, pendingCount1, failedFileCount1];
+        var xValues = ["Signed", "Pending", "Failed"];
+        var barColors = [
+            "#0ea66b",
+            "#f39c12",
+            "#ef4444"
+        ];
+        $(document).ready(function () {
+            loadpiechart();
+            if (statusvalue !== "Completed") {
+
+                intervalId = setInterval(checkstatus, 3000);
+                updatestatus();
+            }
+            else {
+                UpdateDetails();
+            }
+
+        });
+        $("#docSearchInput").on("keyup", function () {
+            let val = $(this).val().toLowerCase();
+
+            filteredFiles = allFiles.filter(x =>
+                x.fileName.toLowerCase().includes(val)
+            );
+
+            currentPage = 1;
+            renderTable();
+        });
+        $("#prevBtn").on("click", function () {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        });
+        const filterToggle = document.getElementById("filterToggle");
+        const filterDropdown = document.getElementById("filterDropdown");
+
+        filterToggle.addEventListener("click", function (e) {
+            e.stopPropagation();
+            filterDropdown.classList.toggle("show");
+        });
+
+        // Close when clicking outside
+        document.addEventListener("click", function (e) {
+            if (!filterDropdown.contains(e.target)) {
+                filterDropdown.classList.remove("show");
+            }
+        });
+
+
+        $("#nextBtn").on("click", function () {
+            let totalPages = Math.ceil(filteredFiles.length / rowsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        });
+        function loadpiechart() {
+
+            if (myChart) {
+                // ✅ Just update data & colors
+                myChart.data.labels = xValues;
+                myChart.data.datasets[0].data = yValues;
+                myChart.data.datasets[0].backgroundColor = barColors;
+
+                myChart.update();   // Only updates what changed
+                return;
+            }
+
+            // ✅ Create chart only once
+            myChart = new Chart("myChart", {
+                type: "pie",
+                data: {
+                    labels: xValues,
+                    datasets: [{
+                        backgroundColor: barColors,
+                        data: yValues
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            align: 'center',
+                            labels: {
+                                boxWidth: 14,
+                                padding: 20,
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        function renderTable() {
+
+            let tableBody = document.getElementById("realTableBody");
+            tableBody.innerHTML = "";
+
+            if (!filteredFiles || filteredFiles.length === 0) {
+                document.querySelector(".dg-table-wrapper").style.display = "none";
+
+                // Show empty state
+                document.getElementById("emptyState").style.display = "flex";
+
+                // Hide pagination
+                document.getElementById("paginationpart").style.display = "none";
+                document.getElementById("pageInfo").textContent = "";
+                return;
+            }
+            // Show table when data exists
+            document.querySelector(".dg-table-wrapper").style.display = "block";
+            document.getElementById("emptyState").style.display = "none";
+
+            let start = (currentPage - 1) * rowsPerPage;
+            let end = start + rowsPerPage;
+            let pageItems = filteredFiles.slice(start, end);
+            console.log(pageItems);
+            pageItems.forEach(item => {
+
+                let statusIcon = "";
+                let downloadHtml = "---";
+
+                if (item.status === "success") {
+                    statusIcon = success;
+                    downloadHtml = `
+                                        <span class="material-symbols-outlined dg-download"
+                                              onclick='redirectToPage("${item.fileName}", "${SignedPath}")'>
+                                            <i class="fa fa-download"></i>
+                                        </span>`;
+                }
+                else if (item.status === "fail") {
+                    statusIcon = fail;
+                }
+                else {
+                    statusIcon = pending;
+                }
+
+                let fileName = item.fileName;
+                let displayName = fileName.length > 45 ? cropFileNames(fileName) : fileName;
+
+                let row = `
+                                    <tr>
+                                                <td title="${fileName}" style="display:flex;gap:0.25rem;"><div class="nd-icon">
+                                                <i class="fa-solid fa-file-lines"></i>
+                                            </div>
+                                                    <div style="margin:0.5rem;">${displayName}</div></td>
+                                        <td class="center">${statusIcon}</td>
+                                        <td class="center">${downloadHtml}</td>
+                                    </tr>
+                                `;
+
+                tableBody.insertAdjacentHTML("beforeend", row);
+            });
+
+            let totalPages = Math.ceil(filteredFiles.length / rowsPerPage);
+            document.getElementById("paginationpart").style.display = "block";
+            document.getElementById("pageInfo").textContent = `Page ${currentPage} of ${totalPages}`;
+
+            document.getElementById("prevBtn").disabled = currentPage === 1;
+            document.getElementById("nextBtn").disabled = currentPage === totalPages;
+        }
+        function redirectToPage(fileName, destinationPath) {
+
+            var data = {
+                fileName: fileName,
+                destinationPath: destinationPath
+            };
+            $.ajax({
+                url: '@Url.Action("Download", "BulkSign")',
+                method: 'POST',
+                headers: {
+
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                },
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                beforeSend: function () {
+                    $('#overlay').show();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                },
+
+                success: function (data) {
+                    if (data.success === false) {
+                        swal({ type: 'info', title: "Download file", text: data.message, showCancelButton: false, closeOnConfirm: true }, function (isConfirm) {
+                            if (isConfirm) {
+
+                            }
+                        });
+                    } else {
+                        // Extract the Base64 string from data.result.fileContents
+                        var base64String = data.result.fileContents; // Assuming data.result.fileContents holds the Base64 string
+
+                        // Decode the Base64 string to get the binary data
+                        var byteCharacters = atob(base64String);
+                        var byteNumbers = new Array(byteCharacters.length);
+
+                        for (var i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+
+                        // Convert the binary data to a Blob object
+                        var byteArray = new Uint8Array(byteNumbers);
+                        var blob = new Blob([byteArray], { type: 'application/octet-stream' });
+
+                        // Create an object URL for the Blob
+                        var url = window.URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url;
+
+                        var parts = fileName.split('.');
+
+                        // Extract the base name (everything before the last ".")
+                        var baseName = parts.slice(0, -1).join('.');
+
+                        // Extract the extension (everything after the last ".")
+                        var extension = parts.pop();
+
+                        if (extension !== 'pdf') {
+                            var pdfFileName = baseName + '.pdf';
+                            fileName = pdfFileName;
+                        }
+
+                        a.download = fileName;
+
+                        // Append the link to the body
+                        document.body.appendChild(a);
+
+                        // Trigger a click on the link to start the download
+                        a.click();
+
+                        // Remove the link from the body
+                        document.body.removeChild(a);
+
+                        // Release the object URL
+                        window.URL.revokeObjectURL(url);
+                    }
+                },
+
+                error: ajaxErrorHandler
+            });
+        }
+        function cropFileNames(full) {
+
+            // Adjust crop lengths based on screen width
+            let start, end;
+
+            const width = window.innerWidth;
+
+            if (width >= 1300) {
+                start = 25;
+                end = 25;
+            } else if (width >= 768) {
+                start = 20;
+                end = 20;
+            } else if (width >= 460) {
+                start = 13;
+                end = 13;
+            }
+            else { // Small screens (mobiles)
+                start = 10;
+                end = 10;
+            }
+
+            if (full && full.length > start + end) {
+                return full.slice(0, start) + '...' + full.slice(-end);
+            } else {
+                return full
+            }
+
+
+
+        }
+        function handleFilter(type) {
+
+            if (type === "all") {
+                filteredFiles = allFiles;
+            }
+            else if (type === "complete") {
+                filteredFiles = allFiles.filter(x => x.status === "success");
+            }
+            else if (type === "fail") {
+                filteredFiles = allFiles.filter(x => x.status === "fail");
+            }
+            else if (type === "notstarted") {
+                filteredFiles = allFiles.filter(x => x.status === "pending");
+            }
+            filterDropdown.classList.remove("show");
+            currentPage = 1; // Reset page when filter changes
+            renderTable();   // Re-render table with pagination + search
+        }
+        function updateTable(fileArray) {
+
+            document.getElementById("shimmerBody").style.display = "table-row-group";
+            document.getElementById("realTableBody").style.display = "none";
+
+            allFiles = fileArray || [];
+            filteredFiles = [...allFiles];
+            currentPage = 1;
+
+            setTimeout(() => {
+                renderTable();
+
+                document.getElementById("shimmerBody").style.display = "none";
+                document.getElementById("realTableBody").style.display = "table-row-group";
+            }, 400);
+        }
+
+
+        function UpdateDetails() {
+            var corelationid = CorelationId;
+            $.ajax({
+                url: '@Url.Action("DocumentResultDetails", "BulkSign")',
+                method: 'GET',
+                data: { correlationId: corelationid },
+                success: function (data) {
+                    if (data.success) {
+                        if (data.result.totalFileCount > 0) {
+                            totalCount1 = data.result.totalFileCount;
+                            failedFileCount1 = data.result.failedFileCount;
+                            successFileCount1 = data.result.successFileCount;
+                            pendingCount1 = data.result.totalFileCount - successFileCount1 - failedFileCount1;
+                            yValues = [successFileCount1, pendingCount1, failedFileCount1]
+                            var fileArray = data.result.fileArray;
+                            filelist = fileArray;
+                            $('#signedcount').text(successFileCount1);
+                            $('#failedcount').text(failedFileCount1);
+                            $('#pendingcount').text(pendingCount1);
+                            $('#totalcount').text(totalCount1);
+                            updateTable(fileArray);
+                            loadpiechart();
+
+                        }
+                    } else {
+                        swal({
+                            title: 'Error',
+                            text: data.message,
+                            type: 'error',
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                // window.location.href = '@Url.Action("Index", "Template")';
+                            }
+                        });
+                    }
+
+                },
+                error: ajaxErrorHandler
+            });
+        }
+
+
+        function updatestatus() {
+
+            var corelationid = CorelationId;
+            $.ajax({
+                url: '@Url.Action("UpdateBulkSignDocumentDetails", "BulkSign")',
+                method: 'GET',
+                data: { correlationId: corelationid },
+                success: function (data) {
+                    if (data.success) {
+                        var fileArray = data.result.fileArray;
+                        if (fileArray.length == 0) {
+                            return;
+                        }
+                        totalCount1 = data.result.totalFileCount
+                        failedFileCount1 = data.result.failedFileCount;
+                        successFileCount1 = data.result.successFileCount;
+                        pendingCount1 = data.result.totalFileCount - successFileCount1 - failedFileCount1;
+                        yValues = [successFileCount1, pendingCount1, failedFileCount1];
+                        $('#signedcount').text(successFileCount1);
+                        $('#failedcount').text(failedFileCount1);
+                        $('#pendingcount').text(pendingCount1);
+                        $('#totalcount').text(totalCount1);
+                        updateTable(fileArray);
+                        filelist = fileArray;
+                        loadpiechart();
+                    } else {
+                        swal({
+                            title: 'Error',
+                            text: data.message,
+                            type: 'error',
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                // window.location.href = '@Url.Action("Index", "Template")';
+                            }
+                        });
+                    }
+
+                },
+                error: ajaxErrorHandler
+            });
+        }
+        function checkstatus() {
+            var corelationid = CorelationId;
+            $.ajax({
+                url: '@Url.Action("DocumentStatusDetails", "BulkSign")',
+                method: 'GET',
+                data: { correlationId: corelationid },
+                success: function (data) {
+
+                    if (data.success) {
+                        if (data.result !== "Completed") {
+                            updatestatus();
+                        }
+                        else {
+                            clearInterval(intervalId);
+                            UpdateDetails();
+                        }
+                    } else {
+                        swal({
+                            title: 'Error',
+                            text: data.message,
+                            type: 'error',
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                            }
+                        });
+                    }
+
+                },
+                error: ajaxErrorHandler
+            });
+        }
+
+    </script>
+}
+
+
+
+

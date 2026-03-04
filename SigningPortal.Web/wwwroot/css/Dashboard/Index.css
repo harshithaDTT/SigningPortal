@@ -1,0 +1,576 @@
+﻿p {
+    font-size: 1.1rem !important;
+    font-weight: 400 !important;
+    color: #3c4b64;
+    font-family: "Roboto", "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+}
+
+.container {
+    width: 100%;
+    padding-right: 5px;
+    padding-left: 5px;
+}
+
+.circle {
+    width: 80px;
+    line-height: 80px;
+    border-radius: 50% !important;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    border: 2px solid black;
+}
+
+.circle1 {
+    width: 150px;
+    height: 150px;
+    border-radius: 50% !important;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */
+
+.progress-bar {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    border-radius: 50%;
+    background: #a2e6a2;
+}
+
+.circle2 {
+    position: absolute;
+    cursor: pointer;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    background: white;
+    font-size: 24px;
+    color: #fff;
+    line-height: 135px;
+    text-align: center;
+    top: 5%;
+    left: 5%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1; /* Ensure circle2 is on top of any other content */
+    box-sizing: border-box; /* Include border in the element's total width and height */
+}
+
+#InProgress {
+    z-index: 2; /* Ensure the text is on top of the spinner */
+    color: #000000;
+    font-size: 38px; /* Adjust the text color as needed */
+}
+
+
+/* 1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111 */
+.progress-bar1 {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    border-radius: 50%;
+    background: #97D8CF;
+}
+
+.circle3 {
+    position: absolute;
+    cursor: pointer;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    background: white;
+    font-size: 24px;
+    color: #fff;
+    line-height: 135px;
+    text-align: center;
+    top: 5%;
+    left: 5%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1; /* Ensure circle2 is on top of any other content */
+}
+
+#Completed {
+    z-index: 2; /* Ensure the text is on top of the spinner */
+    color: #000000;
+    font-size: 38px; /* Adjust the text color as needed */
+}
+/* 1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111 */
+.progress-bar2 {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    border-radius: 50%;
+    background: #b69d94;
+}
+
+.circle4 {
+    position: absolute;
+    cursor: pointer;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    background: white;
+    font-size: 24px;
+    color: #fff;
+    line-height: 135px;
+    text-align: center;
+    top: 5%;
+    left: 5%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1; /* Ensure circle2 is on top of any other content */
+}
+
+#Declined {
+    z-index: 2; /* Ensure the text is on top of the spinner */
+    color: #000000;
+    font-size: 38px; /* Adjust the text color as needed */
+}
+/* 1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111 */
+.progress-bar3 {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    border-radius: 50%;
+    background: #B5BFF0;
+}
+
+.circle5 {
+    position: absolute;
+    cursor: pointer;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    background: white;
+    font-size: 24px;
+    color: #fff;
+    line-height: 135px;
+    text-align: center;
+    top: 5%;
+    left: 5%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1; /* Ensure circle2 is on top of any other content */
+}
+
+#Expired {
+    z-index: 2; /* Ensure the text is on top of the spinner */
+    color: #000000;
+    font-size: 38px; /* Adjust the text color as needed */
+}
+
+
+.circle5 span {
+    color: #000000;
+    font-size: 38px;
+}
+
+.dashboard-name {
+    color: #000;
+}
+
+.Action1 {
+    background: -moz-linear-gradient(top, #f0f9ff 0%, #d5e19e 46%, #acc43d 100%);
+    background: -webkit-linear-gradient(top, #f0f9ff 0%, #d5e19e 46%, #acc43d 100%);
+    background: linear-gradient(to bottom, #f0f9ff 0%, #d5e19e 46%, #acc43d 100%);
+    border-radius: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    text-align: center;
+    color: #000 !important;
+    height: auto;
+    box-shadow: 0 15px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+    .Action1 .col-sm-6:not(:last-child) {
+        border-right: 1px solid #000;
+    }
+
+
+.below-text {
+    font-size: 1.1rem;
+    font-family: "Roboto", "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+}
+
+.card-content {
+    max-height: 646px;
+}
+
+.transparent-scrollbar::-webkit-scrollbar {
+    width: 12px;
+}
+
+.transparent-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.transparent-scrollbar::-webkit-scrollbar-thumb {
+    background-color: transparent; /* Start as transparent */
+    border-radius: 20px;
+    border: 3px solid transparent;
+    opacity: 0; /* Initially invisible */
+    transition: opacity 0.3s ease; /* Smooth transition for hover effect */
+}
+
+#namedisplay {
+    font-size: 20px;
+    color: #3c4b64;
+}
+
+#inprogressdivtext {
+    padding-top: 10px !important;
+}
+
+#completeddivtext {
+    padding-top: 10px !important;
+}
+
+#Declineddivtext {
+    padding-top: 10px !important;
+}
+
+#Expireddivtext {
+    padding-top: 10px !important;
+}
+
+#emaildisplay {
+    color: #3c4b64;
+}
+
+#innerprogress {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#progresscarddiv {
+    display: flex;
+    flex-direction: row;
+    padding: 1%;
+}
+
+
+.background-image {
+    overflow-x: hidden;
+}
+
+@media (max-width:767px) {
+
+    .progress-bar {
+        width: 90px;
+        height: 90px;
+        position: relative;
+        border-radius: 50%;
+        background: #a2e6a2;
+    }
+
+
+
+    #progresscarddiv {
+        display: flex;
+        flex-direction: column;
+        padding: 6%;
+    }
+
+    .progress-bar1 {
+        width: 90px;
+        height: 90px;
+        position: relative;
+        border-radius: 50%;
+        background: #97D8CF;
+    }
+
+    .progress-bar2 {
+        width: 90px;
+        height: 90px;
+        position: relative;
+        border-radius: 50%;
+        background: #b69d94;
+    }
+
+    .progress-bar3 {
+        width: 90px;
+        height: 90px;
+        position: relative;
+        border-radius: 50%;
+        background: #B5BFF0;
+    }
+
+
+    #namedisplay {
+        font-size: 16px;
+        color: #3c4b64;
+    }
+
+    #emaildisplay {
+        font-size: 13px;
+        color: #3c4b64;
+    }
+
+
+    .below-text {
+        font-size: 0.95rem;
+        font-family: "Roboto", "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+    }
+
+    #inprogressdivtext {
+        padding-top: 20px !important;
+    }
+
+    #completeddivtext {
+        padding-top: 20px !important;
+    }
+
+    #Declineddivtext {
+        padding-top: 20px !important;
+    }
+
+    #Expireddivtext {
+        padding-top: 20px !important;
+    }
+}
+
+@media (max-width:320px) {
+    #innerprogress {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #dashboardcard {
+        height: 210vh !important;
+    }
+}
+
+@media (min-width:576px) and (max-width:767px) {
+    #dashboardcard {
+        height: 110vh !important;
+    }
+}
+
+@media (min-width:767px) and (max-width:991px) {
+    #dashboardcard {
+        height: 122vh !important;
+    }
+}
+
+@media (min-width:321px) and (max-width:575px) {
+
+    #dashboardcard {
+        height: 165vh !important;
+    }
+}
+
+
+.doc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    margin-bottom: 8px;
+    background: #ffffff;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    transition: background 0.2s;
+}
+
+    .doc-row:hover {
+        background: #f4f6fa;
+    }
+
+.doc-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.doc-icon {
+    font-size: 20px;
+    color: #6c757d; /* muted gray */
+}
+
+.doc-text .doc-sender {
+    font-size: 13px;
+    color: #333;
+}
+
+.doc-text .doc-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #222;
+    margin-top: 2px;
+}
+
+.btn-sign {
+    background-color: #8BC34A;
+    color: white;
+    font-size: 14px;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .btn-sign:hover {
+        background-color: #7CB342;
+    }
+
+
+#docs-container {
+    position: relative;
+    height: 250px; /* Fixed height for scroll */
+    overflow-y: auto; /* Enable vertical scrolling */
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.scrolling {
+    animation: scroll-up 10s linear infinite;
+}
+
+@keyframes scroll-up {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-100%);
+    }
+}
+
+/* Default state: scrollbar hidden */
+/* Simulated hidden scrollbar */
+#docs-container.hide-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+}
+
+    #docs-container.hide-scrollbar::-webkit-scrollbar {
+        visibility: hidden; /* Chrome, Safari */
+    }
+
+/* On hover: scrollbar visible again */
+#docs-container.show-scrollbar {
+    scrollbar-width: thin;
+}
+
+    #docs-container.show-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #docs-container.show-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #bbb;
+        border-radius: 3px;
+    }
+
+.click-here-btn {
+    height: 33px;
+    width: 120px;
+    border-radius: 8px;
+    border: none;
+    background-color: #acc33e;
+    font-size: 15px;
+    color: white;
+    outline: none !important;
+}
+
+/* .shimmer-wrapper .shimmer-item {
+                height: 50px;
+                margin: 10px;
+                border-radius: 8px;
+                background: #f6f7f8;
+                position: relative;
+                overflow: hidden;
+            }
+
+                .shimmer-wrapper .shimmer-item::after {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: -150px;
+                    width: 100px;
+                    height: 100%;
+                    background: linear-gradient(to right, transparent 0%, #e0e0e0 50%, transparent 100%);
+                    animation: shimmer 1.5s infinite;
+                } */
+
+/* .shimmer-wrapper .shimmer-item {
+                height: 50px;
+                margin: 10px;
+                border-radius: 8px;
+                background: #f9f9f9;
+                position: relative;
+                overflow: hidden;
+            }
+
+                .shimmer-wrapper .shimmer-item::after {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: -150px;
+                    width: 100px;
+                    height: 100%;
+                    background: linear-gradient( to right, rgba(249, 249, 249, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(249, 249, 249, 0) 100% );
+                    animation: shimmer 1.5s infinite;
+                } */
+
+
+.shimmer-wrapper .shimmer-item {
+    height: 50px;
+    margin: 10px;
+    border-radius: 8px;
+    background: #f3f3f3;
+    position: relative;
+    overflow: hidden;
+}
+
+    /* Shimmer band */
+    .shimmer-wrapper .shimmer-item::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient( to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100% );
+        animation: shimmer-horizontal 1.6s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+
+
+@keyframes shimmer-horizontal {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+
+.hidden {
+    display: none !important;
+}
+
+
+
+.click-here-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(163, 217, 119, 0.4);
+}

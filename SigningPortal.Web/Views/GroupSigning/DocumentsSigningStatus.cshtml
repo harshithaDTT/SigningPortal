@@ -1,0 +1,543 @@
+﻿@model SigningPortal.Web.ViewModels.GroupSignings.GroupSigningDetailsViewModel
+@{
+    var totalFileCount = 0;
+    var failedFileCount = 0;
+    var successFileCount = 0;
+    var pendingCount = 0;
+    var filesCount = 0;
+    if (Model.GroupsigningstatusdetailsViewModel != null)
+    {
+        totalFileCount = Model.GroupsigningstatusdetailsViewModel.TotalFileCount;
+        failedFileCount = Model.GroupsigningstatusdetailsViewModel.FailedFileCount;
+        successFileCount = Model.GroupsigningstatusdetailsViewModel.SuccessFileCount;
+        pendingCount = totalFileCount - failedFileCount - successFileCount;
+        filesCount = Model.GroupsigningstatusdetailsViewModel.GroupSignStatus.Count();
+    }
+
+    var groupId = Model.GroupsigningstatusdetailsViewModel.GroupId;
+    var Status = Model.Status;
+}
+
+<style>
+    .dg-bg {
+        background: #f6f7fb;
+        min-height: 100vh;
+    }
+
+    /* ===== STATUS CARD ===== */
+
+    .dg-status-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 17px;
+        display: flex;
+        justify-content: space-between;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    .dg-left {
+        width: 60%;
+    }
+
+    .dg-title-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .dg-doc-icon {
+        padding: 8px 10px;
+        border-radius: 8px;
+    }
+
+    .dg-badge-complete {
+        background: #dcfce7;
+        color: #16a34a;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+   /*  .dg-time-row {
+        margin: 2rem 1rem 2rem 1rem;
+        font-size: 0.875rem;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+        color: #6b7280;
+    } */
+    .dg-time-row {
+        margin-top: 10px;
+        display: flex;
+        gap: 24px;
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .dg-time-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .dg-time-item i {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+
+    /* ===== COUNTS ===== */
+
+    .dg-count-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 1.5rem;
+        margin-top: 2rem;
+        font-size: 0.875rem;
+    }
+
+    .onhoverclass:hover {
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
+        transform: scale(1.0125); /* slight zoom */
+    }
+    .dg-count-box {
+        background: #f1f5f9;
+        padding: 12px 14px;
+        border-radius: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+    }
+
+    .dg-stat-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 25%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+      
+        .dg-count-box.blue span {
+        color: #0EA5A4;
+        }
+
+        .dg-count-box.green span {
+            color: #16a34a;
+        }
+
+        .dg-count-box.red span {
+            color: #dc2626;
+        }
+
+        .dg-count-box.yellow span {
+            color: #f59e0b;
+        }
+
+    /* ===== CIRCLE ===== */
+
+    .dg-right {
+        width: 35%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .dg-circle-wrap {
+        text-align: center;
+    }
+
+    .dg-circle {
+        width: 170px;
+        height: 170px;
+        border-radius: 50%;
+        background: conic-gradient(#10b981 0% 100%, #e5e7eb 0);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .dg-circle-inner {
+        width: 120px;
+        height: 120px;
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .dg-legend {
+        margin-top: 10px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        font-size: 12px;
+    }
+
+        .dg-legend span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dg-legend .g {
+            background: #10b981;
+        }
+
+        .dg-legend .y {
+            background: #f59e0b;
+        }
+
+        .dg-legend .r {
+            background: #ef4444;
+        }
+
+    /* ===== DOCUMENT LIST ===== */
+
+    .dg-doc-list {
+      
+    }
+
+    .dg-doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .dg-search {
+        border: 1px solid #e5e7eb;
+        padding: 6px 12px;
+        border-radius: 8px;
+    }
+
+    .dg-doc-card {
+        display: grid;
+        grid-template-columns: 1fr 180px 100px; /* 👈 fixed alignment */
+        align-items: center;
+        padding: 16px 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 9px rgba(25, 135, 84, 0.2);
+        column-gap: 16px;
+        background:#fff;
+    }
+
+    /* Status column alignment */
+    .dg-doc-status {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start; /* left aligned */
+    }
+
+    /* Optional: center the View button nicely */
+    .dg-doc-card > div:last-child {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+
+    .dg-doc-left {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+        .dg-doc-left i {
+            font-size: 17px;
+            color: #fff;
+        }
+    /* PDF icon wrapper */
+    .dg-pdf-icon {
+        width: 44px;
+        height: 44px;
+        background: #eef4ff; /* soft blue background */
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+        /* PDF text */
+        .dg-pdf-icon span {
+            font-size: 12px;
+            font-weight: 700;
+            color: #2563eb; /* blue text */
+            letter-spacing: 0.5px;
+        }
+
+    .dg-doc-name {
+        font-weight: 600;
+    }
+
+    .dg-doc-status small {
+        color: #6b7280;
+    }
+
+    .dg-status-pill {
+        background: #dcfce7;
+        color: #16a34a;
+        padding: 2px 12px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 4px;
+    }
+
+    .dg-view-btn {
+        background: #f1f5f9;
+        padding: 6px 14px;
+        border-radius: 10px;
+        text-decoration: none;
+        color: #111827;
+        font-weight: 500;
+        font-size: 13px;
+        transition: 0.2s;
+    }
+
+        .dg-view-btn:hover {
+            background: #10b981;
+            color: #fff;
+        }
+
+    .dg-avatar {
+        width: 38px;
+        height: 38px;
+        background-color: #009057 !important;
+        border: 1px solid #009057;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .titleclass{
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #7b8794;
+    }
+</style>
+<div class="container-fluid p-4 dg-bg">
+
+    <!-- ===== TOP STATUS CARD ===== -->
+    <div class="dg-status-card">
+
+        <!-- Left -->
+        <div class="dg-left">
+
+            <div class="dg-title-row">
+                <div class="dg-doc-icon">
+                    <img src="~/img/icon/document_signing_status.png" style="width:3rem;" />
+                    </div>
+                <div>
+                    <div class="dg-title-row">
+                        <h4 class="mb-0">Document Signing Status</h4>
+                        <span class="dg-badge-complete">COMPLETED</span>
+                    </div>
+                   
+                    <div class="dg-time-row">
+                        <div class="dg-time-item">
+                            <i class="fa fa-clock"></i>
+                            <span><b>Start:</b> @Model.CreatedAt</span>
+                        </div>
+
+                        <div class="dg-time-item">
+                            <i class="fa fa-clock"></i>
+                            <span><b>End:</b> @Model.UpdatedAt</span>
+                        </div>
+                    </div>
+                </div>
+              
+                <!-- push to right -->
+               
+            </div>
+
+
+           
+
+            <div class="dg-count-grid">
+
+                <div class="dg-count-box blue">
+                    <div style="display:flex;">
+                        <span class="dg-stat-icon" style="background:#e0e7ff;font-size: 17px;margin: 0rem 0.5rem 0rem 0rem;">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </span>
+                        <span style="margin:0.5rem;color:#6b7280;">
+                            Total Documents
+                        </span>
+                    </div>
+                    <span style="font-size:20px;">@totalFileCount</span>
+                </div>
+
+                <div class="dg-count-box green">
+                    <div style="display:flex;">
+                        <span class="dg-stat-icon" style="background:#dcfce7;font-size: 17px;margin: 0rem 0.5rem 0rem 0rem;">
+                            <i class="fa fa-check-circle"></i>
+                        </span>
+                        <span style="margin:0.5rem;color:#6b7280;">
+                            Signed Documents
+                        </span>
+                    </div>
+                    <span id="successcount" style="font-size:20px;">@successFileCount</span>
+                </div>
+
+                <div class="dg-count-box red">
+                    <div style="display:flex;">
+                        <span class="dg-stat-icon" style="background:#fee2e2;font-size: 17px;margin: 0rem 0.5rem 0rem 0rem;">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </span>
+                        <span style="margin:0.5rem;color:#6b7280;">Failed Documents</span>
+                    </div>
+                    <span id="failcount" style="font-size:20px;">@failedFileCount</span>
+                </div>
+
+                <div class="dg-count-box yellow">
+                    <div style="display:flex;">
+                        <span class="dg-stat-icon" style="background:#fef3c7;font-size: 17px;margin: 0rem 0.5rem 0rem 0rem;">
+                            <i class="fa fa-hourglass-1" ></i>
+                        </span>
+                        <span style="margin:0.5rem;color:#6b7280;">
+                            Pending Documents
+                        </span>
+                    </div>
+                    <span id="pendingcount" style="font-size:20px;">@pendingCount</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right Circle -->
+        <div class="dg-right">
+            <div class="dg-circle-wrap">
+                <canvas id="myChart" width="200" height="200" style="display: block;box-sizing: border-box;height: 225px;width: 300px;"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== DOCUMENT LIST ===== -->
+    <div class="dg-doc-list mt-4">
+
+        <div class="dg-doc-header">
+            <h5>Documents Status</h5>
+        </div>
+
+        @foreach (var item in Model.GroupsigningstatusdetailsViewModel.GroupSignStatus)
+        {
+            <div class="dg-doc-card">
+
+                <!-- Document column -->
+                <div class="dg-doc-left">
+                    <div class="dg-avatar">
+                        <img src="~/img/icon/groupsigning_list_icon.png" style="width:2rem;" />
+                    </div>
+                    <div>
+                        <small class="titleclass">Document Name</small>
+                        <div class="dg-doc-name">@item.DocumentName</div>
+                    </div>
+                </div>
+
+                <!-- Status column -->
+                <div class="dg-doc-status">
+                    <small class="titleclass">Signing Status</small>
+                    @{
+                        string textcolorstatus = "text-secondary";
+                        string backgroundcolortext = "text-secondary-background";
+
+                        if (item.Status == "Signed")
+                        {
+                            textcolorstatus = "#4caf50";
+                            backgroundcolortext = "#dcfce7";
+                        }
+                        else if (item.Status == "Need to sign")
+                        {
+                            textcolorstatus = "#f57c00";
+                            backgroundcolortext = "#fef3c7";
+                        }
+                        else if (item.Status == "In Progress")
+                        {
+                            textcolorstatus = "#f57c00";
+                            backgroundcolortext = "#fef3c7";
+                        }
+                        else if (item.Status == "Failed")
+                        {
+                            textcolorstatus = "red";
+                            backgroundcolortext = "#fee2e2";
+                        }
+                    }
+
+                    <div class="dg-status-pill" style="color:@textcolorstatus; background:@backgroundcolortext;">
+
+                        @if (item.Status == "Signed")
+                        {
+                            <i class="fa fa-check-circle"></i> @item.Status.Replace("_", " ")
+
+                        }
+                        else if (item.Status == "Failed" || item.Status == "Pin_Failed")
+                        {
+                            <i class="fa-solid fa-circle-xmark"></i> @item.Status.Replace("_", " ")
+
+                        }
+                        else
+                        {
+                            <i class="fa fa-hourglass-1"></i> @item.Status.Replace("_", " ")
+                        }
+
+                    </div>
+                </div>
+
+                <!-- Action column -->
+                <div>
+                    <a asp-action="DocumentDetailsById"
+                       asp-controller="Documents"
+                       asp-route-id="@item.DocumentId"
+                       class="dg-view-btn ">
+                        <i class="fa fa-eye"></i> View
+                    </a>
+                </div>
+
+            </div>
+
+        }
+
+    </div>
+
+</div>
+
+
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+
+
+
+<link href="~/local-cdns/Shared/fontawesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<script>
+    var pendingCount1 = @pendingCount;
+    var failedFileCount1 = @failedFileCount;
+    var successFileCount1 = @successFileCount;
+    var filesCount = @filesCount;
+    var groupId = '@groupId';
+    var status = '@Status';
+    var documentDetailsBaseUrl = '@Url.Action("DocumentDetailsById", "Documents")';
+    var documentResultDetailsUrl = '@Url.Action("DocumentResultDetails", "GroupSigning")';
+    var updateGroupDocSignDetailsUrl = '@Url.Action("UpdateGroupDocumentSignDetails", "GroupSigning")';
+    var groupDocStatusDetailsUrl = '@Url.Action("GroupDocumentStatusDetails", "GroupSigning")';
+</script>
+@if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    <script src="~/js/GroupSigning/DocumentsSigningStatus.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+else
+{
+    <script src="~/dist/GroupSigning/DocumentsSigningStatus.min.js" type="text/javascript" asp-append-version="true" defer></script>
+}

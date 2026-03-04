@@ -1,0 +1,363 @@
+[
+  {
+    "code": "102501",
+    "message": "Something went wrong.(Code: 102501)",
+    "description": "An error occurred while generate authentication url."
+  },
+  {
+    "code": "102502",
+    "message": "Something went wrong.(Code: 102502)",
+    "description": "The code value is empty string or null."
+  },
+  {
+    "code": "102503",
+    "message": "Something went wrong.(Code: 102503)",
+    "description": "The nonce value is empty string or null."
+  },
+  {
+    "code": "102504",
+    "message": "Something went wrong.(Code: 102504)",
+    "description": "The id_token value is empty string or null."
+  },
+  {
+    "code": "102505",
+    "message": "Something went wrong.(Code: 102505)",
+    "description": "The access_token value is empty string or null."
+  },
+  {
+    "code": "102506",
+    "message": "Something went wrong.(Code: 102506)",
+    "description": "Claim Object from id_token getting null value."
+  },
+  {
+    "code": "102507",
+    "message": "Something went wrong.(Code: 102507)",
+    "description": "The nonce value is invalid."
+  },
+  {
+    "code": "102508",
+    "message": "Something went wrong.(Code: 102508)",
+    "description": "Failed to gerate api token."
+  },
+  {
+    "code": "102509",
+    "message": "Something went wrong.(Code: 102509)",
+    "description": "An error occurred while authenticate user."
+  },
+  {
+    "code": "102510",
+    "message": "Something went wrong.(Code: 102510)",
+    "description": "No Authorization token provided."
+  },
+  {
+    "code": "102511",
+    "message": "Something went wrong.(Code: 102511)",
+    "description": "Invalid Authorization token type."
+  },
+  {
+    "code": "102512",
+    "message": "Something went wrong.(Code: 102512)",
+    "description": "Invalid Authorization token!."
+  },
+  {
+    "code": "102513",
+    "message": "Something went wrong.(Code: 102513)",
+    "description": "Fail to get Appsetting configuration."
+  },
+  {
+    "code": "102514",
+    "message": "Something went wrong.(Code: 102514)",
+    "description": "UnAuthorized Client."
+  },
+  {
+    "code": "102515",
+    "message": "Something went wrong.(Code: 102515)",
+    "description": "Invalid Request body provided."
+  },
+  {
+    "code": "102516",
+    "message": "Something went wrong.(Code: 102516)",
+    "description": "Invalid  Key Provided."
+  },
+  {
+    "code": "102517",
+    "message": "Something went wrong.(Code: 102517)",
+    "description": "An error occurred while generate Api Access token."
+  },
+  {
+    "code": "102518",
+    "message": "Something went wrong.(Code: 102518)",
+    "description": "An error occurred while receiving allowed file size."
+  },
+  {
+    "code": "102519",
+    "message": "Something went wrong.(Code: 102519)",
+    "description": "An error occurred while receiving own document status count."
+  },
+  {
+    "code": "102520",
+    "message": "Something went wrong.(Code: 102520)",
+    "description": "An error occurred while receiving other document status count."
+  },
+  {
+    "code": "102521",
+    "message": "Something went wrong.(Code: 102521)",
+    "description": "Uploaded File cannot be null."
+  },
+  {
+    "code": "102522",
+    "message": "Something went wrong.(Code: 102522)",
+    "description": "Model cannot be null."
+  },
+  {
+    "code": "102523",
+    "message": "Something went wrong.(Code: 102523)",
+    "description": "Document not found."
+  },
+  {
+    "code": "102524",
+    "message": "Something went wrong.(Code: 102524)",
+    "description": "Failed to save document in edms."
+  },
+  {
+    "code": "102525",
+    "message": "Something went wrong.(Code: 102525)",
+    "description": "An error occurred while saving document."
+  },
+  {
+    "code": "102526",
+    "message": "Something went wrong.(Code: 102526)",
+    "description": "User details cannot be null."
+  },
+  {
+    "code": "102527",
+    "message": "Something went wrong.(Code: 102527)",
+    "description": "An error occurred while receiving documents."
+  },
+  {
+    "code": "102528",
+    "message": "Something went wrong.(Code: 102528)",
+    "description": "Id cannot be null."
+  },
+  {
+    "code": "102529",
+    "message": "Something went wrong.(Code: 102529)",
+    "description": "List of id cannot be empty."
+  },
+  {
+    "code": "102530",
+    "message": "Something went wrong.(Code: 102530)",
+    "description": "An error occurred while deleting document."
+  },
+  {
+    "code": "102531",
+    "message": "Something went wrong.(Code: 102531)",
+    "description": "An error occurred while receiving signing declined comment."
+  },
+  {
+    "code": "102532",
+    "message": "Something went wrong.(Code: 102532)",
+    "description": "Data cannot be null."
+  },
+  {
+    "code": "102533",
+    "message": "Something went wrong.(Code: 102533)",
+    "description": "An error occurred while decline signing."
+  },
+  {
+    "code": "102534",
+    "message": "Something went wrong.(Code: 102534)",
+    "description": "Failed to save document in edms get exception."
+  },
+  {
+    "code": "102535",
+    "message": "Something went wrong.(Code: 102535)",
+    "description": "Email cannot be null."
+  },
+  {
+    "code": "102536",
+    "message": "Something went wrong.(Code: 102536)",
+    "description": "Failed to get pending action document list."
+  },
+  {
+    "code": "102537",
+    "message": "Something went wrong.(Code: 102537)",
+    "description": "Failed to get expired action document list."
+  },
+  {
+    "code": "102538",
+    "message": "Something went wrong.(Code: 102538)",
+    "description": "Signing request data cannot be null."
+  },
+  {
+    "code": "102539",
+    "message": "Something went wrong.(Code: 102539)",
+    "description": "Failed to update document in edms get exception."
+  },
+  {
+    "code": "102540",
+    "message": "Something went wrong.(Code: 102540)",
+    "description": "Signed document cannot be null."
+  },
+  {
+    "code": "102541",
+    "message": "Something went wrong.(Code: 102541)",
+    "description": "Signing request failed."
+  },
+  {
+    "code": "102542",
+    "message": "Something went wrong.(Code: 102542)",
+    "description": "Failed to verify signing request."
+  },
+  {
+    "code": "102543",
+    "message": "Something went wrong.(Code: 102543)",
+    "description": "Failed to recieve document."
+  },
+  {
+    "code": "102545",
+    "message": "Something went wrong.(Code: 102545)",
+    "description": "Document signing failed."
+  },
+  {
+    "code": "102546",
+    "message": "Something went wrong.(Code: 102546)",
+    "description": "Failed to receive document."
+  },
+  {
+    "code": "102547",
+    "message": "Something went wrong.(Code: 102547)",
+    "description": "An error occurred while fetching edms document."
+  },
+  {
+    "code": "102548",
+    "message": "Something went wrong.(Code: 102548)",
+    "description": "Failed to clear notifications."
+  },
+  {
+    "code": "102549",
+    "message": "Something went wrong.(Code: 102549)",
+    "description": "Failed to get notification."
+  },
+  {
+    "code": "102550",
+    "message": "Something went wrong.(Code: 102550)",
+    "description": "Failed to update notification."
+  },
+  {
+    "code": "102551",
+    "message": "Something went wrong.(Code: 102551)",
+    "description": "Object cannot be empty."
+  },
+  {
+    "code": "102552",
+    "message": "Something went wrong.(Code: 102552)",
+    "description": "Email list cannot be empty."
+  },
+  {
+    "code": "102553",
+    "message": "Something went wrong.(Code: 102553)",
+    "description": "An error occurred while validating IDP users."
+  },
+  {
+    "code": "102554",
+    "message": "Something went wrong.(Code: 102554)",
+    "description": "Failed to create notification."
+  },
+  {
+    "code": "102555",
+    "message": "Something went wrong.(Code: 102555)",
+    "description": "Document id value getting null or empty string."
+  },
+  {
+    "code": "102556",
+    "message": "Something went wrong.(Code: 102556)",
+    "description": "Mail sending Fail."
+  },
+  {
+    "code": "102557",
+    "message": "Something went wrong.(Code: 102557)",
+    "description": "corelationID id value getting null or empty string."
+  },
+  {
+    "code": "102558",
+    "message": "Something went wrong.(Code: 102558)",
+    "description": "Notification send Fail."
+  },
+  {
+    "code": "102559",
+    "message": "Something went wrong.(Code: 102559)",
+    "description": "certificate name value getting null or empty string."
+  },
+  {
+    "code": "102560",
+    "message": "Something went wrong.(Code: 102560)",
+    "description": "Failed to save certificate in edms ."
+  },
+  {
+    "code": "102561",
+    "message": "Something went wrong.(Code: 102561)",
+    "description": "Document data value getting null or empty string."
+  },
+  {
+    "code": "102562",
+    "message": "Something went wrong.(Code: 102562)",
+    "description": "Document name value getting null or empty string."
+  },
+  {
+    "code": "102563",
+    "message": "Something went wrong.(Code: 102563)",
+    "description": "Failed to save document in edms responce getting null."
+  },
+  {
+    "code": "102564",
+    "message": "Something went wrong.(Code: 102564)",
+    "description": "Failed to update document in edms."
+  },
+  {
+    "code": "102565",
+    "message": "Something went wrong.(Code: 102565)",
+    "description": "Failed to checke available credit."
+  },
+  {
+    "code": "102566",
+    "message": "Something went wrong.(Code: 102566)",
+    "description": "Failed to get credit details."
+  },
+  {
+    "code": "102567",
+    "message": "Something went wrong.(Code: 102567)",
+    "description": "Failed to get my draft List."
+  },
+  {
+    "code": "102568",
+    "message": "Something went wrong.(Code: 102568)",
+    "description": "Failed to get send list."
+  },
+  {
+    "code": "102569",
+    "message": "Something went wrong.(Code: 102569)",
+    "description": "Failed to get received document list."
+  },
+  {
+    "code": "102570",
+    "message": "Something went wrong.(Code: 102570)",
+    "description": "Failed to get filter List."
+  },
+  {
+    "code": "102571",
+    "message": "Something went wrong.(Code: 102571)",
+    "description": "Failed to get organization List."
+  },
+  {
+    "code": "102572",
+    "message": "Something went wrong.(Code: 102572)",
+    "description": "Failed to get referred document List."
+  },
+  {
+    "code": "102573",
+    "message": "Something went wrong.(Code: 102573)",
+    "description": "Failed to assign document."
+  }
+
+]

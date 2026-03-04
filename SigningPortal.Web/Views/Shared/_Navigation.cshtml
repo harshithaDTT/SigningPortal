@@ -1,0 +1,254 @@
+﻿@using System.Security.Claims;
+
+@{
+
+    var AccountType = User.FindFirst("AccountType").Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+
+}
+<style>
+    img {
+        cursor: pointer;
+    }
+
+  
+    .submenu-link {
+        background-color: #eeeeee !important;
+        color: black !important;
+    }
+
+    #FormRequestsMenu, #sidebar ul ul {
+        padding-bottom: 0px !important;
+        background-color: #eeeeee !important;
+    }
+
+    #FormRequestsMenu, #sidebar ul li ul li {
+        color: transparent !important;
+    }
+
+    #FormTemplatesMenu, #sidebar ul ul {
+        padding-bottom: 0px !important;
+        background-color: #eeeeee !important;
+    }
+
+    #FormTemplatesMenu, #sidebar ul li ul li {
+        color: transparent !important;
+    }
+
+        #FormTemplatesMenu ul ul a {
+            font-size: 17px !important;
+            padding-left: 30px !important;
+        }
+
+    a:hover {
+        text-decoration: none !important;
+    }
+
+    .ugpass-logo{
+        width:60px;
+    }
+    @@media screen and (min-width:845px){
+        .ugpass-logo{
+            width:70px;
+        }
+    }
+
+    #sidebar ul li a {
+        font-size: 89%;
+    }
+    
+</style>
+
+<nav id="sidebar">
+    <div class="sidebar-header fixed-top">
+        <h3 class="gap-header">
+            <img id="primaryImage" alt="" width="250" height="60" style="margin-left: 10%; width: 77%;"
+                 src='@Url.Content("~/img/AppLogo.png")' asp-append-version="true">
+
+        </h3>
+        <strong class="gap-header"><img class="ugpass-logo" id="secondaryImage" asp-append-version="true" alt="" height="auto" src='@Url.Content("~/img/AppLogo-6.png")'></strong>
+    </div>
+
+    <ul class="list-unstyled components" style="margin-top: 56px;">
+
+        <li class="nav-item clickable" id="dashboardMenu">
+            <a class="nav-link " asp-controller="Dashboard" asp-action="Index" onclick="showLoader()">
+                <div class="menu-icon "><img src='@Url.Content("~/img/icon/Group_7@2x.png")' asp-append-version="true"></div>
+                Dashboard
+            </a>
+        </li>
+        <li class="nav-item clickable" id="dashboardMenu">
+            <a class="nav-link " asp-controller="Dashboard" asp-action="Index" onclick="showLoader()">
+                <div class="menu-icon "><img src='@Url.Content("~/img/icon/Group_7@2x.png")' asp-append-version="true"></div>
+                Dashboard New
+            </a>
+        </li>
+       
+        <li class="nav-item clickable" id="DocumentMenu">
+            <a class="nav-link " asp-controller="Documents" asp-action="Index" onclick="showLoader()">
+                <div class="menu-icon "><img src='@Url.Content("~/img/icon/paper@2x.png")' asp-append-version="true"></div>
+                Documents
+            </a>
+        </li>
+      
+          @if (AccountType != "Self")
+        {
+            <li class="nav-item clickable" id="GroupSigningMenu">
+                <a class="nav-link " asp-controller="GroupSigning" asp-action="Index" onclick="showLoader()">
+                    <div class="menu-icon "><img src='@Url.Content("~/img/icon/paper@2x.png")' asp-append-version="true"></div>
+                    Group Signing Transactions
+                </a>
+            </li>
+        }
+
+        <li class="nav-item clickable" id="DocumentVerificationMenu">
+            <a class="nav-link " asp-controller="DocumentVerification" asp-action="Index" onclick="showLoader()">
+                <div class="menu-icon "><img src='@Url.Content("~/img/icon/layout.png")' asp-append-version="true"></div>
+                Document Verification
+            </a>
+        </li>
+        @if (User.IsInRole("template"))
+        {
+            <li class="nav-item" id="BulkSignTemplateMenu">
+                <a class="nav-link " asp-controller="Template" asp-action="Index" onclick="showLoader()">
+
+                    <div class="menu-icon"><img src='@Url.Content("~/img/icon/Document_Templates.png")' asp-append-version="true"></div>
+                    Bulk Sign Template
+                </a>
+            </li>
+        }
+        @if (User.IsInRole("template") || User.IsInRole("bulkSign"))
+        {
+            <li class="nav-item" id="BulkSign">
+                <a class="nav-link " asp-controller="BulkSign" asp-action="Index" onclick="showLoader()">
+
+                    <div class="menu-icon"><img src='@Url.Content("~/img/Bulk_Sign.png")' asp-append-version="true"></div>
+                    Bulk Sign
+                </a>
+            </li>
+        }
+        <li class="nav-item" id="Integration">
+            <a class="nav-link " asp-controller="Integration" asp-action="Index" onclick="showLoader()">
+
+                <div class="menu-icon"><img src='@Url.Content("~/img/icon/INTEGRATION.svg")' asp-append-version="true"></div>
+                Drive Integrations
+            </a>
+        </li>
+        @if (User.IsInRole("Delegate"))
+        {
+            <li class="nav-item" id="SignatureDelegationMenu">
+                <a class="nav-link " asp-controller="SignatureDelegation" asp-action="List" onclick="showLoader()">
+
+                    <div class="menu-icon"><img src='@Url.Content("~/img/icon/SIGNATURE DELEGATION.svg")' asp-append-version="true"></div>
+                    Signature Delegation
+                </a>
+            </li>
+        }
+
+
+        <li class="dropdown" id="FormsModel">
+            <a class="nav-link drop-logo"
+               href="#FormsListModel"
+               data-toggle="collapse"
+               aria-expanded="false"
+               id="DigitalFormsLink">
+                <div class="menu-icon">
+                    <img src='@Url.Content("~/img/icon/Digital Forms.png")' asp-append-version="true">
+                </div>
+                Digital Forms
+            </a>
+            <ul class="collapse list-unstyledData dashColSubmenu" id="FormsListModel">
+                @if (AccountType != "Self")
+                {
+
+                    @if (User.IsInRole("DigitalForms"))
+                    {
+                        <li class="nav-item" id="FormOrgMenu">
+                            <a asp-controller="DigitalForms" asp-action="Index" onclick="showLoader()"
+                               class="submenu-link" id="formOrg">
+                                <div class="menu-icon" style="height:2rem;margin-bottom:5px;">
+                                    <img src='@Url.Content("~/img/icon/Form Templates.png")' style="height:40px;width:40px" asp-append-version="true">
+                                </div>Form Templates
+                            </a>
+                        </li>
+                    }
+                    <li class="nav-item" id="FormTemplatesMenu">
+                        <a asp-controller="DigitalForms" asp-action="Orgindex" onclick="showLoader()"
+                           class="submenu-link" id="formTemplates">
+                            <div class="menu-icon" style="height:2rem;margin-bottom:5px;">
+                                <img src='@Url.Content("~/img/icon/Form requests.png")' style="height:40px;width:40px" asp-append-version="true">
+                            </div>Organization Forms
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item" id="FormTemplatesMenu">
+
+                        <a asp-controller="DigitalForms" asp-action="Globalindex" onclick="showLoader()"
+                           class="submenu-link" id="formTemplates">
+                            <div class="menu-icon" style="height:2rem;margin-bottom:5px;">
+                                <img src='@Url.Content("~/img/icon/Form Templates.png")' style="height:40px;width:40px" asp-append-version="true">
+                            </div>Global Forms
+                        </a>
+                    </li>
+
+                }
+
+
+
+
+                <li class="nav-item" id="FormRequestsMenu">
+                    <a asp-controller="FormRequests"
+                       asp-action="Index" onclick="showLoader()"
+                       class="submenu-link" id="formRequests">
+                        <div class="menu-icon" style="height:2rem;margin-bottom:5px;">
+                            <img src='@Url.Content("~/img/icon/Form requests.png")' style="height:40px;width:40px" asp-append-version="true">
+                        </div>Form Requests
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+    </ul>
+</nav>
+
+<script>
+
+    $(document).ready(function () {
+        // Retrieve the active menu item from localStorage
+        const activeMenuItem = localStorage.getItem('activeMenuItem');
+
+        // If there's an active menu item, set the appropriate CSS
+        if (activeMenuItem) {
+            $(".submenu-link").removeClass("active");
+            $("#" + activeMenuItem).addClass("active");
+        }
+
+        // Handle click events
+        $(".submenu-link").click(function () {
+            // Remove 'active' class from all links
+            $(".submenu-link").removeClass("active");
+
+            // Add 'active' class to the clicked item
+            $(this).addClass("active");
+
+            // Store the ID of the clicked menu item in localStorage
+            const clickedMenuId = $(this).attr('id');
+            localStorage.setItem('activeMenuItem', clickedMenuId);
+        });
+    });
+    function showLoader() {
+        localStorage.removeItem("selectedFilterTab");
+        localStorage.removeItem("selectedDocumentDays");
+        localStorage.removeItem("selectedDocumentCount");
+        localStorage.removeItem("selectedDocumentStatus");
+        localStorage.removeItem("selectedSigningStatus");
+        localStorage.removeItem("CurrentDocNo");
+        localStorage.removeItem("TotalDocs");
+        localStorage.removeItem("DocumentsSearchValue");
+        document.getElementById("navigationNetworkOverlay").style.display = "block";
+    }
+</script>
+
+

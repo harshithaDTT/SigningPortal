@@ -1,0 +1,889 @@
+﻿@model List<SigningPortal.Web.ViewModels.DigitalForms.FormResponse>;
+
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+
+@{
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+}
+
+
+
+
+<style>
+    /* ========================================
+               Modern CSS Design System Variables
+               ======================================== */
+    :root {
+        --df-primary: #10b981;
+        --df-primary-hover: #059669;
+        --df-primary-light: #d1fae5;
+        --df-accent: #3b82f6;
+        --df-accent-hover: #2563eb;
+        --df-text-primary: #1e293b;
+        --df-text-secondary: #64748b;
+        --df-text-muted: #94a3b8;
+        --df-bg-page: #f8fafc;
+        --df-bg-card: #ffffff;
+        --df-bg-hover: #f1f5f9;
+        --df-bg-toolbar: #f0fdf4;
+        --df-border-color: #e2e8f0;
+        --df-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+        --df-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --df-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --df-radius-sm: 8px;
+        --df-radius-md: 12px;
+        --df-radius-lg: 16px;
+        --df-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ========================================
+               Card & Container Styling
+               ======================================== */
+    .card.background-image {
+        background: var(--df-bg-card);
+        border: 1px solid var(--df-border-color);
+        border-radius: var(--df-radius-lg);
+        box-shadow: var(--df-shadow-md);
+    }
+
+    .card-body.background-image {
+        padding: 1.5rem;
+        background: var(--df-bg-card);
+    }
+
+    .common-heading-color {
+        color: var(--df-text-primary);
+        font-weight: 700;
+        font-size: 1.875rem !important;
+        letter-spacing: -0.025em;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+    }
+
+    /* ========================================
+               DataTable Styling
+               ======================================== */
+    .dataTables_wrapper {
+        padding: 0;
+    }
+
+    .dataTables_scrollBody::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .dataTables_scrollBody::-webkit-scrollbar-thumb {
+        background-color: var(--df-text-muted);
+        border-radius: 4px;
+    }
+
+    .dataTables_scrollBody::-webkit-scrollbar-track {
+        background-color: var(--df-bg-page);
+        border-radius: 4px;
+    }
+
+    .dataTables_scrollBody {
+        scrollbar-width: thin;
+        scrollbar-color: var(--df-text-muted) var(--df-bg-page);
+        border-radius: var(--df-radius-md);
+    }
+
+    .dataTables_wrapper.no-footer .dataTables_scrollBody {
+        border-bottom: 1px solid var(--df-border-color);
+    }
+
+    .dataTables_scroll {
+        border: 1px solid var(--df-border-color);
+        border-radius: var(--df-radius-md);
+        overflow: hidden;
+        box-shadow: var(--df-shadow-sm);
+    }
+
+    /* ========================================
+               Table Headers
+               ======================================== */
+    #MyOrgFormTb thead {
+        visibility: hidden;
+        bottom: 22px;
+        height: 0;
+        position: relative;
+        overflow: hidden;
+        border: none;
+    }
+
+    .dataTables_scrollBody thead th {
+        font-size: 0.75rem;
+        font-weight: 600 !important;
+        color: var(--df-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 16px 18px;
+        background: #ebedef;
+        border-bottom: none !important;
+    }
+
+    .dataTables_scrollBody thead {
+        background: linear-gradient(135deg, var(--df-bg-toolbar), #ecfdf5);
+    }
+
+    th {
+        font-size: 0.75rem;
+        font-weight: 600 !important;
+        color: var(--df-text-secondary);
+        background: linear-gradient(135deg, var(--df-bg-toolbar), #ecfdf5);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    #MyOrgFormTb thead tr {
+        visibility: collapse;
+    }
+
+    /* ========================================
+               Table Body
+               ======================================== */
+    table {
+        table-layout: auto;
+        width: auto;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    th, td {
+        width: 150px;
+        text-align: left;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--df-border-color);
+    }
+
+    td {
+        color: var(--df-text-primary) !important;
+        text-align: left !important;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        transition: var(--df-transition);
+        vertical-align: middle;
+    }
+
+    #MyOrgFormTb tbody tr {
+        transition: var(--df-transition);
+        background: var(--df-bg-card);
+    }
+
+        #MyOrgFormTb tbody tr:hover td {
+            background-color: rgba(16, 185, 129, 0.05) !important;
+        }
+
+        #MyOrgFormTb tbody tr:hover {
+            cursor: pointer;
+            box-shadow: var(--df-shadow-sm);
+        }
+
+    /* ========================================
+               Status Pills
+               ======================================== */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.875rem;
+        border-radius: 9999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.025em;
+        text-transform: capitalize;
+    }
+
+    .status-completed {
+        color: #065f46;
+        padding-left:0px;
+    }
+
+    .status-pending,
+    .status-new {
+        color: #92400e;
+    }
+
+    .status-in-progress {
+        color: #1e40af;
+    }
+
+    .status-declined,
+    .status-failed {
+        color: #991b1b;
+    }
+
+    .status-expired {
+        color: #374151;
+    }
+
+    /* ========================================
+               PDF Preview
+               ======================================== */
+    .pdf-page {
+        width: 98%;
+        position: relative;
+        display: inline-block;
+        margin: 1%;
+        border: 1px solid var(--df-border-color);
+        box-shadow: var(--df-shadow-md);
+        border-radius: var(--df-radius-sm);
+        background: var(--df-bg-card);
+    }
+
+    /* ========================================
+               Expand/Collapse Icons
+               ======================================== */
+    table.dataTable > tbody > tr > td.control::before {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--df-primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        width: 26px;
+        height: 26px;
+        line-height: 26px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.1);
+        transition: var(--df-transition);
+    }
+
+    table.dataTable > tbody > tr > td.control:hover::before {
+        background: rgba(16, 185, 129, 0.2);
+    }
+
+    table.dataTable > tbody > tr.parent > td.control::before {
+        font-size: 13px !important;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        width: 26px;
+        height: 26px;
+        line-height: 26px;
+        border-radius: 50%;
+    }
+
+    table.dataTable tbody tr.parent td.control::before {
+        background: linear-gradient(135deg, var(--df-primary), var(--df-primary-hover)) !important;
+        color: white !important;
+    }
+
+    /* ========================================
+               Modal Styling
+               ======================================== */
+    .modal-content {
+        border-radius: var(--df-radius-lg);
+        border: none;
+        box-shadow: var(--df-shadow-lg);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--df-border-color);
+        padding: 16px 20px;
+        background: var(--df-bg-page);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+        .modal-header .btn-primary {
+            background: linear-gradient(135deg, var(--df-primary), var(--df-primary-hover));
+            border: none;
+            border-radius: var(--df-radius-sm);
+            padding: 10px 20px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+            transition: var(--df-transition);
+        }
+
+            .modal-header .btn-primary:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+            }
+
+    .modal-body {
+        padding: 20px;
+        background: var(--df-bg-page);
+    }
+
+    #pdf-container {
+        background: var(--df-bg-card);
+        border-radius: var(--df-radius-md);
+        padding: 16px;
+    }
+
+    /* ========================================
+               DataTable Pagination & Info
+               ======================================== */
+    .dataTables_info {
+        font-size: 0.875rem;
+        color: var(--df-text-secondary);
+        padding: 14px 0;
+        font-weight: 500;
+    }
+
+    .dataTables_paginate {
+        padding: 14px 0;
+    }
+
+        .dataTables_paginate .paginate_button {
+            padding: 8px 14px;
+            margin: 0 3px;
+            border-radius: var(--df-radius-sm);
+            border: 1px solid var(--df-border-color);
+            background: var(--df-bg-card);
+            color: var(--df-text-primary) !important;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--df-transition);
+        }
+
+            .dataTables_paginate .paginate_button:hover {
+                background: var(--df-bg-hover) !important;
+                border-color: var(--df-primary) !important;
+                color: var(--df-primary) !important;
+            }
+
+            .dataTables_paginate .paginate_button.current {
+                background: linear-gradient(135deg, var(--df-primary), var(--df-primary-hover)) !important;
+                border-color: var(--df-primary) !important;
+                color: white !important;
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            }
+
+            .dataTables_paginate .paginate_button.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+    /* ========================================
+               Empty State
+               ======================================== */
+    .text-center .p-4 {
+        background: var(--df-bg-page) !important;
+        border-radius: var(--df-radius-md);
+        color: var(--df-text-secondary);
+        font-weight: 500;
+        padding: 2rem !important;
+    }
+
+    /* ========================================
+               View Icon
+               ======================================== */
+    .btn-group a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: var(--df-radius-sm);
+        transition: var(--df-transition);
+    }
+
+        .btn-group a:hover {
+            background: var(--df-primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--df-shadow-sm);
+        }
+
+        .btn-group a img {
+            width: 20px;
+            height: 20px;
+            opacity: 0.75;
+            transition: var(--df-transition);
+        }
+
+        .btn-group a:hover img {
+            opacity: 1;
+        }
+
+    /* ========================================
+               Responsive Adjustments
+               ======================================== */
+    @@media (max-width: 767px) {
+        .card-body.background-image {
+            padding: 1rem;
+        }
+
+        .common-heading-color {
+            font-size: 1.5rem !important;
+            margin-bottom: 1rem;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            font-size: 0.8125rem;
+        }
+
+        .status-pill {
+            padding: 0.3rem 0.65rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-group a {
+            width: 32px;
+            height: 32px;
+        }
+
+            .btn-group a img {
+                width: 18px;
+                height: 18px;
+            }
+    }
+
+    @@media (max-width: 480px) {
+        .common-heading-color {
+            font-size: 1.25rem !important;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            font-size: 0.75rem;
+        }
+    }
+
+    /* ========================================
+               Media Queries for Zoom Levels
+               ======================================== */
+    @@media (min-width: 800px) {
+        .dataTables_scroll {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+    }
+
+    @@media (min-width: 1092px) {
+        .dataTables_scroll {
+            max-width: 100%;
+        }
+    }
+
+    @@media (min-width: 1365px) {
+        .dataTables_scroll {
+            max-width: 100%;
+        }
+    }
+
+    @@media (min-width: 1440px) {
+        .dataTables_scroll {
+            max-width: 100%;
+        }
+    }
+
+    #MyOrgFormTb_filter{
+        margin-bottom:2%;
+        margin-right:0.5%;
+    }
+
+    thead th {
+        padding:10px 10px !important;
+    }
+
+    .empty-state-card {
+        background: #ffffff;
+        border: 1px solid #E5E7EB;
+        border-radius: 14px;
+        padding: 48px 24px;
+        text-align: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    .empty-state-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+    }
+
+        .empty-state-icon i {
+            font-size: 5rem;
+            color: #64748b;
+        }
+
+    .empty-state-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #0F172A;
+        letter-spacing: -0.02em;
+    }
+
+    .empty-state-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748B;
+        margin: 0;
+        line-height: 1.6;
+    }
+</style>
+@* <script src='https://cdn.datatables.net/2.1.8/js/dataTables.js'></script> *@
+
+
+
+
+<div class="row m-0" style="height:100vh">
+    <div class="col-md-12 p-0" style="height:100%">
+        <div class="card background-image" style="height:100%">
+
+            <div class="card-body background-image">
+                <h3 class="common-heading-color">Form Responses</h3>
+                <div class="row">
+                    <div class="tab-content" style="padding:0px">
+
+                        @if (Model.Count == 0)
+                        {
+
+                            <div class="empty-state-wrapper">
+                                <div class="empty-state-card">
+                                    <div class="empty-state-icon">
+                                        <i class="fa-regular fa-folder-open"></i>
+                                    </div>
+
+                                    <h4 class="empty-state-title">No responses received yet</h4>
+
+                                    <p class="empty-state-text">
+                                        Form responses will appear here.
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+
+
+                            <div class="text-center">
+                                <div class="card-body px-0">
+                                    <div class="dataTables_scrollBody" style="position: relative; overflow: auto; width: 100%;">
+                                        <table id="MyOrgFormTb" class="display nowrap dataTable no-footer" style="width: 100%;">
+                                            <thead style="text-align: left;">
+                                                <tr>
+
+                                                    @* <th>USER</th>
+                                                    <th>EMAIL</th>
+                                                    <th>SIGNED DATE</th> *@
+
+                                                    <th></th>
+                                                    @foreach (var signerResponse in Model[0].SignerResponses)
+                                                    {
+                                                        <th>@signerResponse.SignerDetails.RoleName.ToUpper()</th>
+                                                    }
+                                                    <th>STATUS</th>
+                                                    @foreach (var property in Model[0].FormFieldData.Properties())
+                                                    {
+                                                        <th>@property.Name.Split('_')[0].ToUpper()</th>
+                                                    }
+                                                    <th>VIEW</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody style="text-align: left;">
+                                                @foreach (var item in Model)
+                                                {
+                                                    <tr style="cursor:pointer;" onclick="modalForm('@item.EdmsId', '@item.SignerName')">
+                                                        <td></td>
+                                                        @* <td>@item.CreatedBy</td>
+                                                        <td>@item.SignerEmail</td>
+                                                        <td>@item.CreatedAt</td> *@
+
+                                                        @foreach (var signerResponse in item.SignerResponses)
+                                                        {
+                                                            <td style="text-align:left !important">@signerResponse.SignerDetails.SignerEmail</td>
+                                                        }
+                                                        <td>
+                                                            <span class="status-pill status-@item.Status.ToLower().Replace(" ", "-")">@item.Status</span>
+                                                        </td>
+                                                        @* @foreach (var property in item.FormFieldData.Properties())
+                                                        {
+                                                            <td>@property.Value</td>
+                                                        } *@
+                                                        @foreach (var key in Model[0].FormFieldData.Properties())
+                                                        {
+                                                            <td>@(item.FormFieldData.Properties().FirstOrDefault(p => p.Name == key.Name)?.Value ?? "")</td>
+                                                        }
+                                                        <td class="valigntop" style="text-align:center">
+                                                            <div class="btn-group" onclick="modalForm('@item.EdmsId', '@item.SignerName')">
+                                                                <a href="#">
+                                                                    <i class="fa fa-eye"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        }
+
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="digitalShowModal" tabindex="-1" role="dialog" aria-labelledby="digitalFormModalLabel" aria-hidden="false" data-backdrop="false" style="display:none;opacity: 1;padding-top: 1%;background-color: rgba(0, 0, 0, 0.2);">
+    <div class="modal-dialog modal-lg" role="document" style="width:100%;margin-top:0">
+        <div class="modal-content" style="height:90vh">
+            <div class="modal-header">
+                <button type="button" class="btn btn-primary" onclick="DownloadForm()">Download PDF</button>
+                <img data-toggle="tooltip" data-placement="left" title="Close" style="text-align:left;width:16px;height:20px;margin-left:3%" src="~/assets/images/cross.svg" asp-append-version="true" onclick="closemodal()" />
+            </div>
+            <div class="modal-body" style="overflow-y:auto">
+
+
+                <div id="pdf-container" style="overflow-y:auto;width:100%;height:100%"></div>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+
+
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+<script>
+    var pdfjsLib = window['pdfjs-dist/build/pdf'];
+    let renderedPages = new Set();
+    let pdfInstance = null;
+    if (!pdfjsLib) {
+        console.error('PDF.js library is not loaded.');
+    } else {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '@Url.Content("/local-cdns/Shared/pdfjs/2.10.377/pdf.worker.min.js")';
+    }
+    const pdfContainer = document.getElementById('pdf-container');
+
+    $(document).ready(function () {
+       $('#networkOverlay').hide();
+
+        // $('#MyOrgFormTb').DataTable({
+        //     searching: true,
+        //     paging: true,
+        //     lengthChange: false,
+        //     pageLength: 5,
+        //     orderClasses: false,
+        //     stripeClasses: [],
+        //     info: true,
+        //     "ordering": false
+
+        // });
+
+        new DataTable('#MyOrgFormTb', {
+            scrollX: true,
+            destroy: true,
+            pageLength: 7,
+            lengthChange: false,
+            ordering: false,
+            responsive: {
+                details: {
+                    type: 'column',
+                    target: 'tr'
+                }
+            },
+            columnDefs: [
+                { className: 'control', orderable: false, targets: 0 } // Makes 1st column only for expansion
+            ]
+            // drawCallback: function (settings) {
+            //     var api = this.api();
+            //     var rows = api.rows({ page: 'current' }).data().length;
+            //     if (rows === 0) {
+
+            //         $('#MyOrgFormTb tbody').html('<tr><td colspan="100%" style="text-align:center !important;">No matching records found</td></tr>');
+            //     }
+            // }
+        });
+
+    });
+
+
+    var formbase64 = "";
+
+
+    function renderPage(pageNum, container) {
+        const canvasScale = 1.5;
+        pdfInstance.getPage(pageNum).then(page => {
+            const viewport = page.getViewport({ scale: canvasScale });
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            canvas.style.width = '100%';
+
+            container.innerHTML = '';
+            container.appendChild(canvas);
+
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+
+            page.render(renderContext).promise.then(() => {
+
+            }).catch(err => {
+                console.error(`Render failed for page ${pageNum}:`, err);
+            });
+
+        }).catch(err => {
+            console.error(`Failed to get page ${pageNum}:`, err);
+        });
+    }
+
+
+    function base64ToArrayBuffer(base64) {
+        const binaryString = window.atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+    function modalForm(EdmsId, SignerName) {
+        $("#digitalShowModal").modal('show');
+        FileName = SignerName + "_signed";
+
+        $.ajax({
+            url: '@Url.Action("GetPreviewConfig", "DigitalForms")',
+            type: 'GET',
+            data: {
+                edmsId: EdmsId
+            },
+            beforeSend: function () {
+                $('#overlay').show();
+            },
+            complete: function () {
+                $('#overlay').hide();
+            },
+            success: function (resp) {
+                if (resp.success) {
+
+                    formbase64 = resp.result;
+                    const pdfArrayBuffer = base64ToArrayBuffer(resp.result);
+                    pdfjsLib.getDocument({ data: pdfArrayBuffer }).promise.then(pdf => {
+                        pdfInstance = pdf;
+                        setupPlaceholders(pdf.numPages);
+                        setupLazyObserver();
+
+                    }).catch(error => {
+                        console.error('Error loading PDF:', error);
+                    });
+
+                } else {
+                    swal({
+                        title: 'Error',
+                        text: resp.message,
+                        type: 'error',
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            document.getElementById("navigationNetworkOverlay").style.display = "block";
+                            window.location.href = '@Url.Action("Index", "DigitalForms")';
+                        }
+                    });
+                }
+            },
+            // error: function (xhr, status, error) {
+            //     console.log(error);
+            //     swal({
+            //         title: 'Error',
+            //         text: 'Something went wrong!',
+            //         type: 'error',
+            //     }, function (isConfirm) {
+            //         if (isConfirm) {
+            //             window.location.href = '@Url.Action("Index", "DigitalForms")';
+            //         }
+            //     });
+            // }
+            error: function (xhr, status, error) {
+                if (xhr.status === 500) {
+                    swal({
+                        title: "Server Error",
+                        text: "An internal server error occurred. Redirecting...",
+                        type: "error"
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            document.getElementById("navigationNetworkOverlay").style.display = "block";
+                            window.location.href = '@Url.Action("Index", "DigitalForms")';
+                        }
+                    });
+                } else {
+
+                    ajaxErrorHandler(xhr, status, error);
+                }
+            }
+        });
+    }
+    function DownloadForm() {
+        var byteCharacters = atob(formbase64);
+        var byteNumbers = new Array(byteCharacters.length);
+
+        for (var i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        var byteArray = new Uint8Array(byteNumbers);
+        var blob = new Blob([byteArray], { type: 'application/pdf' });
+
+
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'SignedForm.pdf';
+        link.click();
+    };
+    function closemodal() {
+        const pdfContainer = document.getElementById('pdf-container');
+        pdfContainer.innerHTML = '';
+        renderedPages = new Set();
+        $("#digitalShowModal").modal('hide');
+
+    }
+
+    function setupPlaceholders(totalPages) {
+
+        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'pdf-page';
+            placeholder.dataset.pageNumber = pageNum;
+            placeholder.style.position = 'relative';
+            placeholder.style.minHeight = '600px'; // approximate
+            pdfContainer.appendChild(placeholder);
+        }
+    }
+
+    function setupLazyObserver() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const pageNum = parseInt(entry.target.dataset.pageNumber);
+                    if (!renderedPages.has(pageNum)) {
+                        renderPage(pageNum, entry.target);
+                        renderedPages.add(pageNum);
+                    }
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '200px',
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.pdf-page').forEach(pageDiv => {
+            observer.observe(pageDiv);
+        });
+    }
+</script>

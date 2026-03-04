@@ -1,0 +1,247 @@
+﻿@model SigningPortal.Web.ViewModels.Templates.TemplateListViewModel
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+
+<style>
+    /* Custom dropdown menu style */
+    .custom-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .custom-dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #fff;
+        min-width: 120px;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 1;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+    }
+
+        .custom-dropdown-content a {
+            color: #333;
+            padding: 0.25rem 1rem;
+            text-decoration: none;
+            display: block;
+            font-size: 14px;
+            text-align: left !important;
+        }
+
+            .custom-dropdown-content a:hover {
+                background-color: #eeeeee;
+                color: black;
+            }
+
+    .custom-dropdown:hover .custom-dropdown-content {
+        display: block;
+    }
+
+    .custom-dropdown-content li {
+        list-style: none;
+    }
+
+    .btn {
+        text-transform: capitalize !important;
+        font-size: 12px !important;
+    }
+
+    /* Ensure full width for table */
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+        background-color: transparent;
+    }
+
+    @@-moz-document url-prefix() {
+    .btn-group {
+        float:right; 
+        margin-right: -7%;
+        margin-top: -4% !important; /* Adjusted margin-top for Firefox */
+    }
+}
+    /* Styling the expand "+" icon */
+    table.dataTable > tbody > tr > td.control::before {
+        font-size: 20px; /* Make the icon bigger */
+        font-weight: bold;
+        color: #007bff; /* Blue color */
+        display: inline-block;
+        text-align: center;
+        width: 24px; /* Ensures proper alignment */
+        height: 24px; /* Ensures proper alignment */
+        line-height: 24px; /* Centers icon vertically */
+        border-radius: 24px;
+    }
+
+    /* Styling the collapse "−" icon */
+    table.dataTable > tbody > tr.parent > td.control::before {
+        font-size: 15px !important;
+        font-weight: bold;
+        display: inline-block;
+        text-align: center;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        border-radius: 20px;
+    }
+
+    table.dataTable tbody tr.parent td.control::before {
+        background-color: forestgreen !important;
+        color: white !important;
+    }
+</style>
+
+<div class="row" >
+    <div class="col-md-12" style="height:100%;">
+        <div class="card background-image" style="height:100%; padding-left:3%">
+            <div class="card-body " style="height: 111px; ">
+                <div class="row ">
+                    <div class="col-12 pl-0">
+                        <h3 class="h3" >
+                            Bulk Sign Templates
+                        </h3>
+                    </div>
+
+                    
+                    
+                     <div class="col-12 d-flex justify-content-start justify-content-sm-end mt-2 p-0">
+                        <div class="btn-group d-flex justify-content-start justify-content-sm-end p-0">
+                                <button id="createTemplateBtn" class="submit-button" style="border: none; background: none; cursor: pointer;" onclick="handlecreateTemplate()">
+                                <img src='@Url.Content("~/img/plus button.svg")' asp-append-version="true" style="width: 23px; height: 19px;" alt="Plus Icon">
+                                    Create Template
+                                </button>
+                         </div>
+                     </div>
+
+                    
+
+                    <div class="table-container " style="padding-left:0;padding-right:0px;width:100%;overflow:hidden;">
+                        @if (Model.TemplateList == null || Model.TemplateList.Count() == 0)
+                        {
+                            <div class=" text-center">
+                                <div class="card-body" style=" padding:0px;">
+                                    <div class="text-center p-4 mt-4" style="background-color: rgba(0, 0, 0, 0.05);">No Document Templates are available</div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <table id="roleTable" class="table table-striped table-bordered table-hover table-checkable order-column full-width" style="width:100%;">
+                                <thead style="text-align:center ;background-color: #EEEEEE !important">
+                                    <tr>
+                                        <th></th>
+                                        <th style="text-align:left!important">TEMPLATE NAME</th>
+                                        <th>DOCUMENT NAME</th>
+                                        <th>CREATED DATE</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <br />
+                                <tbody style="text-align:center">
+
+                                    @foreach (var item in Model.TemplateList)
+                                    {
+                                        <tr class="odd gradeX">
+                                            <td></td>
+                                            <td style="text-align:left!important">@item.TemplateName</td>
+                                            <td>@item.DocumentName</td>
+                                           @*  <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td> *@
+                                            <td class="convert-time" data-timestamp="@item.CreatedAt.ToString("o")">
+                                                @item.CreatedAt.ToString("dd/MM/yyyy")
+                                            </td>
+                                            <td class="valigntop">
+                                                <div class="custom-dropdown">
+                                                    <button class="btn btn-success deepGreen-bgcolor no-margin" type="button">
+                                                        Actions
+                                                        <i class="fa fa-caret-down"></i>
+                                                    </button>
+                                                    <ul class="custom-dropdown-content">
+                                                        <li>
+                                                            @* <a asp-action="GetTemplateDetails" asp-route-templateId="@item._id">
+                                                                <i class="icon-docs"></i>Edit
+                                                            </a> *@
+                                                           @*  <button class="edit-button" onclick="handleEditTemplate('@item._id')">
+                                                                <i class="icon-docs"></i> Edit
+                                                            </button> *@
+                                                            <a href="javascript:void(0);" onclick="handleEditTemplate('@item._id')">
+                                                                <i class="icon-docs"></i> Edit
+                                                            </a>
+
+                                                        </li>
+                                                        <li>
+                                                            <a href="javascript:void(0);" onclick="handlePreview('@item._id')">
+                                                                <i class="icon-docs"></i> Preview
+                                                            </a>
+                                                            @* <a asp-action="Preview" asp-route-templateId="@item._id">
+                                                                <i class="icon-docs"></i>Preview
+                                                            </a> *@
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#BulkSignTemplateMenu').addClass('active');
+        $('#networkOverlay').hide();
+        var table = $("#roleTable").DataTable({
+            "bLengthChange": false,
+            "searching": false,
+            "pageLength": 8,
+            "orderClasses": false,
+            "stripeClasses": [],
+            "info": true,
+            "ordering": false,
+             "responsive": {
+                details: {
+                    type: 'column',
+                    target: 'tr'
+                }
+            },
+            "columnDefs": [
+                { className: 'control', orderable: false, targets: 0 }, // Makes 1st column only for expansion
+                { responsivePriority: 1, targets: 1 },
+                { responsivePriority: 2, targets: 2 } ,
+                { responsivePriority: 3, targets: 4 },
+            ]
+        });
+
+        updateTimestamps();
+    });
+    function handlecreateTemplate() {
+        document.getElementById("navigationNetworkOverlay").style.display = "block";
+        window.location.href = '@Url.Action("CreateTemplate", "Template")';
+    }
+    function handleEditTemplate(templateId) {
+        document.getElementById("navigationNetworkOverlay").style.display = "block";
+        window.location.href = '@Url.Action("GetTemplateDetails", "Template")' + `?templateId=${templateId}`;
+
+    }
+    function handlePreview(templateId) {
+        document.getElementById("navigationNetworkOverlay").style.display = "block";
+        window.location.href = '@Url.Action("Preview", "Template")' + `?templateId=${templateId}`;
+
+    }
+</script>

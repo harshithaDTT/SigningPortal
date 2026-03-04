@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="36.918" height="15.528" viewBox="0 0 36.918 15.528">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rectangle_7450" data-name="Rectangle 7450" width="36.918" height="15.528" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="Group_99522" data-name="Group 99522" transform="translate(0 0)">
+    <g id="Group_99521" data-name="Group 99521" transform="translate(0 0)" clip-path="url(#clip-path)">
+      <path id="Path_83280" data-name="Path 83280" d="M10.082,4.291c0,1.033-2.257,1.871-5.041,1.871S0,5.324,0,4.291,2.257,2.42,5.041,2.42s5.041.838,5.041,1.871" transform="translate(0 -1.055)" fill="#acc43d"/>
+      <path id="Path_83281" data-name="Path 83281" d="M.112,21.776s3.963,2.862,10.654.22v1.673s-5.635,2.686-9.422.485A1.855,1.855,0,0,1,.112,21.776" transform="translate(0 -9.492)" fill="#acc43d"/>
+      <path id="Path_83282" data-name="Path 83282" d="M.112,15.454s3.963,2.862,10.654.22v1.673s-5.635,2.686-9.422.485A1.855,1.855,0,0,1,.112,15.454" transform="translate(0 -6.737)" fill="#acc43d"/>
+      <path id="Path_83283" data-name="Path 83283" d="M.112,9.7s3.963,2.862,10.654.22V11.6s-5.635,2.686-9.422.485A1.855,1.855,0,0,1,.112,9.7" transform="translate(0 -4.229)" fill="#acc43d"/>
+      <path id="Path_83284" data-name="Path 83284" d="M50.867,0H37.791a.44.44,0,0,0-.44.441V8.277a.44.44,0,0,0,.44.44H50.867a.44.44,0,0,0,.441-.44V.441A.44.44,0,0,0,50.867,0m-.308,7.7H38.1V.837H50.559Z" transform="translate(-16.282 0)" fill="#acc43d"/>
+      <path id="Path_83285" data-name="Path 83285" d="M48.748,17.8H35.012L32.59,23.035l18.535-.308Zm-4.975,4.755H40.427V20.966h3.346Z" transform="translate(-14.207 -7.757)" fill="#acc43d"/>
+      <path id="Path_83286" data-name="Path 83286" d="M26.776,9.651,25,8.622v.61H20.57v.836H25v.61Z" transform="translate(-8.967 -3.759)" fill="#acc43d"/>
+      <path id="Path_83287" data-name="Path 83287" d="M20.57,13.917l1.781,1.028v-.61h4.426V13.5H22.351v-.61Z" transform="translate(-8.967 -5.618)" fill="#acc43d"/>
+    </g>
+  </g>
+</svg>

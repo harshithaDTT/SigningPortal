@@ -1,0 +1,410 @@
+﻿.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+    top: 3px;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    width: 100%;
+    height: 100%;
+    transition: .4s;
+    border-radius: 4px;
+}
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        right: 4px;
+        bottom: 4px;
+        top: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+        border-radius: 5px;
+    }
+
+input:checked + .slider {
+    background-color: #ACC43D;
+}
+
+    input:checked + .slider:before {
+        /* -webkit-transform: translateX(26px);
+                -ms-transform: translateX(26px); */
+        transform: translateX(26px);
+    }
+
+.pdf-page {
+    width: 100%;
+    position: relative;
+    display: inline-block;
+    margin: 1%;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+
+
+
+.annotated input[type="text"] {
+    border: none;
+    background: black;
+    color: white;
+    width: 100px;
+    height: 30px;
+    padding: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+    text-align: center;
+}
+
+
+.input-field {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center; /* Center the text horizontally */
+    box-sizing: border-box; /* Ensure padding and border are included in the total width and height */
+    background-color: #d8d7d78a;
+    border: 2px solid black;
+}
+
+
+    .input-field.has-value {
+        background-color: transparent; /* Change background color when typing */
+        color: #000; /* Change text color if needed */
+        outline: none; /* Remove default outline */
+        text-align: left;
+    }
+
+#fields-list {
+    margin-top: 20px;
+}
+
+.field-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+    .field-item input {
+        margin-right: 10px;
+        flex: 1;
+    }
+
+
+
+
+
+
+.editable-text {
+    min-height: 10px;
+    width: 100px;
+    cursor: text;
+}
+
+.draggable {
+    position: absolute;
+    padding: 0.48%;
+    cursor: move;
+    background: rgba(0, 0, 0, 0);
+}
+
+#toolbar {
+    display: flex;
+    flex-direction: row; /* Stack buttons vertically */
+    align-items: center; /* Center buttons horizontally */
+    margin-top: 0px;
+    flex-wrap: wrap;
+    height: 45%;
+    width: 100%;
+    column-gap: 15px;
+    margin-left: 5%;
+}
+
+    /* #toolbar button {
+            margin: 5px 0;
+            width: auto;
+            min-width: 45%;
+            height: 20%;
+            background-color: #ACC43D;
+            text-align: left;
+            padding-left: 5%;
+            font-size: 85%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            white-space: nowrap;
+            color:white;
+        } */
+
+    #toolbar button {
+        margin: 5px 0; /* Add some spacing between buttons */
+        width: auto; /* Adjust width as needed */
+        min-width: 45%; /* Optional: Set a maximum width for buttons */
+        height: 75%;
+        background-color: #acc43d38;
+        text-align: left;
+        padding-left: 5%;
+        font-size: 85%;
+        border: 1px solid #ccc; /* Border style */
+        border-radius: 5px;
+        white-space: nowrap;
+        color: black;
+    }
+
+#recommendedfields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2%;
+    margin-left: 4%;
+}
+
+    /* #recommendedfields button {
+            width: fit-content;
+            padding: 9px;
+            margin: 2px 0;
+            text-align: center;
+            background-color: #ebedef;
+            color: black;
+            border: none;
+            cursor: pointer;
+            font-size: small;
+            white-space: nowrap;
+            border-radius: 18px;
+        } */
+
+    #recommendedfields button {
+        width: fit-content;
+        padding: 9px;
+        margin: 2px 0;
+        text-align: center;
+        background-color: #9fa2a559;
+        color: black;
+        border: none;
+        cursor: pointer;
+        font-size: small;
+        white-space: nowrap;
+        border-radius: 18px;
+    }
+
+.resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: transparent;
+    z-index: 1000;
+}
+
+    .resize-handle:hover {
+        background-color: black;
+    }
+
+
+.bottom-right {
+    cursor: nwse-resize;
+    bottom: -5px;
+    right: -5px;
+}
+
+.edit-icon {
+    position: absolute;
+    top: -17px; /* Adjust as needed */
+    right: -17px; /* Adjust as needed */
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.draggable:hover .edit-icon {
+    opacity: 1;
+}
+
+
+#plain-text:hover {
+    background-color: #ACC43D; /* Green background on hover */
+    color: white;
+}
+
+#text-field:hover {
+    background-color: #ACC43D; /* Blue background on hover */
+    color: white;
+}
+
+#radio-button:hover {
+    background-color: #ACC43D; /* Yellow background on hover */
+    color: white;
+}
+
+#check-box:hover {
+    background-color: #ACC43D; /* Orange background on hover */
+    color: white;
+}
+
+#select:hover {
+    background-color: #ACC43D; /* Purple background on hover */
+    color: white;
+}
+
+#date:hover {
+    background-color: #ACC43D; /* Light yellow background on hover */
+    color: black;
+}
+
+#signature:hover {
+    background-color: #ACC43D; /* Teal background on hover */
+    color: white;
+}
+
+#eseal:hover {
+    background-color: #ACC43D; /* Deep purple background on hover */
+    color: white;
+}
+
+#imagefield:hover {
+    background-color: #ACC43D;
+    color: white;
+}
+
+#webfill:hover {
+    background-color: #ACC43D; /* Deep purple background on hover */
+    color: white;
+}
+
+#websave:hover {
+    background-color: #ACC43D; /* Deep purple background on hover */
+    color: white;
+}
+
+.image-container {
+    background-color: #d8d7d78a;
+    color: #636161;
+    border: 2px solid #000;
+    position: relative;
+    width: 150px;
+    height: 170px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.image-upload {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.uploaded-image {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: fill; /* Stretch image to fit the container */
+}
+
+.placeholder-text {
+    font-size: 16px;
+    color: gray;
+}
+
+/* Cross symbol */
+.remove-image-btn {
+    display: none;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(255, 255, 255, 0.7);
+    color: red;
+    font-size: 20px;
+    border: none;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 50%;
+}
+
+/* Show cross symbol on hover only if the image is uploaded */
+.image-container:hover .remove-image-btn.uploaded {
+    display: block;
+}
+
+.stepper {
+    display: flex;
+    /*         flex-direction: column; */
+    align-items: center;
+    position: relative;
+    width: 80%;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.circle {
+    width: 25px;
+    height: 25px;
+    background-color: #d4d4dd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    position: relative;
+}
+
+.step-line {
+    flex-grow: 1;
+    height: 4px;
+    background-color: #d4d4dd;
+}
+
+.step-text {
+    margin-left: 15px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.tooltip-inner {
+    background: #acc43d;
+}
+
+
+.arrow::before {
+    border-bottom-color: #acc43d !important;
+}
+
+.pdfViewContainer {
+    width: 100%;
+}
+
+.configurationContainer {
+    width: 100%;
+}
+
+@media screen and (min-width:992px) {
+    .pdfViewContainer {
+        width: 70%;
+    }
+
+    .configurationContainer {
+        width: 30%;
+    }
+}

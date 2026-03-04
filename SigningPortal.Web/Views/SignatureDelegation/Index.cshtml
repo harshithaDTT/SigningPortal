@@ -1,0 +1,2519 @@
+﻿@using System.Security.Claims
+@{
+    string minDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var OrganizationUid = "";
+    var AccountType = User.FindFirst("AccountType").Value;
+    if (AccountType != "Self")
+    {
+
+        OrganizationUid = User.FindFirst("OrganizationUid").Value;
+    }
+}
+
+<style>
+    /* ===== Delegation Tabs ===== */
+
+    .dg-tabs-wrapper {
+        background: #f3f4f6;
+        border-radius: 10px;
+        padding: 6px;
+    }
+
+    .dg-tabs {
+        display: flex;
+        background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+
+    .dg-tab-btn {
+        flex: 1;
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        background: none;
+        padding: 7px 8px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-grow: 1;
+    }
+
+        .dg-tab-btn:hover {
+            background: #f9fafb;
+        }
+
+
+        .dg-tab-btn:not(.active) {
+            background: rgba(255, 255, 255, 0.35);
+            color: #5b6478;
+        }
+
+        /* active segment: raised with white background and subtle shadow */
+        .dg-tab-btn.active {
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);
+            color: #101010;
+        }
+
+
+
+
+
+
+
+    /* card */
+    .dg-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 18px 22px;
+        margin-bottom: 16px;
+        font-family: "Inter";
+    }
+
+        .dg-card:hover {
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
+        }
+
+    /* top row */
+    .dg-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+    }
+
+    /* user */
+    .dg-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 260px;
+    }
+
+    .dg-avatar {
+        width: 40px;
+        height: 40px;
+        background-color: #009057 !important;
+        border: 1px solid #009057;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .dg-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .dg-email {
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    /* column */
+    .dg-col {
+        min-width: 140px;
+    }
+
+    .dg-name,
+    .dg-email {
+        max-width: 180px; /* adjust as per card width */
+        white-space: nowrap;
+        display: block;
+    }
+
+    .dg-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0; /* ✅ important for ellipsis inside flex */
+    }
+
+        .dg-user > div {
+            min-width: 0; /* ✅ allows ellipsis to work */
+        }
+
+    .dg-to-row {
+        display: flex;
+        gap: 6px;
+        min-width: 0;
+    }
+
+        .dg-to-row .dg-email {
+            min-width: 0;
+        }
+
+    .dg-label {
+        font-size: 14px;
+        text-align: left;
+        margin-bottom: 4px;
+        font-weight: 400;
+        color: #7c8797;
+        font-family: 'Inter';
+    }
+
+    .dg-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #111827;
+        letter-spacing: 0.65px;
+    }
+
+    /* status */
+    .dg-status {
+        background: #e7f8ef;
+        color: #16a34a;
+        font-size: 13px;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-weight: 500;
+    }
+
+        .dg-status.cancelled {
+            background: #ffeaea;
+            color: #cc0000;
+        }
+
+        .dg-status.expired {
+            background: #e8e9eb;
+            color: #475569;
+        }
+
+        .dg-status.active {
+            background: #d1f4e0;
+            color: #198754;
+        }
+
+        .dg-status.in-progress {
+            background: #fbeeba;
+            color: #fb8604;
+        }
+
+        .dg-status.new {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+    /* action */
+    .dg-action-btn {
+        border: 1px solid #86d6b6;
+        background: #ffffff;
+        color: #0f766e;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+        .dg-action-btn:hover {
+            background: #0f766e;
+            color: #ffffff;
+        }
+
+    /* bottom */
+    .dg-legal {
+        margin-top: 14px;
+        font-size: 13px;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    /* Overlay */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .modal-box {
+        background: #f9fafb;
+        width: 90%;
+        max-width: 900px;
+        border-radius: 16px;
+        padding: 24px;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+    /* Header container */
+    .delegation-summary {
+        background: linear-gradient(149deg, #fbfffd, #daf0e9);
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+    }
+
+    /* Flex row */
+    .delegation-summary-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Left block */
+    .summary-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    /* Info icon */
+    .info-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #059669;
+        color: #ffffff;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    /* Title */
+    .summary-left h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    /* Dates row */
+    .dates {
+        display: flex;
+        gap: 48px; /* controls distance between Start & End */
+        margin-top: 6px;
+    }
+
+        .dates span {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+    /* Status badge */
+    .status-chip {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        /* Status colors */
+        .status-chip.in-progress {
+            background: #fbeeba;
+            color: #fb8604;
+            border: 1px solid #fb8604;
+        }
+
+        .status-chip.expired {
+            background: #e8e9eb;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .status-chip.active {
+            background: #d1f4e0;
+            border: 2px solid #8dd3bb;
+            border-radius: 50px;
+            color: #198754;
+        }
+
+        .status-chip.rejected {
+            background: #ffeaea;
+            border: 1px solid #ff9c9c;
+            color: #cc0000;
+        }
+
+        .status-chip.cancelled {
+            background: #ffeaea;
+            border: 1px solid #ff9c9c;
+            color: #cc0000;
+        }
+
+        .status-chip.new {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #93c5fd;
+        }
+
+    .delegate-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 20px;
+    }
+
+        .delegate-card h4 {
+            margin-bottom: 16px;
+        }
+
+    .delegate-row {
+        display: grid;
+        grid-template-columns: 60px 1fr 1.5fr 120px;
+        align-items: center;
+        padding: 16px;
+        border-radius: 12px;
+        background: #fff;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+        .delegate-row img {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+    .delegate-info label {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .delegate-info div {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .delegate-status {
+        justify-self: end;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    /* Footer */
+    .modal-footer {
+        text-align: right;
+        margin-top: 20px;
+    }
+
+    .btn-close-modal {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        background: #e5e7eb;
+        cursor: pointer;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .delegate-row {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .delegate-status {
+            justify-self: start;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .delegation-summary-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .dates {
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .status-chip {
+            align-self: flex-start;
+        }
+    }
+
+
+
+    .delegate-status.in-progress {
+        background: #fbeeba;
+        color: #fb8604;
+        border: 1px solid #fb8604;
+    }
+
+    .delegate-status.expired {
+        background: #e8e9eb;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+
+    .delegate-status.active {
+        background: #d1f4e0;
+        border: 2px solid #8dd3bb;
+        border-radius: 50px;
+        color: #198754;
+    }
+
+    .delegate-status.rejected {
+        background: #ffeaea;
+        border: 1px solid #ff9c9c;
+        color: #cc0000;
+    }
+
+    .delegate-status.cancelled {
+        background: #ffeaea;
+        border: 1px solid #ff9c9c;
+        color: #cc0000;
+    }
+
+    .delegate-status.new {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #93c5fd;
+    }
+
+
+    /* Footer */
+    .modal-footer {
+        text-align: right;
+        margin-top: 20px;
+    }
+
+    .btn-close-modal {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        background: #e5e7eb;
+        cursor: pointer;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .delegate-row {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .delegate-status {
+            justify-self: start;
+        }
+    }
+
+    .onhoverclass {
+        transition: box-shadow .25s ease, transform .25s ease;
+    }
+
+        .onhoverclass:hover {
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+            transform: translateY(-2px); /* no clipping */
+            z-index: 10;
+        }
+
+    .dg-card {
+        overflow: visible;
+        position: relative;
+    }
+
+    .delegation-list,
+    #templatesContainer,
+    .tab-pane {
+        overflow: visible !important;
+    }
+
+
+    .popup-listcard {
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
+    }
+
+
+
+    .disabled-blur {
+        opacity: 0.5;
+    }
+
+    .signature-delegation-container {
+        font-family: 'Inter', sans-serif;
+        margin: 30px;
+    }
+
+
+    .title {
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+        .title .icon {
+            font-size: 28px;
+            margin-right: 10px;
+        }
+
+    .subtitle {
+        color: #6c757d;
+        margin-top: 5px;
+        margin-bottom: 25px;
+        font-size: 16px;
+    }
+
+    .legal-notice {
+        font-size: smaller;
+        font-family: 'Inter', sans-serif;
+        background-image: linear-gradient(to right, #fffbed,#fff7ed);
+        border: 1px solid rgb(253 230 138);
+        padding: 11px 15px;
+        margin-bottom: 25px;
+        border-radius: 6px;
+        color: rgb(120 53 15 / var(--tw-text-opacity, 1));
+        line-height: 1.5;
+    }
+
+    .new-delegation-btn {
+        background-color: #009057 !important;
+        border: 1px solid #009057;
+        color: white;
+        padding: 10px 18px;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .new-delegation-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+    /* Search Card */
+    .delegation-search-card {
+        background: #fff;
+        padding: 20px 25px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+        border-width: 1px;
+        border-color: var(--border);
+        margin-top: 25px;
+    }
+
+    .delegation-search {
+        width: 100%;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+    }
+
+        .delegation-search input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+
+
+
+
+    .card {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        border: 1px solid #eee;
+    }
+
+
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #009057;
+        color: white;
+        border-radius: 25%;
+        font-family: 'Segoe UI', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .name-email {
+        margin-left: 12px;
+        flex-grow: 1;
+    }
+
+
+
+
+    .footerbuttons {
+        width: 48%;
+        padding: 10px 0;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        background: #F4F6F8;
+        transition: 0.2s;
+    }
+
+    .btn-danger {
+        background: #ffeaea;
+        border: 1px solid #ff9c9c;
+        color: #cc0000;
+    }
+
+    .btn-danger-blurred {
+        padding: 10px 22px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        background: #ffeaea;
+        border: 1px solid #ff9c9c;
+        color: #cc0000;
+    }
+
+    .btn-view {
+        background: #f4f4f4;
+    }
+    /* Wrapper */
+    .delegation-wrapper {
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    /* Header */
+    .delegation-header {
+        background: #fff4ec;
+        padding: 18px 24px;
+        border-bottom: 1px solid #ffe0c7;
+    }
+
+    .icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #ffe9d6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ff6a00;
+    }
+
+    /* Body */
+    .delegation-body {
+        padding: 24px;
+    }
+
+    .input-lg {
+        height: 46px;
+    }
+
+    /* Period Box */
+    .delegation-period-box {
+        background: #f2f7ff;
+        border: 1px solid #cfe0ff;
+        border-radius: 14px;
+        padding: 20px;
+    }
+
+    .period-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        color: #2563eb;
+    }
+
+    /* Duration */
+    .duration-row {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .duration-label {
+        color: #6b7280;
+    }
+
+    .duration-value {
+        color: #2563eb;
+        font-weight: 600;
+    }
+
+    /* Important */
+    .important-box {
+        background: #fff7e6;
+        border: 1px solid #ffcc80;
+        border-radius: 10px;
+        padding: 7px;
+        font-size: 0.85rem;
+        display: flex;
+        gap: 12px;
+        color: #b45309;
+    }
+
+    /* Footer */
+    .delegation-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .status-badge {
+        font-size: 13px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        color: black;
+        background: #fff4d6;
+        border: 1px solid #f3cc8a;
+    }
+
+    .recent-new {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #93c5fd;
+    }
+
+    .recent-expired {
+        background: #e8e9eb;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+
+    .recent-active {
+        background: #d1f4e0;
+        border: 2px solid #8dd3bb;
+        border-radius: 50px;
+        color: #198754;
+    }
+
+    .recent-cancelled {
+        background: #ffeaea;
+        border: 1px solid #ff9c9c;
+        color: #cc0000;
+    }
+
+    .recent-in-pending {
+        background: #fbeeba;
+        color: #fb8604;
+        border: 1px solid #fb8604;
+    }
+    /* =========================
+                                               RESPONSIVE FIXES
+                                               ========================= */
+
+    /* Base safety */
+    * {
+        box-sizing: border-box;
+    }
+
+    /* Container spacing */
+    .signature-delegation-container {
+        max-width: 100%;
+        padding: 0 16px;
+        margin: 16px auto;
+    }
+
+    /* Header stacks ONLY on mobile */
+    @@media (max-width: 576px) {
+        .signature-delegation-container > .d-flex {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .new-delegation-btn {
+            width: 100%;
+        }
+    }
+
+    /* Title scaling */
+    @@media (max-width: 480px) {
+        .title {
+            font-size: 22px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 14px;
+        }
+    }
+
+    /* Legal notice */
+    @@media (max-width: 480px) {
+        .legal-notice {
+            font-size: 13px;
+            padding: 10px 12px;
+        }
+    }
+
+    /* Search box */
+    @@media (max-width: 480px) {
+        .delegation-search-card {
+            padding: 14px;
+        }
+    }
+
+
+    /* Card header */
+    @@media (max-width: 480px) {
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .status-badge {
+            align-self: flex-start;
+        }
+    }
+
+    /* Template rows (Start / End time) */
+    @@media (max-width: 480px) {
+        .template-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 14px;
+        }
+    }
+
+    /* Action buttons */
+    @@media (max-width: 480px) {
+        .action-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+            .action-row .btn,
+            .action-row .btn-danger,
+            .action-row .btn-view,
+            .btn-danger-blurred {
+                width: 100%;
+                text-align: center;
+            }
+    }
+
+    /* Delegation create form */
+    @@media (max-width: 768px) {
+        .delegation-body {
+            padding: 16px;
+        }
+
+        .delegation-period-box {
+            padding: 16px;
+        }
+    }
+
+    /* Start & End time inputs */
+    @@media (max-width: 480px) {
+        .rowitem {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+            .rowitem .col-6 {
+                width: 100%;
+                max-width: 100%;
+            }
+    }
+
+    /* Footer buttons */
+    @@media (max-width: 480px) {
+        .delegation-footer {
+            flex-direction: column;
+        }
+
+            .delegation-footer button {
+                width: 100%;
+            }
+    }
+
+    .container {
+        max-width: 1400px;
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    @@media (max-width: 768px) {
+        .container {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+    }
+
+    .verification-card {
+        background: #fff;
+        border: 1px solid #e3e6ea;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 18px;
+    }
+
+    .card-top {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr auto;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .user-info {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+    }
+
+    .user-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+    }
+
+    .user-name {
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .user-meta {
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    .top-info {
+        text-align: left;
+    }
+
+
+
+    .card-divider {
+        margin: 16px 0;
+        border-top: 1px solid #eef0f3;
+    }
+
+    .card-bottom {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr auto;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .label {
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 4px;
+    }
+
+    .startlabel,
+    .endlabel {
+        font-family: 'Arial', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        letter-spacing: 0.5px;
+    }
+
+    .value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #bdbdbd;
+    }
+
+    .method-badge {
+        background: #F1F1F1;
+        color: #656565;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .signed-btn {
+        background: #fff;
+        border: 1px solid #d1d5db;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .card-grid {
+        display: grid;
+        grid-template-columns: 1.6fr 260px 220px;
+        row-gap: 16px;
+        column-gap: 20px;
+        align-items: center;
+    }
+
+    .col-right {
+        justify-self: end;
+    }
+
+    .action-dropdown {
+        position: relative;
+    }
+
+    .action-btn {
+        align-items: center;
+        gap: 8px;
+        background: #d1f4e0;
+        color: #198754;
+        font-size: 0.8rem;
+        padding: 7px 9px 9px 12px;
+        max-width: 90px;
+        width: 85px;
+        text-transform: none !important;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .action-btn:hover {
+            background: #0ea66b;
+            border-color: #0ea66b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2);
+        }
+
+    #cardWrapper {
+        overflow: visible !important;
+    }
+
+    .dg-card {
+        position: relative;
+        overflow: visible;
+    }
+
+       
+
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        top: 110%;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        min-width: 160px;
+        z-index: 100; /* 🔥 important */
+    }
+
+
+    .dropdown-item {
+        width: 100%;
+        padding: 10px 12px;
+        background: none;
+        border: none;
+        text-align: left;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .dropdown-item:hover {
+            background: #f3f4f6;
+        }
+
+    .dropdown-menu {
+        display: none;
+    }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+    /* ---------- SHIMMER BASE ---------- */
+    .shimmer {
+        position: relative;
+        overflow: hidden;
+        background: #f0f0f0;
+        border-radius: 6px;
+    }
+
+        .shimmer::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient( 90deg, transparent, rgba(255, 255, 255, 0.6), transparent );
+            animation: shimmer 1.4s infinite;
+        }
+
+    @@keyframes shimmer {
+        100% {
+            left: 100%;
+        }
+    }
+
+    /* ---------- SHIMMER CARD ---------- */
+    .dg-card.shimmer-card {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .shimmer-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+    }
+
+    .shimmer-line {
+        height: 12px;
+        margin-top: 8px;
+        border-radius: 4px;
+    }
+
+        .shimmer-line.sm {
+            width: 80px;
+        }
+
+        .shimmer-line.md {
+            width: 140px;
+        }
+
+        .shimmer-line.lg {
+            width: 200px;
+        }
+
+    .shimmer-col {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .dg-top {
+        flex-wrap: wrap;
+    }
+
+    .dg-to-row {
+        display: flex;
+        align-items: center;
+        gap: 6px; /* space between To: and name */
+    }
+
+    .dg-to-label {
+        font-weight: 500;
+        color: #555;
+        font-size: 13px;
+    }
+
+    @@media (max-width: 576px) {
+        /* Stack card content vertically */
+        .dg-top {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        /* User section full width */
+        .dg-user {
+            width: 100%;
+            min-width: unset;
+        }
+        /* Each column becomes vertical */
+        .dg-col {
+            width: 100%;
+            min-width: unset;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        /* Label above value */
+        .dg-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+
+        .dg-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            white-space:nowrap;
+        }
+        /* Status stays below label */
+        .dg-status {
+            margin-top: 4px;
+            align-self: flex-start;
+        }
+        /* Actions full width */
+        .action-dropdown {
+            width: 100%;
+        }
+
+        .action-btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    @@media (min-width: 577px) and (max-width: 992px) {
+        /* Allow wrapping */
+        .dg-top {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+        /* USER → full width */
+        .dg-user {
+            grid-column: 1 / -1;
+        }
+        /* Start & End Date */
+        .dg-col.start-date {
+            grid-column: 1 / 2;
+        }
+
+        .dg-col.end-date {
+            grid-column: 2 / 3;
+        }
+        /* Status & Actions row */
+        .dg-col.status-col {
+            grid-column: 1 / 2;
+        }
+
+        .action-dropdown {
+            grid-column: 2 / 3;
+            justify-content: flex-end;
+        }
+        /* Remove unwanted spacing */
+        .action-dropdown {
+            margin-top: 0 !important;
+        }
+    }
+
+    .dg-card-custom {
+        cursor: pointer;
+        padding: 2rem !important;
+        box-shadow: 0 4px 9px rgba(25, 135, 84, 0.2);
+    }
+
+    @@media (min-width: 992px) and (max-width: 1365px) {
+        .dg-top {
+            gap: 12px;
+        }
+
+        .dg-user {
+            width: 240px;
+        }
+
+        .dg-col.start-date {
+            width: 172px;
+        }
+
+        .dg-col.end-date {
+            width: 172px;
+        }
+
+        .dg-label {
+            font-size: 13px;
+        }
+
+        .dg-value {
+            font-size: 13px;
+            white-space:nowrap;
+        }
+
+        .dg-col.status-col {
+            width: 85px;
+            min-width: 80px;
+        }
+    }
+
+    @@media(min-width:1366px) {
+        .dg-user {
+            width: 295px;
+        }
+
+        .dg-top {
+            gap: 24px;
+        }
+
+        .dg-col.start-date {
+            width: 185px;
+        }
+
+        .dg-col.end-date {
+            width: 185px;
+        }
+
+        .dg-label {
+            font-size: 14px;
+        }
+
+        .dg-value {
+            font-size: 14px;
+            white-space:nowrap;
+        }
+
+        .dg-col.status-col {
+            width: 100px;
+            min-width: 100px;
+        }
+    }
+
+    #showMoreBtn {
+        color: #0ea66b;
+        background: #F6F7FB;
+        border: 1px solid #0ea66b;
+    }
+
+        #showMoreBtn:hover {
+            background: #0ea66b;
+            color: #fff;
+            border: none;
+        }
+</style>
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+    @Html.AntiForgeryToken()
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="title">
+
+            Signature Delegation
+        </div>
+
+        <button id="newdelegation" class="new-delegation-btn" onclick="handleCreateDelegation()">
+            + New Delegation
+        </button>
+    </div>
+
+    <p class="subtitle">Delegate your signing authority to another user</p>
+
+    <!-- Legal Notice -->
+    <div class="legal-notice">
+        <strong>⚖ Legal Notice:</strong>
+        By delegating your signature authority, you authorize the delegate to sign
+        documents on your behalf during the specified period. All signatures made
+        by the delegate will be legally binding and attributed to you. Ensure you
+        trust the delegate completely.
+    </div>
+
+    <!-- Search Box -->
+    <div class="bg-white border mb-4 rounded-3 shadow-sm delegation-search-card" id="delegationcard">
+        <div class="delegation-search rounded-3">
+            <i class="fa fa-search"></i>
+            <input type="text" id="delegationSearch" placeholder="Search delegate or delegator email..." />
+        </div>
+    </div>
+
+    <div class="bg-white border container rounded-3 mb-4 shadow-sm" id="newdelegationdiv" style="display:none;padding: 0px 1px;">
+        <div class="delegation-wrapper">
+
+            <!-- Header -->
+            <div class="delegation-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-user-group"></i>
+                    </div>
+                    <h5 class="mb-0">Create Delegation</h5>
+                </div>
+                <button id="clodediv" class="btn-close" onclick="handleCloseCreateDelegation()"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="delegation-body">
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            Delegate Email <span class="text-danger">*</span>
+                        </label>
+                        <input type="email"
+                               id="DelegateEmail"
+                               class="form-control input-lg"
+                               placeholder="Please enter email" />
+
+                    </div>
+                </div>
+
+
+                <!-- Delegation Period -->
+                <div class="delegation-period-box mb-4">
+                    <div class="period-title">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span>Delegation Period</span>
+                    </div>
+
+                    <div class="row item mt-3">
+                        <div class="col-6">
+                            <label class="form-label">Start Time</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fa-regular fa-calendar"></i>
+                                </span>
+                                <input id="StartDateTime" type="text" class="form-control" readonly />
+                            </div>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label">End Time</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fa-regular fa-calendar"></i>
+                                </span>
+                                <input id="EndDateTime" type="text" class="form-control" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="duration-row mt-3">
+                        <span class="duration-label">Duration</span>
+                        <span class="duration-value" id="durationValue">0 days</span>
+                    </div>
+
+                </div>
+
+                <!-- Reason -->
+                <div class="mb-4">
+                    <label class="form-label">Reason for Delegation </label>
+                    <textarea id="delegationReason" class="form-control" rows="4" placeholder="e.g., Vacation, Business Trip, Medical Leave..."></textarea>
+                </div>
+
+                <!-- Info Box -->
+                <div class="important-box">
+                    <i style="margin-top:5px;" class="fa-solid fa-circle-exclamation"></i>
+                    <p class="mb-0">
+                        <strong>Important:</strong> You remain legally responsible for all documents signed by the delegate during the delegation period. The delegate will have full access to sign documents on your behalf.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="delegation-footer">
+                <button class="btn btn-outline-secondary" onclick=" closeDelegationModal()">Cancel</button>
+                <button id="submitButton" class="new-delegation-btn">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Create Delegation
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== Delegation Tabs ===== -->
+    <div id="listtabpart">
+        <div class="dg-tabs-wrapper mb-4">
+
+            <div class="dg-tabs">
+
+                <!-- My Delegations -->
+                <button class="dg-tab-btn active" id="tabMyDelegations">
+                    <i class="fa-regular fa-paper-plane me-2"></i>
+                    My Delegations
+
+                </button>
+
+                <!-- Received -->
+                <button class="dg-tab-btn" id="tabReceived">
+                    <i class="fa-solid fa-inbox me-2"></i>
+                    Received Delegations
+
+                </button>
+
+            </div>
+
+        </div>
+        <div id="Mydelegationsempty" style="display:none;">
+            <div class="text-center py-5"
+                 style="border-radius: 12px; background:#f9fafb; margin-top:20px;">
+
+                <!-- Icon Circle -->
+                <div style="
+            width:80px;
+            height:80px;
+            margin:0 auto 20px auto;
+            background:#eef1f5;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">
+                    <i class="fa-solid fa-user-group"
+                       style="font-size:32px; color:#6b7280;"></i>
+                </div>
+
+                <!-- Main Title -->
+                <h4 style="font-weight:600; color:#1f2937; margin-bottom:8px;">
+                    No Delegations found
+                </h4>
+
+                <!-- Subtitle -->
+                <p style="color:#6b7280; font-size:15px; margin:0;">
+                    No delegations are created yet
+                </p>
+
+            </div>
+        </div>
+        <div id="receiveddelegationsempty" style="display:none;">
+            <div class="text-center py-5"
+                 style="border-radius: 12px; background:#f9fafb; margin-top:20px;">
+
+                <!-- Icon Circle -->
+                <div style="
+            width:80px;
+            height:80px;
+            margin:0 auto 20px auto;
+            background:#eef1f5;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">
+                    <i class="fa-solid fa-user-group"
+                       style="font-size:32px; color:#6b7280;"></i>
+                </div>
+
+                <!-- Main Title -->
+                <h4 style="font-weight:600; color:#1f2937; margin-bottom:8px;">
+                    No Received Delegations found
+                </h4>
+
+                <!-- Subtitle -->
+                <p style="color:#6b7280; font-size:15px; margin:0;">
+                    Looks like no one has delegated you yet.
+                </p>
+
+            </div>
+        </div>
+        <div class="bg-white border rounded-3 mb-4 shadow-sm delegation-search-card" id="cardslist">
+            <div id="cardWrapper"></div>
+
+            <div class="text-end mt-3">
+                <button id="showMoreBtn" class="btn btn-outline-primary d-none">Show More</button>
+                <button id="showLessBtn" class="btn btn-outline-secondary d-none">Show Less</button>
+            </div>
+
+        </div>
+
+    </div>
+   
+    <!-- Overlay -->
+    <div id="delegationModalOverlay" class="modal-overlay d-none">
+        <div class="modal-box">
+
+            <!-- Header (dynamic) -->
+            <div id="delegationSummary" class="delegation-summary"></div>
+
+            <!-- Delegate List -->
+            <div class="delegate-card shadow-sm">
+                <h4>Delegate Details</h4>
+                <div id="delegateListContainer"></div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button class="btn-close-modal" onclick="closeDelegationModal()">Close</button>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+@section scripts {
+    <link rel="stylesheet" href="~/local-cdns/Shared/datetimepicker/2.5.20/jquery.datetimepicker.min.css">
+    <script src="~/local-cdns/Shared/jquery/3.6.0/jquery.min.js"></script>
+    <script src="~/local-cdns/Shared/datetimepicker/2.5.20/jquery.datetimepicker.full.min.js"></script>
+
+
+    <script>
+
+        var userEmail = '@userEmail';
+        var viewmodel = @Html.Raw(Json.Serialize(Model));
+        var emailInputValue = [];
+        var delegateEmails = [];
+        var index = 0;
+        var emailIsValid = false;
+        var index_val = 0;
+        var delegateeobj = [];
+        let allDelegations = [];
+        const INITIAL_VISIBLE_COUNT = 4;
+        let isExpanded = false;
+        const emailRegex = /^\w+([\.-]?\w+)*@@\w+([\.-]?\w+)*(\.\w{2,6})+$/;
+        var usersuid = '@Suid';
+        var loginorgid = '@OrganizationUid';
+        var activetab = '';
+        $(document).ready(function () {
+            $('#networkOverlay').hide();
+
+            $('#StartDateTime').datetimepicker({
+                format: 'd-m-Y H:i',
+                step: 15,
+                minDate: '@minDateTime',
+                scrollInput: false
+            });
+
+            $('#EndDateTime').datetimepicker({
+                format: 'd-m-Y H:i',
+                step: 15,
+                minDate: '@minDateTime',
+                scrollInput: false
+            });
+
+            $('#StartDateTime').attr('placeholder', 'DD-MM-YYYY HH:MM');
+            $('#EndDateTime').attr('placeholder', 'DD-MM-YYYY HH:MM');
+            function calculateDuration() {
+                var startVal = $('#StartDateTime').val();
+                var endVal = $('#EndDateTime').val();
+
+                if (!startVal || !endVal) {
+                    $('#durationValue').text('0 days');
+                    return;
+                }
+
+                // Convert "d-m-Y H:i" → JS Date
+                var startParts = startVal.split(/[- :]/);
+                var endParts = endVal.split(/[- :]/);
+
+                var startDate = new Date(
+                    startParts[2],        // year
+                    startParts[1] - 1,    // month
+                    startParts[0],        // day
+                    startParts[3],        // hour
+                    startParts[4]         // minute
+                );
+
+                var endDate = new Date(
+                    endParts[2],
+                    endParts[1] - 1,
+                    endParts[0],
+                    endParts[3],
+                    endParts[4]
+                );
+
+                if (endDate < startDate) {
+                    $('#durationValue').text('0 days');
+                    return;
+                }
+
+                var diffMs = endDate - startDate;
+                var diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+                $('#durationValue').text(diffDays + ' days');
+            }
+
+            // Trigger calculation when date changes
+            $('#StartDateTime, #EndDateTime').on('change', calculateDuration);
+            $('#DelegateEmail').on('change', function () {
+
+                var emailInputValue = $(this).val().trim();
+
+                // Empty check
+                if (emailInputValue === "") {
+                    toastr.error('Please enter an Email');
+                    return;
+                }
+
+                // Email format validation
+                if (!emailRegex.test(emailInputValue)) {
+                    toastr.error('Please enter a valid Email');
+                    return;
+                }
+
+                // Self-delegation check
+                if (userEmail === emailInputValue) {
+                    toastr.error('You cannot assign yourself as Delegatee');
+                    return;
+                }
+
+                // Organization email validation
+                if (!Array.isArray(viewmodel.emails) ||
+                    !viewmodel.emails.includes(emailInputValue)) {
+
+                    toastr.error("This email does not belong to this organization");
+                    return;
+                }
+
+                // ✅ Update delegatee object (single delegatee)
+                delegateeobj = []; // reset previous value
+
+                delegateeobj.push({
+                    email: emailInputValue
+                });
+
+                // Optional: store separately if needed
+                delegateEmails = [emailInputValue];
+
+            });
+            getdelegationlist();
+
+        });
+
+        $(document).on("click", ".action-btn", function (e) {
+            e.stopPropagation();
+
+            // Close other open dropdowns
+            $(".dropdown-menu").not($(this).next()).removeClass("show");
+
+            // Toggle current dropdown
+            $(this).next(".dropdown-menu").toggleClass("show");
+        });
+
+        // Close dropdown when clicking outside
+        $(document).on("click", function () {
+            $(".dropdown-menu").removeClass("show");
+        });
+        $(document).on("click", ".dg-tab-btn", function () {
+
+            $(".dg-tab-btn").removeClass("active");
+            $(this).addClass("active");
+
+            if (this.id === "tabMyDelegations") {
+                getdelegationlist();
+                console.log("My Delegations");
+            } else {
+                getdelegationReceivedlist();
+                console.log("Received");
+            }
+        });
+
+        function convertToDesiredFormat(dateTimeStr) {
+            if (!dateTimeStr) return '';
+
+            // Split the input string into date and time parts
+            var dateParts = dateTimeStr.split(' ')[0].split('-'); // ['30', '09', '2024']
+            var timeParts = dateTimeStr.split(' ')[1].split(':'); // ['21', '52']
+
+            // Create a Date object using the date and time parts (note: months are 0-indexed in JavaScript)
+            var date = new Date(
+                dateParts[2],           // Year (e.g., 2024)
+                dateParts[1] - 1,       // Month (e.g., 09 -> 8 because it's zero-indexed)
+                dateParts[0],           // Day (e.g., 30)
+                timeParts[0],           // Hours (e.g., 21)
+                timeParts[1]            // Minutes (e.g., 52)
+            );
+
+            var year = date.getFullYear();
+            var month = ('0' + (date.getMonth() + 1)).slice(-2); // Add 1 to month as it is zero-indexed
+            var day = ('0' + date.getDate()).slice(-2);
+            var hours = ('0' + date.getHours()).slice(-2);
+            var minutes = ('0' + date.getMinutes()).slice(-2);
+
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        $('#submitButton').click(function () {
+
+            // --- Get date values ---
+            var startRaw = $('#StartDateTime').val();
+            var endRaw = $('#EndDateTime').val();
+
+            if (!startRaw) {
+                toastr.error('Please select start date');
+                return;
+            }
+
+            if (!endRaw) {
+                toastr.error('Please select end date');
+                return;
+            }
+            var reason = $('#delegationReason').val().trim();
+
+
+            var startDateTime = convertToDesiredFormat(startRaw);
+            var endDateTime = convertToDesiredFormat(endRaw);
+
+            if (!startDateTime || startDateTime === "NaN-aN-aNTaN:aN") {
+                toastr.error('Please select valid start date');
+                return;
+            }
+
+            if (!endDateTime || endDateTime === "NaN-aN-aNTaN:aN") {
+                toastr.error('Please select valid end date');
+                return;
+            }
+
+            if (startDateTime === endDateTime) {
+                toastr.error('Delegation start and end time cannot be same');
+                return;
+            }
+
+            if (startDateTime > endDateTime) {
+                toastr.error('Please select correct end date time');
+                return;
+            }
+
+            var now = new Date();
+            var startDate = new Date(startDateTime);
+
+            if (startDate <= now) {
+                toastr.error('Start date & time must be in the future');
+                return;
+            }
+
+            // --- Email validation ---
+            var EmailInputValue = $('#DelegateEmail').val().trim();
+
+            if (!EmailInputValue) {
+                toastr.error('Please enter an email');
+                return;
+            }
+
+            if (!emailRegex.test(EmailInputValue)) {
+                toastr.error('Please enter a valid Email');
+                return;
+            }
+
+            if (EmailInputValue === userEmail) {
+                toastr.error('You cannot assign yourself as Delegatee');
+                return;
+            }
+
+            if (!Array.isArray(viewmodel.emails) || !viewmodel.emails.includes(EmailInputValue)) {
+                toastr.error('This email does not belong to this organization');
+                return;
+            }
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            if (token) {
+                xhr.setRequestHeader('RequestVerificationToken', token);
+            }
+            // --- Build model ---
+            var model = {
+                StartDateTime: new Date(startDateTime).toISOString(),
+                EndDateTime: new Date(endDateTime).toISOString(),
+                Reason: reason,
+                Emails: [EmailInputValue]   // backend-compatible
+            };
+
+            // --- AJAX call ---
+            $.ajax({
+                url: '@Url.Action("AddDelegation", "SignatureDelegation")',
+                type: 'POST',
+                data: JSON.stringify(model),
+                headers: {
+                    'RequestVerificationToken': token
+                },
+                contentType: 'application/json',
+                beforeSend: function () {
+                    $('#overlay').show();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                },
+                success: function (response) {
+                    if (response.status === "Failed") {
+                        swal({
+                            title: 'Server response',
+                            text: response.message,
+                            type: 'info'
+                        });
+                    } else {
+                        swal({
+                            title: 'Success',
+                            text: response.message,
+                            type: 'success'
+                        }, function () {
+                            window.location.href = '@Url.Action("Index", "SignatureDelegation")';
+                        });
+                    }
+                },
+                error: ajaxErrorHandler
+            });
+
+        });
+
+        function revokeDelegate(delegationId) {
+            // Send an AJAX request to the controller
+
+            $.ajax({
+                url: '@Url.Action("RevokeDelegate", "SignatureDelegation")',
+                type: 'POST',
+                data: { delegationId: delegationId },
+                beforeSend: function () {
+                    $('#overlay').show();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                },
+                error: ajaxErrorHandler,
+                success: function (response) {
+                    if (response.status == "Failed") {
+                        swal({
+                            title: 'Server response',
+                            text: response.message,
+                            type: 'info',
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = '@Url.Action("Index", "SignatureDelegation")';
+                            }
+                        });
+                    }
+                    else {
+                        swal({
+                            title: 'Success',
+                            text: response.message,
+                            type: 'success',
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = '@Url.Action("Index", "SignatureDelegation")';
+                            }
+                        });
+
+                    }
+                }
+            });
+        }
+
+
+        function formatDateToDDMMYYYYtime(dateString) {
+            if (!dateString) return "";
+
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+            const year = date.getFullYear();
+
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, "0");
+            const seconds = String(date.getSeconds()).padStart(2, "0");
+
+            const ampm = hours >= 12 ? "PM" : "AM";
+            hours = hours % 12;
+            hours = hours ? hours : 12; // Convert '0' to '12'
+            const formattedHours = String(hours).padStart(2, "0");
+
+            return `${day}/${month}/${year} ${formattedHours}:${minutes}:${seconds} ${ampm}`;
+
+        }
+
+        function convertToLocalTime(serverTime) {
+            // Parse the server-sent time (with offset) into a Date object
+            const date = new Date(serverTime);
+
+            // Convert to user's local time
+            const localTime = date.toLocaleString("en-US", { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+
+            return localTime;
+        }
+
+        function updateTimestamps_statuspage() {
+            document.querySelectorAll(".convert-time").forEach(function (element) {
+                const serverTime = element.getAttribute("data-timestamp");
+                if (serverTime) {
+                    const localTime = convertToLocalTime(serverTime);
+                    element.textContent = formatDateToDDMMYYYYtime(localTime);
+
+                }
+            });
+
+        }
+        function handleCreateDelegation() {
+            document.getElementById("delegationcard").style.display = "none";
+            document.getElementById("newdelegationdiv").style.display = "block";
+            document.getElementById("listtabpart").style.display = "none";
+
+        }
+        function handleCloseCreateDelegation() {
+            document.getElementById("delegationcard").style.display = "block";
+            document.getElementById("newdelegationdiv").style.display = "none";
+            document.getElementById("listtabpart").style.display = "block";
+        }
+
+        function handlePreview(delegationId) {
+            window.location.href = '@Url.Action("Preview", "SignatureDelegation")' + `?DelegationId=${delegationId}`;
+        }
+
+        function getdelegationlist() {
+
+            showShimmer(5); // 👈 show shimmer immediately
+            activetab = "mydelegation";
+            $.ajax({
+                url: '@Url.Action("Listitems", "SignatureDelegation")',
+                type: "GET",
+                success: function (response) {
+
+                    if (!response.success) {
+                        console.error(response.message);
+                        return;
+                    }
+                    if (response.result.delegationList.length < 1) {
+                        document.getElementById("Mydelegationsempty").style.display = "block";
+                        document.getElementById("receiveddelegationsempty").style.display = "none";
+                        document.getElementById("cardslist").style.display = "none";
+                        return;
+                    }
+                    document.getElementById("Mydelegationsempty").style.display = "none";
+                    document.getElementById("receiveddelegationsempty").style.display = "none";
+                    document.getElementById("cardslist").style.display = "block";
+                    allDelegations = response.result.delegationList || [];
+                    renderDelegationCards(); // 👈 replaces shimmer
+                    updateShowMoreButtons();
+                    updateTimestamps_statuspage();
+                },
+                error: ajaxErrorHandler,
+            });
+        }
+        function getdelegationReceivedlist() {
+
+            showShimmer(5);
+            activetab = "receiveddelegation";
+            $.ajax({
+                url: '@Url.Action("ReceivedListitems", "SignatureDelegation")',
+                type: "GET",
+                data: {
+                    suid: usersuid,     // or your JS variable
+                    orgId: loginorgid    // or your JS variable
+                },
+                success: function (response) {
+                    console.log(response);
+                    if (!response.success) {
+                        console.error(response.message);
+                        return;
+                    }
+                    if (response.result.delegationList.length < 1) {
+                        document.getElementById("receiveddelegationsempty").style.display = "block";
+                        document.getElementById("Mydelegationsempty").style.display = "none";
+                        document.getElementById("cardslist").style.display = "none";
+                        return;
+                    }
+                    document.getElementById("receiveddelegationsempty").style.display = "none";
+                    document.getElementById("Mydelegationsempty").style.display = "none";
+                    document.getElementById("cardslist").style.display = "block";
+                    allDelegations = response.result.delegationList || [];
+                    renderDelegationCards(); // 👈 replaces shimmer
+                    updateShowMoreButtons();
+                    updateTimestamps_statuspage();
+                },
+                error: ajaxErrorHandler,
+            });
+        }
+        function showShimmer(count = 4) {
+            const wrapper = document.getElementById("cardWrapper");
+            wrapper.innerHTML = "";
+
+            for (let i = 0; i < count; i++) {
+                const shimmerCard = document.createElement("div");
+                shimmerCard.className = "dg-card shimmer-card shadow-sm";
+
+                shimmerCard.innerHTML = `
+                                            <div class="dg-top">
+
+                                                <div class="dg-user">
+                                                    <div class="shimmer shimmer-avatar"></div>
+                                                    <div>
+                                                        <div class="shimmer shimmer-line md"></div>
+                                                        <div class="shimmer shimmer-line sm"></div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="dg-col shimmer-col">
+                                                    <div class="shimmer shimmer-line sm"></div>
+                                                    <div class="shimmer shimmer-line md"></div>
+                                                </div>
+
+                                                <div class="dg-col shimmer-col">
+                                                    <div class="shimmer shimmer-line sm"></div>
+                                                    <div class="shimmer shimmer-line md"></div>
+                                                </div>
+
+                                                <div class="dg-col shimmer-col">
+                                                    <div class="shimmer shimmer-line sm"></div>
+                                                    <div class="shimmer shimmer-line sm"></div>
+                                                </div>
+
+                                            </div>
+                                        `;
+
+                wrapper.appendChild(shimmerCard);
+            }
+        }
+        function handleEmptyState(count) {
+            if (count === 0) {
+                $("#cardslist").hide();
+
+                if (activetab === "mydelegation") {
+                    $("#Mydelegationsempty").show();
+                    $("#receiveddelegationsempty").hide();
+                } else {
+                    $("#receiveddelegationsempty").show();
+                    $("#Mydelegationsempty").hide();
+                }
+            } else {
+                $("#cardslist").show();
+                $("#Mydelegationsempty").hide();
+                $("#receiveddelegationsempty").hide();
+            }
+        }
+        $("#delegationSearch").on("input", function () {
+            const searchText = $(this).val().toLowerCase().trim();
+
+            // If search box is empty → show default list
+            if (!searchText) {
+                renderDelegationCards();
+                return;
+            }
+
+            // Filter delegations by delegate email
+            const filteredData = allDelegations.filter(d => {
+                if (!d.delegatees || d.delegatees.length === 0) return false;
+
+                const delegateEmail = d.delegatees[0].delegateeEmail || "";
+                return delegateEmail.toLowerCase().includes(searchText);
+            });
+
+            // Render filtered cards
+            generateCards(filteredData);
+
+            // Optional: handle empty state
+            handleEmptyState(filteredData.length);
+        });
+
+        function renderDelegationCards() {
+            const wrapper = $("#cardWrapper");
+            wrapper.empty();
+
+            const dataToRender = isExpanded
+                ? allDelegations
+                : allDelegations.slice(0, INITIAL_VISIBLE_COUNT);
+
+            generateCards(dataToRender);
+        }
+      
+        function generateCards(data) {
+
+            const wrapper = document.getElementById("cardWrapper");
+            wrapper.innerHTML = "";
+            var textval = '';
+            if (activetab === "mydelegation") {
+                textval = ` <span class="dg-to-label">To:</span>`;
+            } else {
+                textval = ` <span class="dg-to-label">From:</span>`;
+            }
+            data.forEach(d => {
+
+                const card = document.createElement("div");
+                card.className = "dg-card shadow-sm onhoverclass";
+
+                const delegate = d.delegatees[0];
+
+                const fullnameval = cropFileNames(delegate.fullName, "name");
+                const emailval = delegate.delegateeEmail;
+
+                /* ---------- STATUS ---------- */
+                let statusText = d.delegationStatus;
+                let statusClass = "";
+                let statushtml = "";
+
+                if (["Cancelled", "Rejected"].includes(statusText)) {
+                    statusClass = "dg-status cancelled";
+                    statushtml = `
+                                        <span class="${statusClass}">
+                                                    ${statusText}
+                                        </span>`;
+                }
+                else if (["Expired", "Completed"].includes(statusText)) {
+                    statusClass = "dg-status expired";
+                    statushtml = `
+                                        <span class="${statusClass}">
+                                                    ${statusText}
+                                        </span>`;
+                }
+                else if (statusText === "Active") {
+                    statusClass = "dg-status active";
+                    statushtml = `
+                                        <span class="${statusClass}">
+                                                    ${statusText}
+                                        </span>`;
+                }
+                else {
+                    statusClass = "dg-status new";
+                    statushtml = `
+                                        <span class="${statusClass}">
+                                                   ${statusText}
+                                        </span>`;
+                }
+
+
+                /* ---------- ACTION DROPDOWN ---------- */
+                let buttonsHtml = "";
+
+                if (["Cancelled", "Expired", "Completed", "Rejected"].includes(statusText)) {
+                    buttonsHtml = `
+                                                        <div class="action-dropdown">
+                                                            <button class="action-btn rounded-3">Actions ▾</button>
+                                                            <div class="dropdown-menu">
+                                                                <button class="dropdown-item disabled-blur" style="color:red;"><i class='fa fa-circle-minus'></i>&nbsp; Revoke</button>
+                                                                <button class="dropdown-item" onclick="getdetails('${d._id}')">
+                                                                                    <i class='fa-regular fa-eye'></i>&nbsp;View
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    `;
+                } else {
+                    buttonsHtml = `
+                                                        <div class="action-dropdown">
+                                                                    <button class="action-btn rounded-3">Actions ▾</button>
+                                                            <div class="dropdown-menu">
+                                                                        <button class="dropdown-item" onclick="revokeDelegate('${d._id}')" style="color:red;">
+                                                                            <i class='fa fa-circle-minus'></i>&nbsp; Revoke
+                                                                </button>
+                                                                <button class="dropdown-item" onclick="getdetails('${d._id}')">
+                                                                                            <i class='fa-regular fa-eye'></i>&nbsp;View
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    `;
+                }
+
+                /* ---------- NEW UI CARD ---------- */
+                card.innerHTML = `
+                                                    <div class="dg-top">
+
+                                                        <div class="dg-user">
+                                                            <div class="dg-avatar">
+                                                                ${delegate.fullName[0].toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <div class="dg-name" title="${delegate.fullName}">${fullnameval}</div>
+                                                                     <div class="dg-to-row">
+                                                                           ${textval}
+                                                                           <div class="dg-email">${emailval}</div>
+                                                                     </div>
+                                                            </div>
+                                                        </div>
+                                                                <div class="dg-col start-date">
+                                                            <div class="dg-label">Start Date & Time</div>
+                                                            <div class="dg-value convert-time" data-timestamp="${d.startDateTime}">
+                                                                ${d.startDateTime}
+                                                            </div>
+                                                        </div>
+
+                                                                <div class="dg-col end-date">
+                                                            <div class="dg-label">End Date&Time</div>
+                                                            <div class="dg-value convert-time" data-timestamp="${d.endDateTime}">
+                                                                ${d.endDateTime}
+                                                            </div>
+                                                        </div>
+
+                                                                <div class="dg-col status-col" style="text-align:left;">
+                                                            <div class="dg-label">Status</div>
+                                                                    ${statushtml}
+                                                        </div>
+
+                                                        ${buttonsHtml}
+
+                                                    </div>
+
+                                                `;
+
+                wrapper.appendChild(card);
+            });
+        }
+
+        function updateShowMoreButtons() {
+            console.log("Total delegations:", allDelegations.length);
+
+            if (allDelegations.length <= INITIAL_VISIBLE_COUNT) {
+                $("#showMoreBtn, #showLessBtn").addClass("d-none");
+                return;
+            }
+
+            if (isExpanded) {
+                $("#showMoreBtn").addClass("d-none");
+                $("#showLessBtn").removeClass("d-none");
+            } else {
+                $("#showMoreBtn").removeClass("d-none");
+                $("#showLessBtn").addClass("d-none");
+            }
+        }
+
+
+        $("#showMoreBtn").on("click", function () {
+            isExpanded = true;
+            renderDelegationCards();
+            updateShowMoreButtons();
+            updateTimestamps_statuspage();
+        });
+
+        $("#showLessBtn").on("click", function () {
+            isExpanded = false;
+            renderDelegationCards();
+            updateShowMoreButtons();
+            updateTimestamps_statuspage();
+
+            // Optional: scroll back to top of cards
+            $('html, body').animate({
+                scrollTop: $("#cardWrapper").offset().top - 100
+            }, 400);
+        });
+
+
+        function getdetails(delegationId) {
+            $.ajax({
+                url: '@Url.Action("Previewdetails", "SignatureDelegation")',
+                type: "GET",
+                data: { delegationId: delegationId },
+                success: function (response) {
+                    if (!response.success) {
+                        console.error(response.message);
+                        return;
+                    }
+                    console.log(response);
+                    openDelegationModal(response.result);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error fetching data:", error);
+                }
+            });
+        }
+        function openDelegationModal(data) {
+
+            /* ---------- FORMAT DATE ---------- */
+            function formatDate(isoString) {
+                if (!isoString) return "-";
+                const date = new Date(isoString);
+                return date.toLocaleString("en-GB", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true
+                });
+            }
+
+            /* ---------- STATUS CLASS ---------- */
+            function getStatusClass(status) {
+                switch (status) {
+                    case "Active":
+                        return "active";
+                    case "Expired":
+                        return "expired";
+                    case "Cancelled":
+                        return "cancelled";
+                    case "Rejected":
+                        return "rejected";
+                    default:
+                        return "new";
+                }
+            }
+
+            /* ---------- HEADER ---------- */
+            const summaryHtml = `
+                                                                                                <div class="delegation-summary-header">
+                                                                                                    <div class="summary-left">
+                                                                                                        <div class="info-icon">i</div>
+
+                                                                                                        <div>
+                                                                                                            <div class="title-row">
+                                                                                                                <h3>Signature Delegation Details</h3>
+                                                                                                            </div>
+
+                                                                                                            <div class="dates">
+                                                                                                                <span>Start Date: ${formatDate(data.startDateTime)}</span>
+                                                                                                                <span>End Date: ${formatDate(data.endDateTime)}</span>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+
+                                                                                                    <span class="status-chip ${getStatusClass(data.delegationStatus)}">
+                                                                                                        ${data.delegationStatus}
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                            `;
+
+            document.getElementById("delegationSummary").innerHTML = summaryHtml;
+
+            /* ---------- DELEGATE LIST ---------- */
+            const listContainer = document.getElementById("delegateListContainer");
+            listContainer.innerHTML = "";
+
+
+            (data.delegatees || []).forEach(d => {
+
+                const imageSrc = d.thumbnail
+                    ? `data:image/jpeg;base64,${d.thumbnail}`
+                    : "https://via.placeholder.com/48";
+
+                const row = document.createElement("div");
+                row.className = "delegate-row ";
+                var fullnameval = cropFileNames(d.fullName, "name");
+                var emailval = cropFileNames(d.email, "email");
+                row.innerHTML = `
+                                                                                                        <img src="${imageSrc}" alt="delegate" />
+
+                                                                                                        <div class="delegate-info" style="margin-left:1rem;">
+                                                                                                            <label style="dg-label">Name</label>
+                                                                                                                    <div>${fullnameval || "-"}</div>
+                                                                                                        </div>
+
+                                                                                                        <div class="delegate-info">
+                                                                                                                    <label style="dg-label">Email</label>
+                                                                                                                    <div>${emailval || "-"}</div>
+                                                                                                        </div>
+
+                                                                                                        <div class="delegate-status ${getStatusClass(data.delegationStatus)}">
+                                                                                                            ${data.delegationStatus}
+                                                                                                        </div>
+                                                                                                    `;
+
+                listContainer.appendChild(row);
+            });
+
+            /* ---------- SHOW MODAL ---------- */
+            document.getElementById("delegationModalOverlay").classList.remove("d-none");
+        }
+
+
+        function closeDelegationModal() {
+            document.getElementById("delegationModalOverlay").classList.add("d-none");
+        }
+
+                function cropFileNames(full, type) {
+            if (!full) return "";
+
+            let visible;
+
+            const width = window.innerWidth;
+
+            if (type === "name") {
+                if (width >= 1300) visible = 18;
+                else if (width >= 768) visible = 14;
+                else if (width >= 460) visible = 16;
+                else visible = 12;
+            } else {
+                if (width >= 1300) visible = 30;
+                else if (width >= 768) visible = 24;
+                else if (width >= 460) visible = 26;
+                else visible = 20;
+            }
+
+            if (full.length <= visible) return full;
+
+            const half = Math.floor(visible / 2);
+
+            return (
+                full.slice(0, half) +
+                "..." +
+                full.slice(full.length - half)
+            );
+        }
+
+    </script>
+}

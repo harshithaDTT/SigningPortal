@@ -1,0 +1,770 @@
+﻿@using System.Security.Claims;
+@using Newtonsoft.Json;
+
+@model SigningPortal.Web.ViewModels.Templates.PreviewTemplateViewModel
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var name = User.FindFirst(ClaimTypes.Name).Value;
+}
+
+<style>
+    /* ============================================================
+           DESIGN SYSTEM - Matching CreateTemplateNew.cshtml
+           ============================================================ */
+    :root {
+        --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --primary-blue: #2563eb;
+        --primary-purple: #7c3aed;
+        --accent-green: #10b981;
+        --text-primary: #0f172a;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --bg-page: #f8fafc;
+        --bg-card: #ffffff;
+        --border-color: #e2e8f0;
+        --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+        --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+        --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.12);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 24px;
+        --preview-shell-vh: 100vh;
+    }
+
+    /* Base Reset & Typography */
+    .preview-page-wrapper * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .preview-page-wrapper {
+        font-family: var(--font-family);
+        background: var(--bg-page);
+        color: var(--text-primary);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Viewer Shell - Main Container */
+    .viewer-shell {
+        padding: 1.25rem;
+        background: var(--bg-page);
+        min-height: calc(var(--preview-shell-vh) - 40px);
+        padding-bottom:0px;
+    }
+
+    .viewer-flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 20px;
+        height: 83vh;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        margin-top: 0.35rem;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+
+    /* Viewer Left Panel - PDF Container */
+    .viewer-left {
+        flex: 3;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background: var(--bg-card);
+        box-shadow: var(--shadow-md);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+        min-height: calc(var(--preview-shell-vh) - 180px);
+        height:100%;
+    }
+
+    /* Viewer Toolbar */
+    .viewer-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e5e7eb;
+        background: var(--bg-card);
+        flex-wrap: wrap;
+        min-height: 56px;
+    }
+
+    .toolbar-info {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+
+    .toolbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        flex: 1;
+        justify-content: flex-end;
+    }
+
+    .viewer-toolbar .zoom-controls,
+    .viewer-toolbar .page-controls {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
+    .viewer-toolbar button.toolbar-btn {
+        border: 1px solid #d1d5db;
+        background: var(--bg-card);
+        padding: 7px 12px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        color: #1f2937;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.15s ease;
+        box-shadow: var(--shadow-sm);
+        min-width: 36px;
+        height: 32px;
+    }
+
+        .viewer-toolbar button.toolbar-btn:hover {
+            border-color: #9ca3af;
+            background: #f9fafb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .viewer-toolbar button.toolbar-btn:active {
+            transform: scale(0.98);
+        }
+
+    .viewer-toolbar span {
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.875rem;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .viewer-toolbar .page-controls span {
+        font-weight: 500;
+        color: #6b7280;
+        font-size: 0.875rem;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    /* Scroll Container */
+    #scrollContainer {
+        flex: 1;
+        overflow-y: auto;
+        background: #f5f5f7;
+        padding: 20px;
+    }
+
+        #scrollContainer::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #scrollContainer::-webkit-scrollbar-thumb {
+            background: rgba(71, 85, 105, 0.35);
+            border-radius: 999px;
+        }
+
+        #scrollContainer::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+    /* PDF Container */
+    #pdf-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        transition: transform 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* PDF Page Styling */
+    .pdf-page {
+        background: white;
+        border-radius: var(--radius-sm);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        margin-bottom: 18px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Page Indicator Overlay */
+    .page-indicator-overlay {
+        position: absolute;
+        bottom: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(15, 23, 42, 0.85);
+        color: #fff;
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-md);
+        pointer-events: none;
+        display: none;
+    }
+
+    /* Draggable Elements (Annotations) */
+    .draggable {
+        position: absolute;
+        padding: 0.48%;
+        cursor: move;
+        background: rgba(0, 0, 0, 0);
+    }
+
+    .edit-icon {
+        position: absolute;
+        top: -18px;
+        right: -18px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .draggable:hover .edit-icon,
+    .draggable:focus .edit-icon,
+    .draggable.active .edit-icon {
+        opacity: 1;
+    }
+
+    /* Action Button Styles */
+    .btn-back-template {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: var(--bg-card);
+        border: 2px solid var(--accent-green);
+        border-radius: var(--radius-md);
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.08);
+        text-decoration: none;
+    }
+
+        .btn-back-template:hover {
+            transform: translateY(-1px);
+            text-decoration: none;
+        }
+
+    /* ============================================================
+           RESPONSIVE STYLES
+           ============================================================ */
+    @@media (max-width: 991px) {
+        .viewer-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 10px 14px;
+        }
+
+        .toolbar-actions {
+            width: 100%;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .viewer-toolbar .zoom-controls,
+        .viewer-toolbar .page-controls {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .viewer-flex-container {
+            flex-direction: column;
+        }
+
+        .viewer-left {
+            min-height: calc(var(--preview-shell-vh) - 220px);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .viewer-shell {
+            padding: 1rem 0.75rem;
+        }
+
+        .page-header {
+            margin-bottom: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.875rem;
+        }
+
+        #scrollContainer {
+            padding: 12px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .viewer-shell {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+        }
+
+        .viewer-toolbar {
+            padding: 8px 12px;
+        }
+
+        #scrollContainer {
+            padding: 10px;
+        }
+    }
+</style>
+
+<link rel="stylesheet" href="~/local-cdns/Shared/fontawesome/6.0.0-beta3/css/all.min.css">
+<script src="~/local-cdns/Shared/sweetalert2/11/sweetalert2.min.js"></script>
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+<script src="~/local-cdns/Shared/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="~/local-cdns/Shared/pdf-lib/1.16.0/pdf-lib.min.js"></script>
+
+<div class="preview-page-wrapper">
+    <div class="viewer-shell" id="viwer">
+        <div class="page-header">
+            <h1 class="page-title">Preview Template</h1>
+            <p class="page-subtitle">Review your template layout and annotation placements before finalizing.</p>
+        </div>
+
+        <div class="viewer-flex-container">
+            <div class="viewer-left" id="viewerdivtag">
+                <div class="viewer-toolbar" id="viewerToolbar">
+                    <div class="toolbar-info">
+                        <span id="toolbar-page-info"></span>
+                    </div>
+                    <div class="toolbar-actions">
+                        <a href="@Url.Action("BulkSignIndexNew", "BulkSign")" class="btn-back-template">
+                            <i class="fas fa-arrow-left"></i>
+                            Back to Templates
+                        </a>
+                    </div>
+                </div>
+                <div id="scrollContainer">
+                    <div id="pdf-container"></div>
+                </div>
+                <div id="pageIndicatorOverlay" class="page-indicator-overlay">Page 0 / 0</div>
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" id="filebase64" name="filebase64" value="" />
+    <input type="hidden" id="pdfschema" name="pdfschema" value="@Model.htmlSchema" />
+    <input type="hidden" id="oiginialpdfschema" name="oiginialpdfschema" value="" />
+</div>
+
+@section scripts {
+    <script>
+        var config = "";
+        var suid = "@Suid";
+        var loginEmail = "@userEmail";
+        var loginName = "@name";
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        if (!pdfjsLib) {
+            console.error('PDF.js library is not loaded.');
+        } else {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '@Url.Content("/local-cdns/Shared/pdfjs/2.10.377/pdf.worker.min.js")';
+        }
+        const pdfContainer = document.getElementById('pdf-container');
+        const components = document.getElementById('pdfschema').value;
+
+        // Helper: convert base64 to Blob
+        function base64ToBlob(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; ++i) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return new Blob([bytes], { type: 'application/pdf' });
+        };
+
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        $(document).ready(function () {
+            $('#BulkSignTemplateMenu').addClass('active');
+            document.getElementById("navigationNetworkOverlay").style.display = "none";
+            $('#networkOverlay').hide();
+            $('#overlay').show();
+
+            getDocumentdata();
+        });
+
+        // Create draggable element for previous annotations (kept your original logic)
+        function createDraggableElement(annotation) {
+            var sigAnnData = @Html.Raw(JsonConvert.SerializeObject(Model.annotations ?? "null"));
+            var esealAnnData = @Html.Raw(JsonConvert.SerializeObject(Model.esealAnnotations ?? "null"));
+            var qrAnnData = @Html.Raw(JsonConvert.SerializeObject(Model.qrCodeAnnotations ?? "null"));
+            var Docrotation = 0;
+
+            if (annotation.type === "Signature") {
+                overlaysignflag = true;
+
+                const element = document.createElement('div');
+                element.classList.add('draggable');
+                element.style.position = 'absolute';
+                element.style.pointerEvents = 'auto';
+                element.style.overflow = "hidden";
+                element.style.border = 'none';
+                element.style.zIndex = '1000';
+                element.style.padding = '0';
+                const wratio = (annotation.width / 100);
+                const hratio = (annotation.height / 100);
+                const lratio = ((annotation.x) / 100);
+                const tratio = ((annotation.y / 100));
+                element.setAttribute('data-wpercent', wratio)
+                element.setAttribute('data-hpercent', hratio)
+                element.setAttribute('data-lpercent', lratio)
+                element.setAttribute('data-tpercent', tratio)
+
+                const content = document.createElement('div');
+                content.classList.add('draggable-content');
+
+                element.style.left = ((annotation.x / 100) * canvasWidth) + 'px';
+                element.style.top = ((annotation.y / 100) * canvasHeight) + 'px';
+                const input = document.createElement('div');
+                input.style.border = "1px solid #44aad1";
+                input.id = "Signature";
+                input.style.textAlign = 'center';
+
+                input.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+                input.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+
+                input.textContent = annotation.role;
+                input.style.backgroundColor = "#d8d7d78a";
+                input.style.color = "#44aad1";
+                var fontSize = (canvasWidth * 0.0575) / 4.5;
+                input.style.fontSize = `${fontSize}px`;
+                input.style.wordBreak = "break-word";
+                content.appendChild(input);
+                element.appendChild(content);
+                var signatureconfig = JSON.parse(sigAnnData);
+                matchedSignData = {};
+
+                for (const key in signatureconfig) {
+                    if (signatureconfig.hasOwnProperty(key) && key === suid) {
+                        matchedSignData[key] = signatureconfig[key];
+                    }
+                }
+
+                return element;
+            }
+            else if (annotation.type === 'Eseal') {
+
+                overlayesealflag = true;
+
+                const element = document.createElement('div');
+                element.classList.add('draggable');
+                element.style.position = 'absolute';
+                element.style.pointerEvents = 'auto';
+                element.style.overflow = "hidden"
+                element.style.border = 'none';
+                element.style.zIndex = '1000';
+                element.style.padding = '0';
+
+                const wratio = (annotation.width / 100);
+                const hratio = (annotation.height / 100);
+                const lratio = ((annotation.x) / 100);
+                const tratio = ((annotation.y / 100));
+                element.setAttribute('data-wpercent', wratio)
+                element.setAttribute('data-hpercent', hratio)
+                element.setAttribute('data-lpercent', lratio)
+                element.setAttribute('data-tpercent', tratio)
+
+                const content = document.createElement('div');
+                content.classList.add('draggable-content');
+
+                element.style.left = ((annotation.x / 100) * canvasWidth) + 'px';
+                element.style.top = ((annotation.y / 100) * canvasHeight) + 'px';
+
+                element.style.padding = '0';
+                const input = document.createElement('div');
+                input.style.border = "1px solid #44aad1";
+                input.style.textAlign = 'center';
+                input.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+                input.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+                input.id = 'Eseal';
+                input.textContent = annotation.role;
+                input.style.backgroundColor = "#d8d7d78a";
+                input.style.color = "#44aad1";
+                var fontSize = (canvasWidth * 0.0575) / 4.5;
+                input.style.fontSize = `${fontSize}px`;
+                input.style.wordBreak = "break-word";
+
+                content.appendChild(input);
+
+                element.appendChild(content);
+                var esealconfig = JSON.parse(esealAnnData);
+                matchedEsealData = {};
+                for (const key in esealconfig) {
+                    if (esealconfig.hasOwnProperty(key) && key === suid) {
+                        matchedEsealData[key] = esealconfig[key];
+                    }
+                }
+
+                return element;
+            }
+        }
+
+        // ---------------------- On-demand rendering code ----------------------
+        // Shared state used by other functions in this view (kept names used elsewhere)
+        let uploadedPDF = null;
+        const renderQueue = new Set();
+        const renderedPages = new Set();
+        var canvasWidth = 0;
+        var canvasHeight = 0;
+        var originalWidth = "";
+        var originalHeight = "";
+
+        // Primary: create page containers, pre-render some pages + annotated pages,
+        // then set up lazy rendering as the user scrolls
+        function renderPDF(pdf, annotations = []) {
+            $('#overlay').hide();
+            pdfContainer.innerHTML = '';
+            uploadedPDF = pdf;
+
+            // Create page containers WITHOUT awaiting getPage
+            for (let pageNum = 0; pageNum < pdf.numPages; pageNum++) {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'pdf-page';
+                pageDiv.dataset.pageNumber = pageNum;
+                pageDiv.style.minHeight = '200px';
+                pageDiv.style.marginBottom = '1%';
+                pdfContainer.appendChild(pageDiv);
+            }
+
+            // Pre-render first 20 pages and also any pages that contain annotations
+            const renderTasks = [];
+            const limit = Math.min(20, pdf.numPages);
+
+            // Build set of pages to pre-render: first limit pages + pages from annotations
+            const pagesToRender = new Set();
+            for (let i = 0; i < limit; i++) pagesToRender.add(i);
+            try {
+                if (Array.isArray(annotations) && annotations.length > 0) {
+                    annotations.forEach(a => {
+                        if (a && typeof a.page === 'number') {
+                            const idx = a.page - 1;
+                            if (idx >= 0 && idx < pdf.numPages) pagesToRender.add(idx);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('Error computing pages to pre-render from annotations', e);
+            }
+
+            pagesToRender.forEach(p => {
+                renderTasks.push(renderPage(p, annotations));
+            });
+
+            Promise.all(renderTasks).then(() => {
+                setupScrollRendering(annotations);
+                try { document.getElementById("loading-text1").innerText = "Document Loaded"; } catch (e) { }
+            }).catch(err => {
+                console.error('Error pre-rendering pages:', err);
+                // fallback to set up observer even if pre-render failed
+                setupScrollRendering(annotations);
+            });
+        }
+
+        // Render a single page and append annotation layer & previous annotations
+        async function renderPage(pageNum, annotations = []) {
+            if (renderedPages.has(pageNum)) return;
+            renderedPages.add(pageNum);
+
+            const page = await uploadedPDF.getPage(pageNum + 1);
+
+            const scale = 1.5;
+            const rotation = page.rotate;
+            rotationDataval = rotation;
+            const viewport = page.getViewport({ scale, rotation });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            canvas.style.width = '100%';
+
+            const context = canvas.getContext('2d');
+            const renderContext = { canvasContext: context, viewport };
+
+            const container = document.querySelector(`[data-page-number="${pageNum}"]`);
+            if (!container) return;
+
+            container.innerHTML = '';
+            container.style.position = 'relative';
+            container.dataset.pageNum = pageNum;
+            container.appendChild(canvas);
+
+            await page.render(renderContext).promise;
+
+            const rect = canvas.getBoundingClientRect();
+            canvasWidth = rect.width;
+            canvasHeight = rect.height;
+
+            const annotationLayer = document.createElement('div');
+            annotationLayer.className = 'annotation-layer';
+            annotationLayer.style.position = 'absolute';
+            annotationLayer.style.top = '0';
+            annotationLayer.style.left = '0';
+            annotationLayer.style.width = '100%';
+            annotationLayer.style.height = '100%';
+            annotationLayer.style.pointerEvents = 'none';
+            annotationLayer.dataset.pageNumber = pageNum;
+            container.appendChild(annotationLayer);
+
+            originalWidth = viewport.viewBox[2];
+            originalHeight = viewport.viewBox[3];
+
+            // Append any provided annotations for this page
+            try {
+                const pageIndexOneBased = pageNum + 1;
+                const pageAnnotations = annotations && Array.isArray(annotations) ? annotations.filter(a => a.page === pageIndexOneBased) : [];
+                if (pageAnnotations.length > 0) {
+                    pageAnnotations.forEach(annotation => {
+                        if (annotation.type !== 'Wsave' && annotation.type !== 'Wfill') {
+                            const el = createDraggableElement(annotation);
+                            if (el) annotationLayer.appendChild(el);
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('Error appending page annotations', err);
+            }
+        }
+
+        // IntersectionObserver for on-demand rendering, preloads neighbors
+        function setupScrollRendering(annotations = []) {
+            const observer = new IntersectionObserver(async (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        const pageDiv = entry.target;
+                        const pageNum = parseInt(pageDiv.dataset.pageNumber);
+
+                        // Render this page and neighbors to reduce perceived load
+                        const start = Math.max(0, pageNum - 1);
+                        const end = Math.min(uploadedPDF.numPages - 1, pageNum + 1);
+
+                        for (let i = start; i <= end; i++) {
+                            if (!renderQueue.has(i)) {
+                                renderQueue.add(i);
+                                try {
+                                    await renderPage(i, annotations);
+                                } catch (e) {
+                                    console.error('Error rendering page', i, e);
+                                }
+                            }
+                        }
+                    }
+                }
+            }, {
+                root: null,
+                rootMargin: '200px',
+                threshold: 0.1
+            });
+
+            document.querySelectorAll('.pdf-page').forEach(div => observer.observe(div));
+        }
+
+        // ---------------------------------------------------------------------
+
+        // Fetch document data & initialize rendering
+                function getDocumentdata() {
+            var url = "@Url.Action("GetPreviewConfig", "Documents")";
+            var id = "@Model.edmsId";
+            var sigAnnData = @Html.Raw(JsonConvert.SerializeObject(Model.annotations ?? "null"));
+            var esealAnnData = @Html.Raw(JsonConvert.SerializeObject(Model.esealAnnotations ?? "null"));
+            var qrAnnData = @Html.Raw(JsonConvert.SerializeObject(Model.qrCodeAnnotations ?? "null"));
+
+            $.ajax({
+                url: url + '/' + id,
+                type: 'GET',
+                success: function (resp) {
+                    if (resp.success) {
+                        Documentbase64 = resp.result;
+                        var blobdata = base64ToBlob(Documentbase64);
+                        globalblobdata = blobdata;
+                        var reader = new FileReader();
+                        reader.readAsDataURL(blobdata);
+                        reader.onloadend = function () {
+                            document.getElementById('filebase64').value = reader.result.split(',')[1]; // Extract only the Base64 part
+                        };
+                        const pdfBase64 = Documentbase64;
+
+                        const pdfArrayBuffer = base64ToArrayBuffer(pdfBase64);
+                        pdfjsLib.getDocument({ data: pdfArrayBuffer }).promise.then(pdf => {
+
+                            renderPDF(pdf, JSON.parse(components));
+                        }).catch(error => {
+                            console.error('Error loading PDF:', error);
+                        });
+                    } else {
+                        $('#overlay').hide();
+                        swal({
+                            title: 'Error',
+                            text: resp.message,
+                            type: 'error',
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href =  '@Url.Action("BulkSignIndexNew", "BulkSign")';
+                            }
+                        });
+                    }
+
+                },
+
+                error: ajaxErrorHandler
+            });
+        }
+
+    </script>
+}

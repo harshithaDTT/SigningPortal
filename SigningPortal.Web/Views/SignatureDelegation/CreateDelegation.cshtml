@@ -1,0 +1,665 @@
+﻿@model SigningPortal.Web.ViewModels.SignatureDelegation.AddDelegationViewModel
+@using System.Security.Claims;
+
+@{
+    // Get the current date and time in the format "yyyy-MM-ddTHH:mm"
+    string minDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+}
+
+<style>
+    #custom-alert {
+        position: absolute;
+        top: 10%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        border: 1px solid #ccc;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        max-width: 650px;
+        border-radius: 5px;
+    }
+
+        #custom-alert #alert-message {
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        #custom-alert #ok-button {
+            background-color: #acc33e;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            #custom-alert #ok-button:hover {
+                background-color: #99b32c;
+            }
+
+    .card-content {
+        overflow-y: auto; /* Add overflow-y to enable vertical scrolling if needed */
+        max-height: 645px; /* Add max-height to limit the height of the card content */
+    }
+
+    .col-form-label {
+        font-weight: 500 !important;
+        font-size: 17px !important;
+    }
+  
+   /* Adjust padding and alignment for small screens */
+    @@media (max-width: 767px) {
+        .form-group .col-sm-5,
+        .form-group .col-sm-6 {
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .form-group label {
+            text-align: left;
+            margin-left: 10px; /* Adjust the value as needed */
+        }
+        #delegateContainer .form-group .col-sm-8 {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+    }
+
+    /* Adjust button and input group for small screens */
+    @@media (max-width: 575px) {
+        #formElementsContainer ul li .col-sm-8 {
+            margin-left: 0;
+            width: 100%;
+        }
+        #formElementsContainer ul li .col-sm-2 {
+            margin-top: 10px;
+        }
+    }
+
+    /* General alignment adjustments */
+    .col-md-5, .col-md-9 {
+        margin-left: 15px; /* Adjust the value as needed */
+    }
+
+    .form-group label {
+        margin-left: 15px; /* Adjust the value as needed */
+    }
+
+    .input, .btn {
+        margin-left: 15px; /* Adjust the value as needed */
+    }
+
+
+
+    input[type="datetime-local"] {
+        -webkit-appearance: none; /* Hides default calendar in Safari/Chrome */
+        -moz-appearance: textfield; /* Hides default calendar in Firefox */
+        appearance: none; /* Hides default calendar in modern browsers */
+        border: 1px solid #ced4da;
+        padding: 10px;
+        border-radius: 4px;
+        width: 100%;         
+    }
+
+    .xdsoft_datepicker {
+        width: 297px !important;
+    }
+
+    .xdsoft_datetimepicker .xdsoft_timepicker .xdsoft_time_box {
+        height: 249px !important;
+    }
+
+    .xdsoft_calendar td.xdsoft_current{
+        color: #666 !important;
+    }
+
+    @@media (max-width:430px){
+        .xdsoft_datepicker {
+            width: 100% !important;
+        }
+        .xdsoft_datetimepicker{
+            left:0% !important;
+        }
+    }
+
+</style>
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card c-main">
+            <div class="card-content background-image w-100" style="overflow-x:hidden;">
+                <div class="card-body p-1 p-md-3 p-lg-4" id="create">
+                    <div class="row">
+                        <div class="col-12">
+                            <h3>Create Delegations</h3>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group row">
+                                <label class="col-12 col-sm-4 col-lg-2 col-form-label" style="padding-right: 10px;margin-left: 30px !important;">Start Date<span style="color: red;">*</span> :</label>
+                                <div class="col-6" style="margin-left:30px !important;">
+@*                                     <input asp-for="StartDateTime" type="text" autocomplete="off" class="datetimepicker form-control" required min="@minDateTime" readonly style="margin-left: 10%; width: 135%; background-color: #fff;" />
+ *@                                    <input asp-for="StartDateTime" type="text" autocomplete="off" class="datetimepicker form-control" required min="@minDateTime" readonly style=" width: 17rem; background-color: #fff;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-12 ">
+                            <div class="form-group row">
+                                <label class="col-12 col-sm-4 col-lg-2 col-form-label" style="padding-right: 10px;margin-left: 30px !important;">End Date<span style="color: red;">*</span> :</label>
+                                <div class="col-6">
+                          @*        <input asp-for="EndDateTime" class="datetimepicker form-control" autocomplete="off" required min="@minDateTime" style="margin-left: 12%; width: 135%;" />  *@                                    
+                                    <input asp-for="EndDateTime" type="text" class="datetimepicker form-control" autocomplete="off" required min="@minDateTime" readonly style="margin-left: 30px; width: 17rem; background-color: #fff;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-12 ">
+                            <div class="form-group row ">
+                                <label class="col-12 col-sm-4 col-lg-2 col-form-label" style=" padding-right:10px;margin-left: 30px !important;">Delegatee<span style="color: red;">*</span> :</label>
+                                <div id="delegateContainer" class="col-6">
+                                    <div id="formElementsContainer">
+                                        <ul style="list-style:none; padding-left: 0;">
+                                            <li class="row align-items-center" style="margin-bottom:11px;">
+                                                <div class="col-12">
+@*                                                     <input class="delgateeEmail form-control" id="delgateeEmail1_0" type="email" placeholder="E-Mail" style="width: 90%; margin-right: 5px;">
+ *@                                                    <input class="delgateeEmail form-control" id="delgateeEmail1_0" type="email" placeholder="E-Mail" style="width: 17rem; margin-left:30px;">
+                                                </div>
+                                                @*<div class="col-sm-4 d-flex align-items-center">
+                                                    <button type="button" class="btn btn-danger sub-form-elements" id="minus_0" style="display:none; background-color: #dc143c !important; color: white; margin-right: 5px; margin-left: -40px;">
+                                                        <i class="fa fa-minus"></i>
+                                                    </button>
+                                                    <button type="button" id="plus_0" class="btn btn-primary text-center org-pluse-button add add-form-elements" style="background-color: #acc43d !important; color: white; margin-left: -40px;">
+                                                        <i class="fa fa-plus-circle"></i>
+                                                    </button>
+                                                </div>*@
+                                            </li>
+
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br />
+                    <div class="row">
+                        <div class="col-md-6 ">
+                            <button type="button" class="submit-button" id="submitButton" style="width:100px;margin-left: 5%;">Submit</button>
+                        </div>
+                    </div>
+                </div>
+
+                @* Custom Alert *@
+                <div id="custom-alert" style="display: none; background:red; color:white;">
+                    <div id="alert-message" style="display: inline-block; margin-left:10px"></div>
+                    <button id="ok-button" style="display: inline-block; margin-left: 10px; background:red;">X</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+
+
+<script src="~/local-cdns/Shared/jquery/3.6.0/jquery.min.js"></script>
+
+<!-- Include the jQuery DateTimePicker library -->
+<link rel="stylesheet" href="~/local-cdns/Shared/datetimepicker/2.5.20/jquery.datetimepicker.min.css">
+<script src="~/local-cdns/Shared/jquery/3.6.0/jquery.min.js"></script>
+<script src="~/local-cdns/Shared/datetimepicker/2.5.20/jquery.datetimepicker.full.min.js"></script>
+
+@section Scripts {
+
+    <script>
+
+        var userEmail = '@User.FindFirst(ClaimTypes.Email).Value';
+        var viewmodel = @Html.Raw(Json.Serialize(Model));
+        var emailInputValue = [];
+        var delegateEmails = [];
+        var index = 0;
+        var emailIsValid = false;
+        var index_val = 0;
+        var delegateeobj = [];
+
+
+        $(document).ready(function () {
+            document.getElementById("navigationNetworkOverlay").style.display = "none";
+
+            $('#networkOverlay').hide();
+            $('#SignatureDelegationMenu').addClass('active');
+            var actWidth = $(".nav-tabs").find(".active").parent("li").width();
+            var actPosition = $(".nav-tabs .active").position();
+            $(".slider").css({ "left": 0, /* + actPosition.left, */ "width": $(".nav-tabs .active").parent("li").width() });
+
+            var start = $('#StartDateTime').datetimepicker({
+                format: 'd-m-Y H:i',  // Format for displaying date and time
+                step: 15,             // 15-minute intervals
+                minDate: '@minDateTime', // Set the minimum date if required
+                scrollInput: false,
+            });
+
+            var end = $('#EndDateTime').datetimepicker({
+                format: 'd-m-Y H:i',  // Format for displaying date and time
+                step: 15,             // 15-minute intervals
+                minDate: '@minDateTime', // Set the minimum date if required
+                scrollInput: false,
+            });
+
+            $('#StartDateTime').attr('placeholder', 'DD-MM-YYYY HH:MM');
+
+            // var startDateTime = document.getElementsByName('StartDateTime')[0].value = 'yyyy-MM-ddThh:mm';
+            // var endDateTime = document.getElementsByName('EndDateTime')[0].value = 'DD/MM/YY HH:MM';
+
+            var startDateTime = document.getElementsByName('StartDateTime')[0].value = 'DD/MM/YY HH:MM';
+            var endDateTime = document.getElementsByName('EndDateTime')[0].value = 'DD/MM/YY HH:MM';
+        });
+
+
+
+
+        $('#delegateContainer').on('change', '.delgateeEmail', function (e) {
+            emailInputValue = $(this).val();
+            var input_id = $(this).attr('id'); // Use .attr('id') to get the id attribute
+            var parts = input_id.split('_');
+            var indexPart = parts.length > 1 ? parts[1] : null;
+            const emailRegex = /^\w+([\.-]?\w+)*@@\w+([\.-]?\w+)*(\.\w{2,6})+$/;
+
+            if (emailInputValue.trim() === "") {
+                toastr.error('Please enter an Email');
+                return; // Exit the function if email input is empty
+            }
+
+            if (!emailRegex.test(emailInputValue)) {
+                toastr.error('Please enter a valid Email');
+                return; // Exit the function if email format is invalid
+            }
+
+            if (userEmail === emailInputValue) {
+                toastr.error('You cannot assign yourself as Delegatee');
+                // Optionally clear the input
+                // $(this).val('');
+                return; // Exit the function if user tries to assign their own email
+            }
+
+            if (Array.isArray(viewmodel.emails) && viewmodel.emails.some(email => email === emailInputValue)) {
+                delegateEmails.push(emailInputValue);
+                if (delegateeobj.length > 0) {
+                    var finddelegateeobj = delegateeobj.find(item => item.order === indexPart);
+                    if (finddelegateeobj != undefined) {
+                        delegateeobj = delegateeobj.filter(item => item.order !== indexPart);
+                        var obj = {
+                            order: indexPart,
+                            email: emailInputValue
+                        }
+                        delegateeobj.push(obj);
+                    }
+                    else {
+                        var obj = {
+                            order: indexPart,
+                            email: emailInputValue
+                        }
+                        delegateeobj.push(obj);
+                    }
+                }
+                else {
+                    var obj = {
+                        order: indexPart,
+                        email: emailInputValue
+                    }
+                    delegateeobj.push(obj);
+                }
+                
+            } else {
+               toastr.error("This email does not belongs to this organization");
+                // Optionally clear the input
+                // $(this).val('');
+                return; // Exit the function if email is not from organization subscribers
+            }
+        });
+
+        // Initialize index outside the event handler
+       
+        $("#delegateContainer").on("click", ".add-form-elements", function () {
+            var emailInputValue = $(this).closest('.row').find('.delgateeEmail').val();
+            var $li = $(this).closest('li');
+            var indexToRemove = $li.index();
+            const emailRegex = /^\w+([\.-]?\w+)*@@\w+([\.-]?\w+)*(\.\w{2,6})+$/;
+            index_val = index_val + 1;
+            if (emailInputValue.trim() === "") {
+                toastr.error('Please enter an Email');
+                return; // Exit the function if email input is empty
+            }
+
+            if (!emailRegex.test(emailInputValue)) {
+                toastr.error('Please enter a valid Email');
+                return; // Exit the function if email format is invalid
+            }
+
+            if (userEmail === emailInputValue) {
+                toastr.error('You cannot assign yourself as Delegatee');
+                //$(this).closest('.row').find('.delgateeEmail').val('');
+                return; // Exit the function if user tries to assign their own email
+            }
+
+            if (indexToRemove == 1) {
+                if (delegateEmails[0] == emailInputValue) {
+                     toastr.error('Email already used');
+                    delegateEmails = delegateEmails.filter((email, index) => index !== indexToRemove);
+                    return; // Exit the function if email is already in use
+                }
+            }
+
+            if (Array.isArray(viewmodel.emails) && viewmodel.emails.some(email => email === emailInputValue) && index <= 1) {
+                // Validation passed, add the email to the delegateEmails array
+                if (index < 1) {
+                    var $ul = $("#delegateContainer ul");
+                    var newLi = $("<li class='row align-items-center' style='margin-bottom: 11px;'>").html(`
+                        <div class="col-sm-8">
+                            <input class="delgateeEmail form-control" id="delgateeEmail1_${index_val}" type="email" placeholder="E-Mail" style="width: 90%; margin-right: 5px;">
+                        </div>
+                       
+                        <br />
+                    `);
+
+
+
+                    $ul.append(newLi);
+                    $(this).hide(); // Hide the plus button of the clicked item
+                    $(this).prev('.sub-form-elements').show(); // Show the minus button of the clicked item
+                    index = index + 1; // Increment index
+                } else {
+                    toastr.error('You cannot add more than 2 subscribers as delegatee');
+                    return;
+                }
+            } else if (Array.isArray(viewmodel.emails) && viewmodel.emails.some(email => email === emailInputValue) && delegateEmails.length < 3) {
+                toastr.error('You cannot add more than 2 subscribers as delegatee');
+                return;
+            } else {
+                toastr.error("This email does not belongs to this organization");
+                return; // Exit the function if email is not from organization subscribers
+            }
+
+            // Add the new delegatee UI element
+        });
+
+
+        $("#delegateContainer").on("click", ".sub-form-elements", function () {
+            index--;
+            var $li = $(this).closest('li');
+            var isLastItem = $li.is(":last-child");
+            var isFirstItem = $li.is(":first-child");
+            var isListLengthTwo = $("#delegateContainer ul li").length === 2;
+            var indexToRemove = $li.index();
+            delegateEmails = delegateEmails.filter((email, index) => index !== indexToRemove);
+            var input_id = $(this).attr('id'); // Use .attr('id') to get the id attribute
+            var parts = input_id.split('_');
+            var indexPart = parts.length > 1 ? parts[1] : null;
+            var indexstring = indexPart.toString();
+            delegateeobj = delegateeobj.filter(item => item.order !== indexstring);
+
+            if (isFirstItem && isListLengthTwo) {
+                var $nextLi = $li.next('li');
+                $nextLi.find('.sub-form-elements').hide();
+                $li.remove();
+            }
+            else if (isFirstItem) {
+                $li.remove();
+            }
+            else if (isLastItem) {
+                var $prevLi = $li.prev('li');
+
+
+                $prevLi.find('.sub-form-elements').hide();
+
+
+                $prevLi.find('.add-form-elements').show();
+                $li.remove();
+            }
+            else {
+                $li.remove();
+            }
+        });
+
+
+
+        // Custom Alert Function
+        function showCustomAlert(message) {
+            // Set the alert message
+            document.getElementById('alert-message').innerText = message;
+
+            // Show the alert box
+            document.getElementById('custom-alert').style.display = 'block';
+
+            // Add some additional styles to the custom alert box
+            document.getElementById('custom-alert').style.animation = 'fadeIn 0.3s';
+            document.getElementById('custom-alert').style.animationFillMode = 'forwards';
+
+            // Add a click event listener to the OK button
+            document.getElementById('ok-button').addEventListener('click', function () {
+                // Hide the alert box when the OK button is clicked
+                document.getElementById('custom-alert').style.animation = 'fadeOut 0.3s';
+                document.getElementById('custom-alert').style.animationFillMode = 'forwards';
+
+                setTimeout(function () {
+                    document.getElementById('custom-alert').style.display = 'none';
+                }, 300);
+            });
+            setTimeout(function () {
+                if (document.getElementById('custom-alert').style.display === 'block') {
+                    document.getElementById('custom-alert').style.animation = 'fadeOut 0.3s';
+                    document.getElementById('custom-alert').style.animationFillMode = 'forwards';
+
+                    setTimeout(function () {
+                        document.getElementById('custom-alert').style.display = 'none';
+                    }, 300);
+                }
+            }, 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Function to compare start and end dates
+            function validateDateTime() {
+                var startDateTime = document.getElementsByName('StartDateTime')[0].value;
+                var endDateTime = document.getElementsByName('EndDateTime')[0].value;
+
+                // Convert to Date objects and compare
+                if (startDateTime == endDateTime) {
+                    toastr.error('Delegation start date time and end date time cannot be same.');
+                    // Clear the EndDateTime input field
+                    // document.getElementsByName('EndDateTime')[0].value = '';
+                    return false;
+                }
+                return true;
+            }
+            // Attach the validation function to the end date input's change event
+           // document.getElementsByName('EndDateTime')[0].addEventListener('change', validateDateTime);
+            $('input[name="EndDateTime"]').on('change', function () {
+                validateDateTime();  
+            });
+        });
+
+
+        function convertToDesiredFormat(dateTimeStr) {
+            if (!dateTimeStr) return '';  
+
+            // Split the input string into date and time parts
+            var dateParts = dateTimeStr.split(' ')[0].split('-'); // ['30', '09', '2024']
+            var timeParts = dateTimeStr.split(' ')[1].split(':'); // ['21', '52']
+
+            // Create a Date object using the date and time parts (note: months are 0-indexed in JavaScript)
+            var date = new Date(
+                dateParts[2],           // Year (e.g., 2024)
+                dateParts[1] - 1,       // Month (e.g., 09 -> 8 because it's zero-indexed)
+                dateParts[0],           // Day (e.g., 30)
+                timeParts[0],           // Hours (e.g., 21)
+                timeParts[1]            // Minutes (e.g., 52)
+            );
+
+            var year = date.getFullYear();
+            var month = ('0' + (date.getMonth() + 1)).slice(-2); // Add 1 to month as it is zero-indexed
+            var day = ('0' + date.getDate()).slice(-2);
+            var hours = ('0' + date.getHours()).slice(-2);
+            var minutes = ('0' + date.getMinutes()).slice(-2);
+    
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+
+        $('#submitButton').click(function () {
+            
+            // var startDateTime = $('#StartDateTime').val();
+            // var endDateTime = $('#EndDateTime').val();
+
+            var start_Date_Time = $('#StartDateTime').val(); //
+            var end_Date_Time = $('#EndDateTime').val(); //
+            var startDateTime = convertToDesiredFormat(start_Date_Time); //fun call for dateTime format
+            var endDateTime = convertToDesiredFormat(end_Date_Time);
+           
+            let selector = `#delgateeEmail1_${index_val}`;
+            var EmailInputValue = $(selector).val();
+            // Get the value of the input field with the constructed selector
+            let lastemailvalue = $(selector).val();
+            //var lastemailvalue = $('#delegateeEmail1_${index_val}').val();
+            var now = new Date();
+            var startDate = new Date(startDateTime);
+            var sDate = new Date(startDateTime).toISOString();
+            var eDate = new Date(endDateTime).toISOString();
+            const emailRegex = /^\w+([\.-]?\w+)*@@\w+([\.-]?\w+)*(\.\w{2,6})+$/;
+
+            if (startDateTime == "" || startDateTime == "NaN-aN-aNTaN:aN") {
+            toastr.error('Please select start date');
+            return; // Exit the function if email field is empty
+            }
+
+
+            if (endDateTime == "" || endDateTime == "NaN-aN-aNTaN:aN") {
+                toastr.error('Please select end date');
+                return; // Exit the function if email field is empty
+            }
+
+            if (startDateTime == endDateTime) {
+                toastr.error('Delegation start date time and end date time cannot be same.');
+                return;
+            }
+            if (startDateTime > endDateTime) {
+                toastr.error('Please select correct end date time to create Delegation');
+                return;
+            }
+
+            if (startDate.getDate() === now.getDate() && startDate.getHours() <= now.getHours() && startDate.getMinutes() <= now.getMinutes()) {
+                toastr.error('Please select current start time and date to create Delegation');
+                return;
+            }
+
+            if (lastemailvalue != undefined) {
+                EmailInputValue = lastemailvalue;
+                if (lastemailvalue.trim() == "") {
+                   toastr.error('Please enter an email');
+                    return;
+                }
+
+            }
+            if (lastemailvalue == undefined) {
+                EmailInputValue = delegateeobj[delegateeobj.length - 1].email;
+
+            }
+
+            if (EmailInputValue.length == 0) {
+                toastr.error('Please enter an email');
+                return; // Exit the function if email field is empty
+            }
+
+            if (!emailRegex.test(EmailInputValue)) {
+                toastr.error('Please enter a valid Email');
+                return; // Exit the function if email format is invalid
+            }
+
+            if (userEmail === EmailInputValue) {
+                toastr.error('You cannot assign yourself as Delegatee');
+                //$(this).closest('.row').find('.delgateeEmail').val('');
+                return; // Exit the function if user tries to assign their own email
+            }
+
+            if ((delegateEmails[0] == delegateEmails[1]) && (delegateEmails[0] != undefined) && (delegateEmails[1] != undefined)) {
+               toastr.error('Please ensure your email is unique; duplicates are not accepted');
+                // delegateEmails = delegateEmails.filter((email, index) => index !== indexToRemove);
+                return; // Exit the function if email is already in use
+            }
+
+            if (Array.isArray(viewmodel.emails) && viewmodel.emails.some(email => email === EmailInputValue)) {
+                var delegateeemailslist = [];
+
+                // Use forEach to iterate over the delegateeobj array
+                delegateeobj.forEach((item) => {
+                    // Push each item's email to the delegateeemailslist array
+                    delegateeemailslist.push(item.email);
+                });
+
+                var model = {
+                    StartDateTime: sDate,
+                    EndDateTime: eDate,
+                    //Emails: delegateEmails.length == 0 ? [EmailInputValue] : delegateEmails
+                    Emails: delegateeemailslist
+                }
+
+                // Perform AJAX request when the "Submit" button is clicked
+                $.ajax({
+                    url: '@Url.Action("AddDelegation", "SignatureDelegation")', // URL to your controller action method
+                    type: 'POST', // HTTP method (POST, GET, etc.)
+                    data: JSON.stringify(model), // Convert model object to JSON string
+                    contentType: 'application/json',
+                    beforeSend: function () {
+                        $('#overlay').show();
+                    },
+                    complete: function () {
+                        $('#overlay').hide();
+                    },
+                    success: function (response) {
+                        if (response.status == "Failed") {
+                            swal({
+                                title: 'Server response',
+                                text: response.message,
+                                type: 'info',
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                }
+                            });
+                        }
+                        else {
+                            swal({
+                                title: 'Success',
+                                text: response.message,
+                                type: 'success',
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = '@Url.Action("List", "SignatureDelegation")';
+                                }
+                            });
+
+                        }
+                    },
+                    error: ajaxErrorHandler
+                });
+            } else {
+                toastr.error('This email does not belongs to this organization');
+                return;
+            }
+
+
+        });
+
+    </script>
+}
+

@@ -1,0 +1,175 @@
+﻿@using System.Security.Claims;
+@{
+    var name = User.FindFirst(ClaimTypes.Name).Value;
+    var Email = User.FindFirst(ClaimTypes.Email).Value;
+}
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+
+<link rel="stylesheet" asp-append-version="true" href="~/css/Dashboard/Index.css" />
+
+
+<div class="row transparent-scrollbar" id="dashboardcard" style="height:100vh">
+    <div class="col-md-12" style="height:100%">
+        <div class="card c-main" style="height:100%;padding-top:0px !important;">
+            <div class="card-content transparent-scrollbar">
+                <div class="background-image pl-2 pr-2">
+                    <div class="row margin-bottom">
+                        <div class="col-lg-6 col-md-12 d-flex align-items-center">
+                            <div class="circle" style="font-size: 45px"><span>@name.Trim().Substring(0, 1)</span></div>
+                            <div class="dashboard-name ml-2" style="padding-left:5%">
+                                <span id="namedisplay">@name</span><br>
+                                <span id="emaildisplay">@Email</span><br>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-12 pl-0 pr-0" style="padding-top:1%;padding-left: 1.3%;">
+                            <div class="row Action1">
+                                <div class="col-sm-6 col-6" id="actionRequiredContainer">
+                                    <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                    <div style="padding-bottom: 10px; font-size: 25px;cursor:pointer;" id="ActionRequired"></div>
+                                    <div style="padding-bottom: 10px" class="below-text">Action Required</div>
+                                </div>
+
+                                <div class="col-sm-6 col-6" id="expiringSoonContainer" style="cursor: pointer;">
+                                    <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                    <div style="padding-bottom: 10px; font-size: 25px;cursor:pointer;" id="ExpiringSoon"></div>
+                                    <div style="padding-bottom: 10px" class="below-text">Expiring Soon</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="col-sm-3 pr-1">
+                            <div class="card pt-0" style="border: 1px solid #d8dbe0; min-height: 250px; max-height: 250px;box-shadow: 0 0px 3px 0 rgb(0 0 0 / 20%);">
+                                <div class="card-body d-flex flex-column justify-content-center align-items-center p-0 mt-1">
+                                    <h5 class="mb-3 mt-0" style="font-size:17px !important;font-weight:500;">Sign Document Yourself</h5>
+                                    <div class="d-flex justify-content-center align-items-center mb-3">
+                                        <img src='@Url.Content("~/img/signYourself.png")' asp-append-version="true" alt="Sign Yourself" style="cursor: pointer; height: 90px;" class="me-3" />
+                                    </div>
+                                    <button class="click-here-btn sign-yourself-btn">Get Started</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-3 pl-2 pr-0">
+                            <div class="card pt-0" style="border: 1px solid #d8dbe0; min-height: 250px; max-height: 250px;box-shadow: 0 0px 3px 0 rgb(0 0 0 / 20%);">
+                                <div class="card-body d-flex flex-column justify-content-center align-items-center p-0">
+                                    <h5 class=" mb-3 mt-0" style="font-size:17px !important;font-weight:500;">Send Document to Others</h5>
+                                    <div class="d-flex justify-content-center align-items-center mt-1 mb-3">
+                                        <img class="me-3" style="cursor: pointer; height: 90px;" src='@Url.Content("~/img/sendDocOthers.png")' asp-append-version="true" alt="Send for Signatures" />
+                                    </div>
+                                    <button class="click-here-btn send-now-btn">Send Now</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div id="actionrequiredDocsContainer" style="box-shadow: 0 0px 3px 0 rgb(0 0 0 / 20%);background-color:#ffffff; border: 1px solid #d8dbe0;border-radius:0.5rem; min-height: 250px; max-height: 250px; display: flex; flex-direction: column;">
+                                <div id="actionRequiredText" style="position: sticky; top: 0; background-color: white; z-index: 1;border-bottom:1px solid #d8dbe0;border-top-left-radius:0.5rem;border-top-right-radius:0.5rem;">
+                                    <h3 class="mb-0 fw-bold p-2" style="font-size:20px !important;color:#acc33e;">
+                                        Action Required Documents
+                                        <i class="fa fa-external-link action-required-icon" style="margin-left: 12px;font-size:smaller;cursor:pointer;"></i>
+                                    </h3>
+                                </div>
+
+                                <div class="p-0 shimmer-wrapper" style="flex-grow: 1; overflow-y: auto;border-bottom-left-radius:0.5rem;border-bottom-right-radius:0.5rem;">
+                                    <div class="shimmer-item"></div>
+                                    <div class="shimmer-item"></div>
+                                    <div class="shimmer-item"></div>
+                                </div>
+
+                                <div id="docs-container" class="p-0 shimmer-wrapper" style="flex-grow: 1; overflow-y: auto;border-bottom-left-radius:0.5rem;border-bottom-right-radius:0.5rem;position:relative;">
+                                    <!-- Dynamic document rows will go here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-left:2px;margin-right:1px;">
+                        <div class="col-md-12 col-lg-12 card" id="progresscarddiv" style="border: 1px solid #d8dbe0; box-shadow: none;">
+                            <div id="innerprogress" class="col-lg-6">
+                                <div class="d-flex justify-content-center flex-column align-items-center my-documents">
+                                    <div class="progress-bar">
+                                        <div class="circle2">
+                                            <div class="lds-spinner" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);">
+                                                <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+                                            </div>
+                                            <span id="InProgress"></span>
+                                        </div>
+                                    </div>
+                                    <div class="below-text" id="inprogressdivtext">My Documents</div>
+                                </div>
+
+                                <div class="d-flex justify-content-center flex-column align-items-center sent-documents">
+                                    <div class="progress-bar1">
+                                        <div class="circle3">
+                                            <div class="lds-spinner" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);">
+                                                <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+                                            </div>
+                                            <span id="Completed"></span>
+                                        </div>
+                                    </div>
+                                    <div class="below-text" id="completeddivtext">Sent Documents</div>
+                                </div>
+                            </div>
+
+                            <div id="innerprogress" class="col-lg-6">
+                                <div class="d-flex justify-content-center flex-column align-items-center received-documents">
+                                    <div class="progress-bar2">
+                                        <div class="circle4">
+                                            <div class="lds-spinner" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);">
+                                                <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+                                            </div>
+                                            <span id="Declined"></span>
+                                        </div>
+                                    </div>
+                                    <div class="below-text" id="Declineddivtext">Received Documents</div>
+                                </div>
+
+                                <div class="d-flex justify-content-center flex-column align-items-center referred-documents">
+                                    <div class="progress-bar3">
+                                        <div class="circle5">
+                                            <div class="lds-spinner" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);">
+                                                <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+                                            </div>
+                                            <span id="Expired"></span>
+                                        </div>
+                                    </div>
+                                    <div class="below-text" id="Expireddivtext">Referred Documents</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+<script>
+    var DocStats = '@Url.Action("DocStats", "Dashboard")';
+    var GetFilteredDocumentsList = '@Url.Action("GetFilteredDocumentsList", "Documents")';
+    var redirectingurl = '@Url.Action("Index", "Documents")?viewName=';
+    var CreateDocumentsSEND = '@Url.Action("CreateDocuments", "Documents")?param=SEND';
+    var CreateDocumentsSIGN = '@Url.Action("CreateDocuments", "Documents")?param=SIGN';
+    var IsDocumentBlocked = '@Url.Action("IsDocumentBlocked", "Documents")';
+    var currentemailval = "@Email";
+    var SignActionByDocIdForReferedDoc = '@Url.Action("SignActionByDocIdForReferedDoc", "Documents")';
+    var SignActionConfigByDocId = '@Url.Action("SignActionConfigByDocId", "Documents")';
+</script>
+
+@if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    <script src="~/js/Dashboard/Index.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+else
+{
+    <script src="~/dist/Dashboard/Index.min.js" type="text/javascript" asp-append-version="true" defer></script>
+}

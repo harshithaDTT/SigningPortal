@@ -1,0 +1,1039 @@
+﻿@model SigningPortal.Web.ViewModels.GroupSignings.TransactionListViewModel
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+<style>
+    .title {
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+        .title .icon {
+            font-size: 28px;
+            margin-right: 10px;
+        }
+
+    .subtitle {
+        color: #6c757d;
+        margin-top: 5px;
+        margin-bottom: 25px;
+        font-size: 16px;
+    }
+
+    /* Search Card */
+    .groupsigning-search-card {
+        background: #fff;
+        padding: 20px 25px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+        border-width: 1px;
+        border-color: var(--border);
+        margin-top: 25px;
+    }
+
+    .groupsigning-search {
+        width: 100%;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+    }
+
+        .groupsigning-search input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+    .action-dropdown {
+        position: relative;
+    }
+
+
+
+    .action-btn {
+        align-items: center;
+        gap: 8px;
+        background: #d1f4e0;
+        color: #198754;
+        font-size: 0.8rem;
+        padding: 7px 9px 9px 12px;
+        max-width: 90px;
+        width: 85px;
+        text-transform: none !important;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .action-btn:hover {
+            background-color: #009057 !important;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        top: 110%;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        min-width: 100px;
+        display: none;
+        z-index: 100;
+        padding:0px;
+    }
+
+    .dropdown-item {
+        width: 100%;
+        padding: 10px 12px;
+        background: none;
+        border: none;
+        text-align: center;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .dropdown-item:hover {
+            background: #f3f4f6;
+        }
+
+    .dropdown-menu {
+        display: none;
+    }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+    /* ---------- SHIMMER BASE ---------- */
+    .shimmer {
+        position: relative;
+        overflow: hidden;
+        background: #f0f0f0;
+        border-radius: 6px;
+    }
+
+        .shimmer::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient( 90deg, transparent, rgba(255, 255, 255, 0.6), transparent );
+            animation: shimmer 1.4s infinite;
+        }
+
+    /* ---------- SHIMMER CARD ---------- */
+    .dg-card.shimmer-card {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .shimmer-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+    }
+
+    .shimmer-line {
+        height: 12px;
+        margin-top: 8px;
+        border-radius: 4px;
+    }
+
+        .shimmer-line.sm {
+            width: 80px;
+        }
+
+        .shimmer-line.md {
+            width: 140px;
+        }
+
+        .shimmer-line.lg {
+            width: 200px;
+        }
+
+    .shimmer-col {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .dg-top {
+        flex-wrap: wrap;
+    }
+    /* card */
+    .dg-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 18px 22px;
+        margin-bottom: 16px;
+        font-family: "Inter";
+    }
+
+        .dg-card:hover {
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
+        }
+
+    /* top row */
+    .dg-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+    }
+
+    /* user */
+    .dg-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 260px;
+    }
+
+    .dg-avatar {
+        width: 40px;
+        height: 40px;
+        background-color: #009057 !important;
+        border: 1px solid #009057;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dg-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .dg-email {
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    /* column */
+    .dg-col {
+        min-width: 25px;
+    }
+
+    .dg-label {
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 4px;
+        font-weight: 400;
+        color: #7c8797;
+        font-family: 'Inter';
+    }
+
+    .dg-label-starttime {
+        font-size: 14px;
+        text-align: left;
+        margin-bottom: 4px;
+        font-weight: 400;
+        color: #7c8797;
+        font-family: 'Inter';
+    }
+
+    .dg-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #111827;
+        text-align: center;
+    }
+
+    /* status */
+    .dg-status {
+        background: #e7f8ef;
+        color: #16a34a;
+        font-size: 13px;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-weight: 500;
+    }
+
+        .dg-status.cancelled {
+            background: #ffeaea;
+            color: #cc0000;
+        }
+
+    .cancelled {
+        background: #ffeaea;
+        color: #cc0000;
+    }
+
+    .completed {
+        background: #d1f4e0;
+        color: #198754;
+    }
+
+    .dg-status.completed {
+        background: #d1f4e0;
+        color: #198754;
+    }
+
+    .dg-status.in-progress {
+        background: #fbeeba;
+        color: #fb8604;
+    }
+
+    .in-progress {
+        background: #fbeeba;
+        color: #fb8604;
+    }
+
+    .dg-status.partiallydone {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .partiallydone {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    /* action */
+    .dg-action-btn {
+        border: 1px solid #86d6b6;
+        background: #ffffff;
+        color: #0f766e;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+        .dg-action-btn:hover {
+            background: #0f766e;
+            color: #ffffff;
+        }
+
+    @@media (max-width: 576px) {
+        /* Stack card content vertically */
+        .dg-top {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        /* User section full width */
+        .dg-user {
+            width: 100%;
+            min-width: unset;
+        }
+        /* Each column becomes vertical */
+        .dg-col {
+            width: 100%;
+            min-width: unset;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        /* Label above value */
+        .dg-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+
+        .dg-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            word-break: break-word;
+        }
+        /* Status stays below label */
+        .dg-status {
+            margin-top: 4px;
+            align-self: flex-start;
+        }
+        /* Actions full width */
+        .action-dropdown {
+            width: 100%;
+        }
+
+        .action-btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    @@media (min-width: 577px) and (max-width: 992px) {
+        /* Allow wrapping */
+        .dg-top {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+        /* USER → full width */
+        .dg-user {
+            grid-column: 1 / -1;
+        }
+        /* Start & End Date */
+        .dg-col.start-date {
+            grid-column: 1 / 2;
+        }
+
+        .dg-col.end-date {
+            grid-column: 2 / 3;
+        }
+        /* Status & Actions row */
+        .dg-col.status-col {
+            grid-column: 1 / 2;
+        }
+
+        .action-dropdown {
+            grid-column: 2 / 3;
+            justify-content: flex-end;
+        }
+        /* Remove unwanted spacing */
+        .action-dropdown {
+            margin-top: 0 !important;
+        }
+    }
+
+    @@keyframes shimmer {
+        100% {
+            left: 100%;
+        }
+    }
+
+    /* Title scaling */
+    @@media (max-width: 480px) {
+        .title {
+            font-size: 22px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 14px;
+        }
+    }
+    /* Search box */
+    @@media (max-width: 480px) {
+        .groupsigning-search-card {
+            padding: 14px;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        /* Stack card content vertically */
+        .dg-top {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        /* User section full width */
+        .dg-user {
+            width: 100%;
+            min-width: unset;
+        }
+        /* Each column becomes vertical */
+        .dg-col {
+            width: 100%;
+            min-width: unset;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        /* Label above value */
+        .dg-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+
+        .dg-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            word-break: break-word;
+        }
+        /* Status stays below label */
+        .dg-status {
+            margin-top: 4px;
+            align-self: flex-start;
+        }
+        /* Actions full width */
+        .action-dropdown {
+            width: 100%;
+        }
+
+        .action-btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    @@media (min-width: 577px) and (max-width: 992px) {
+        /* Allow wrapping */
+        .dg-top {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+        /* USER → full width */
+        .dg-user {
+            grid-column: 1 / -1;
+        }
+        /* Start & End Date */
+        .dg-col.start-date {
+            grid-column: 1 / 2;
+        }
+
+        .dg-col.end-date {
+            grid-column: 2 / 3;
+        }
+        /* Status & Actions row */
+        .dg-col.status-col {
+            grid-column: 1 / 2;
+        }
+
+        .action-dropdown {
+            grid-column: 2 / 3;
+            justify-content: flex-end;
+        }
+        /* Remove unwanted spacing */
+        .action-dropdown {
+            margin-top: 0 !important;
+        }
+    }
+
+    .dg-card-custom {
+        cursor: pointer;
+        padding: 2rem !important;
+        box-shadow: 0 4px 9px rgba(25, 135, 84, 0.2);
+    }
+
+    @@media (min-width: 992px) and (max-width: 1365px) {
+        .dg-top {
+            gap: 12px;
+        }
+
+        .dg-user {
+            width: 240px;
+        }
+
+        .dg-col.start-date {
+            width: 155px;
+        }
+
+        .dg-col.end-date {
+            width: 155px;
+        }
+
+        .dg-label {
+            font-size: 13px;
+        }
+
+        .dg-value {
+            font-size: 13px;
+        }
+
+        .dg-col.status-col {
+            width: 110px;
+            min-width: 80px;
+        }
+    }
+
+    @@media(min-width:1366px) {
+        .dg-user {
+            width: 295px;
+        }
+
+        .dg-top {
+            gap: 24px;
+        }
+
+        .dg-col.start-date {
+            width: 160px;
+        }
+
+        .dg-col.end-date {
+            width: 160px;
+        }
+
+        .dg-label {
+            font-size: 14px;
+        }
+
+        .dg-value {
+            font-size: 14px;
+        }
+
+        .dg-col.status-col {
+            width: 110px;
+            min-width: 100px;
+        }
+    }
+
+    #showMoreBtn {
+        color: #0ea66b;
+        background: #F6F7FB;
+        border: 1px solid #0ea66b;
+    }
+
+        #showMoreBtn:hover {
+            background: #0ea66b;
+            color: #fff;
+            border: none;
+        }
+</style>
+
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="title">
+
+            Group Signing Transactions
+        </div>
+    </div>
+
+    <p class="subtitle">Sign multiple documents in a single, streamlined transaction.</p>
+
+
+    <!-- Search Box -->
+    <div class="bg-white border mb-4 rounded-3 shadow-sm groupsigning-search-card d-none">
+        <div class="groupsigning-search rounded-3">
+            <i class="fa fa-search"></i>
+            <input type="text" id="templateSearch" placeholder="Search …" />
+        </div>
+    </div>
+    <!-- No Data Message -->
+    <div id="noDataMessageDraft" style="display:none;">
+        <div class="text-center py-5"
+             style="border-radius: 12px; background:#f9fafb; margin-top:20px;">
+
+            <!-- Icon Circle -->
+            <div style="
+            width:80px;
+            height:80px;
+            margin:0 auto 20px auto;
+            background:#eef1f5;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">
+                <i class="fa-regular fa-file-lines"
+                   style="font-size:32px; color:#6b7280;"></i>
+            </div>
+
+            <!-- Main Title -->
+            <h4 style="font-weight:600; color:#1f2937; margin-bottom:8px;">
+                No documents found
+            </h4>
+
+            <!-- Subtitle -->
+            <p style="color:#6b7280; font-size:15px; margin:0;">
+                Upload your first document to get your first sign
+            </p>
+
+        </div>
+    </div>
+
+    <div class="bg-white border rounded-3 mb-4 shadow-sm groupsigning-search-card" id="cardslist">
+        <div id="cardWrapper"></div>
+
+        <div class="text-end mt-3">
+            <button id="showMoreBtn" class="btn btn-outline-primary d-none">Show More</button>
+            <button id="showLessBtn" class="btn btn-outline-secondary d-none">Show Less</button>
+        </div>
+
+    </div>
+
+
+</div>
+@section scripts {
+
+    <script>
+
+        var DocumentsSigningStatus = '@Url.Action("DocumentsSigningStatus", "GroupSigning")';
+        var GetGroupSigningListUrl = '@Url.Action("GetGroupSigningList", "GroupSigning")';
+        var groupsigninglist = [];
+        var filteredGroupSignings=[];
+        var index = 0;
+        var index_val = 0;
+        const INITIAL_VISIBLE_COUNT = 4;
+        let isExpanded = false;
+        $(document).ready(function () {
+            getgroupsigninglist();
+
+        });
+
+        function getgroupsigninglist() {
+
+            showShimmer(5); // 👈 show shimmer immediately
+
+            $.ajax({
+                url: GetGroupSigningListUrl, // ✅ correct API
+                type: "GET",
+                success: function (response) {
+                    console.log(response);
+                    if (!response.success) {
+                        console.error(response.message);
+                        return;
+                    }
+                    if (response.result.groupSigninglist.length < 1) {
+                        document.getElementById("noDataMessageDraft").style.display = "block";
+                        document.getElementById("cardslist").style.display = "none";
+                        return;
+                    }
+                    document.getElementById("noDataMessageDraft").style.display = "none";
+                    document.getElementById("cardslist").style.display = "block";
+                    groupsigninglist = response.result.groupSigninglist || [];
+                    renderDelegationCards();
+                    updateTimestamps_forGroupSIgning();
+
+                },
+                error: ajaxErrorHandler
+            });
+
+        }
+        function renderDelegationCards() {
+            const wrapper = $("#cardWrapper");
+            wrapper.empty();
+
+            const dataToRender = isExpanded
+                ? groupsigninglist
+                : groupsigninglist.slice(0, INITIAL_VISIBLE_COUNT);
+
+            generateGroupSigningCards(dataToRender);
+        }
+
+        $(document).on("click", ".action-btn", function (e) {
+            e.stopPropagation();
+
+            // Close other open dropdowns
+            $(".dropdown-menu").not($(this).next()).removeClass("show");
+
+            // Toggle current dropdown
+            $(this).next(".dropdown-menu").toggleClass("show");
+        });
+
+        // Close dropdown when clicking outside
+        $(document).on("click", function () {
+            $(".dropdown-menu").removeClass("show");
+        });
+        function generateGroupSigningCards(groupList) {
+
+            const wrapper = document.getElementById("cardWrapper");
+            wrapper.innerHTML = "";
+              if (!groupList || groupList.length === 0) {
+        $("#cardWrapper").hide();
+        $("#noDataMessageDraft").show();
+        return;
+    } else {
+        $("#noDataMessageDraft").hide();
+        $("#cardWrapper").show();
+    }
+            groupList.forEach(group => {
+
+                const groupName = group.transaction || "-";
+                var starttime = group.createdAt || "-";
+                const totalcount = group.totalFileCount || "-";
+                const successcount = group.successFileCount || "0";
+                const failcount = group.failedFileCount || "0";
+                const statusText = group.status || "-";
+                if (statusText === "Completed") {
+                    if (successcount == group.signingGroups.length) {
+                        statusClass = "dg-status completed";
+                        statushtml = `
+                                                <span class="${statusClass}">
+                                                            ${statusText}
+                                </span>`;
+                    }
+                    else if (failcount === group.signingGroups.length) {
+                        statusClass = "dg-status Cancelled";
+                        statushtml = `
+                                                <span class="${statusClass}">
+                                                            ${statusText}
+                                </span>`;
+                    }
+                    else {
+                        statusClass = "dg-status partiallydone";
+                        statushtml = `
+                                                <span class="${statusClass}">
+                                                           Partially done
+                                </span>`;
+                    }
+
+
+                }
+                else if (statusText === "In Progress") {
+                    statusClass = "dg-status in-progress";
+                    statushtml = `
+                                                <span class="${statusClass}">
+                                                           ${statusText}
+                                                </span>`;
+                }
+
+                const card = document.createElement("div");
+                card.className = "dg-card shadow-sm onhoverclass";
+                var buttonsHtml = `
+                                                                <div class="action-dropdown">
+                                                                    <button class="action-btn rounded-3">Actions ▾</button>
+                                                                    <div class="dropdown-menu">
+                                                                                <button class="dropdown-item" onclick="handleDocumentsSigningStatus('${group._id}')">
+                                                                             <i class='fa-regular fa-eye'></i>&nbsp;View
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            `;
+                card.innerHTML = `
+                                                <div class="dg-top">
+
+                                                    <div class="dg-user">
+                                                                 <img src="/img/icon/groupsigning_list_icon.png" style="width:2rem;" />
+                                                        <div>
+                                                         <div class="dg-col start-date">
+                                                              <div class="dg-label-starttime">Start Date & Time</div>
+                                                                            <div class="dg-value convert-time" style="text-align: left;" data-timestamp="${group.createdAt}">
+                                                                      ${group.createdAt}
+                                                                   </div>
+                                                              </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="dg-col">
+                                                        <div class="dg-label">Total</div>
+                                                                <div class="dg-value">${totalcount}</div>
+                                                    </div>
+                                                            <div class="dg-col">
+                                                                <div class="dg-label">Signed</div>
+                                                                        <div class="dg-value">${successcount}</div>
+                                                            </div>
+                                                                      <div class="dg-col">
+                                                                        <div class="dg-label">Failed</div>
+                                                                                <div class="dg-value">${failcount}</div>
+                                                                    </div>
+
+                                                    <div class="dg-col status-col" style="text-align:center;">
+                                                        <div class="dg-label">Status</div>
+                                                                ${statushtml}
+                                                    </div>
+
+                                                    ${buttonsHtml}
+
+                                                </div>
+                                            `;
+
+                wrapper.appendChild(card);
+
+            });
+        }
+        $("#templateSearch").on("input", function () {
+
+    const searchText = $(this).val().toLowerCase().trim();
+
+    if (!searchText) {
+        filteredGroupSignings = [...allGroupSignings];
+    } else {
+        filteredGroupSignings = allGroupSignings.filter(group => {
+            return (
+                (group.transaction || "").toLowerCase().includes(searchText) ||
+                (group.status || "").toLowerCase().includes(searchText)
+            );
+        });
+    }
+
+    generateGroupSigningCards(filteredGroupSignings);
+});
+
+        function handleDocumentsSigningStatus(groupId) {
+
+            document.getElementById("navigationNetworkOverlay").style.display = "block";
+            window.location.href = DocumentsSigningStatus + `?groupId=${groupId}`;
+        }
+        function convertToLocalTime(serverTime) {
+            // Parse the server-sent time (with offset) into a Date object
+            const date = new Date(serverTime);
+
+            // Convert to user's local time
+            const localTime = date.toLocaleString("en-US", { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+
+            return localTime;
+        }
+        function formatDateToDDMMYYYYtimewithoutseconds(dateString) {
+            if (!dateString) return "";
+
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+            const year = date.getFullYear();
+
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, "0");
+            const seconds = String(date.getSeconds()).padStart(2, "0");
+
+            const ampm = hours >= 12 ? "PM" : "AM";
+            hours = hours % 12;
+            hours = hours ? hours : 12; // Convert '0' to '12'
+            const formattedHours = String(hours).padStart(2, "0");
+
+            return `${day}/${month}/${year} ${formattedHours}:${minutes} ${ampm}`;
+        }
+        function updateTimestamps_forGroupSIgning() {
+            document.querySelectorAll(".convert-time").forEach(function (element) {
+                const serverTime = element.getAttribute("data-timestamp");
+                if (serverTime) {
+                    const localTime = convertToLocalTime(serverTime);
+                    element.textContent = formatDateToDDMMYYYYtimewithoutseconds(localTime);
+
+                }
+            });
+
+        }
+        function updateShowMoreButtons() {
+            console.log("Total delegations:", allDelegations.length);
+
+            if (allDelegations.length <= INITIAL_VISIBLE_COUNT) {
+                $("#showMoreBtn, #showLessBtn").addClass("d-none");
+                return;
+            }
+
+            if (isExpanded) {
+                $("#showMoreBtn").addClass("d-none");
+                $("#showLessBtn").removeClass("d-none");
+            } else {
+                $("#showMoreBtn").removeClass("d-none");
+                $("#showLessBtn").addClass("d-none");
+            }
+        }
+
+        function showShimmer(count = 4) {
+            const wrapper = document.getElementById("cardWrapper");
+            wrapper.innerHTML = "";
+
+            for (let i = 0; i < count; i++) {
+                const shimmerCard = document.createElement("div");
+                shimmerCard.className = "dg-card shimmer-card shadow-sm";
+
+                shimmerCard.innerHTML = `
+                                            <div class="dg-top">
+
+                                                <div class="dg-user">
+                                                    <div class="shimmer shimmer-avatar"></div>
+                                                    <div>
+                                                        <div class="shimmer shimmer-line md"></div>
+                                                        <div class="shimmer shimmer-line sm"></div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="dg-col shimmer-col">
+                                                    <div class="shimmer shimmer-line sm"></div>
+                                                    <div class="shimmer shimmer-line md"></div>
+                                                </div>
+
+                                                <div class="dg-col shimmer-col">
+                                                    <div class="shimmer shimmer-line sm"></div>
+                                                    <div class="shimmer shimmer-line md"></div>
+                                                </div>
+
+                                                <div class="dg-col shimmer-col">
+                                                    <div class="shimmer shimmer-line sm"></div>
+                                                    <div class="shimmer shimmer-line sm"></div>
+                                                </div>
+
+                                            </div>
+                                        `;
+
+                wrapper.appendChild(shimmerCard);
+            }
+        }
+
+        $("#showMoreBtn").on("click", function () {
+            isExpanded = true;
+            renderDelegationCards();
+            updateShowMoreButtons();
+            updateTimestamps_statuspage();
+        });
+
+        $("#showLessBtn").on("click", function () {
+            isExpanded = false;
+            renderDelegationCards();
+            updateShowMoreButtons();
+            updateTimestamps_statuspage();
+
+            // Optional: scroll back to top of cards
+            $('html, body').animate({
+                scrollTop: $("#cardWrapper").offset().top - 100
+            }, 400);
+        });
+        function cropFileNames(full, type) {
+
+            // Adjust crop lengths based on screen width
+            let start, end;
+            if (type === "name") {
+                const width = window.innerWidth;
+
+                if (width >= 1300) {
+                    start = 9;
+                    end = 9;
+                } else if (width >= 768) {
+                    start = 7;
+                    end = 7;
+                }
+                else if (width >= 460) {
+                    start = 12;
+                    end = 12;
+                }
+                else { // Small screens (mobiles)
+                    start = 10;
+                    end = 10;
+                }
+
+                if (full && full.length > start + end) {
+                    return full.slice(0, start) + '...' + full.slice(-end);
+                } else {
+                    return full
+                }
+            } else {
+                const width = window.innerWidth;
+
+                if (width >= 1300) {
+                    start = 15;
+                    end = 15;
+                } else if (width >= 768) {
+                    start = 12;
+                    end = 12;
+                }
+                else if (width >= 460) {
+                    start = 13;
+                    end = 13;
+                }
+                else { // Small screens (mobiles)
+                    start = 10;
+                    end = 10;
+                }
+
+                if (full && full.length > start + end) {
+                    return full.slice(0, start) + '...' + full.slice(-end);
+                } else {
+                    return full
+                }
+            }
+
+        }
+
+    </script>
+}

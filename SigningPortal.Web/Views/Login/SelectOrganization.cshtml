@@ -1,0 +1,156 @@
+﻿@model SigningPortal.Core.Domain.Services.Communication.Authentication.AuthenticateUserResponse;
+@inject IConfiguration Configuration
+@{
+    Layout = null;
+    var name = Model.name;
+    var firstName = Model.firstName;
+    var lastName = Model.lastName;
+    var email = Model.email;
+    var accessToken = Model.accessToken;
+    var idp_token = Model.idp_token;
+    var suid = Model.suid;
+    var last_login = Model.last_login;
+    var allowAccountSelection = Model.allowAccountSelection;
+    var allowSelfAccountSelection = Model.allowSelfAccountSelection;
+    var organizationId = Model.orgnizationId;
+    var organizationName = Model.orgnizationName;
+    var currentStaging = Configuration["CurrentStaging"];
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@currentStaging</title>
+    <link rel="icon"
+          type="image/x-icon"
+          href="@Url.Content($"~/Images_change/{currentStaging}/favicon.png")"
+          asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/local-cdns/Shared/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .centered {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+        }
+
+        .small-card {
+            width: 497px;
+            height: 263.2px;
+        }
+
+        .rectangle {
+            background-color: orange;
+            height: 66px;
+            width: 100%;
+            font-size: 21px;
+            font-family:'Sans Serif Collection';
+            padding-top: 17px;
+            padding-left: 15px;
+        }
+
+        .custom-card {
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container centered">
+        <div class="card small-card custom-card">
+            <div class="rectangle h4">Welcome!</div>
+            <div class="card-body">
+                <p class="card-text" style="font-family:'Sans Serif Collection';margin-left:15px;margin-top:8px;">Do you want to choose an organization or proceed with your own account?</p>
+                <div class="row">
+                    <div class="col">
+                        <button type="button" style="background:#ACC43D !important;color:#4F5D73;font-family:'Sans Serif Collection';font-size:14px !important" class="btn btn-secondary">Proceed with self</button>
+                    </div>
+                    <div class="col">
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Select Organization
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                @{
+                                    foreach (var item in Model.OrgDetailsList)
+                                    {
+                                        <a class="dropdown-item organization" data-id="@item.OrganizationUid" href="#">@item.OrganizationName</a>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/local-cdns/Shared/jquery/3.5.1/jquery.min.js"></script>
+    <script src="~/local-cdns/Shared/popper/1.16.0/popper.min.js"></script>
+    <script src="~/local-cdns/Shared/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
+<script>
+    $(document).ready(function () {
+        var name = "@name";
+        var firstName = "@firstName";
+        var lastName = "@lastName";
+        var email = "@email";
+        var accessToken = "@accessToken";
+        var idp_token = "@idp_token";
+        var suid = "@suid";
+        var last_login = "@last_login";
+        var allowAccountSelection = "@allowAccountSelection";
+        var allowSelfAccountSelection = "@allowSelfAccountSelection";
+        var organizationId = "@organizationId";
+        var organizationName = "@organizationName";
+
+        $('#proceed-self').click(function () {
+            Model.OrganizationId = null;
+            sendModelToController(Model);
+        });
+
+        $('.organization').click(function (e) {
+            e.preventDefault();
+           
+            var orgId = $(this).data('id');
+            var orgName = $(this).text();
+            sendModelToController(orgId);
+        });
+
+        function sendModelToController(orgId, orgName) {
+            var model = {
+                "Name": name,
+                "FirstName": firstName,
+                "LastName": lastName,
+                "Email": email,
+                "AccessToken": accessToken,
+                "IdpToken": idp_token,
+                "Suid": suid,
+                "LastLogin": last_login,
+                "AllowAccountSelection": allowAccountSelection,
+                "AllowSelfAccountSelection": allowSelfAccountSelection,
+                "OrganizationId": orgId,
+                "OrganizationName": orgName
+            };
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CreateSession", "Login")',
+                data: JSON.stringify(model),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (response) {
+    
+                },
+                error: function (xhr, status, error) {
+   
+                }
+            });
+        }
+    });
+</script>
+
+

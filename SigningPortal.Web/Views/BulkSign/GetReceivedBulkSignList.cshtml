@@ -1,0 +1,472 @@
+﻿@model List<SigningPortal.Core.Domain.Model.BulkSign>
+@using Newtonsoft.Json;
+@{
+    //await Html.RenderPartialAsync("_AlertBox");
+    var len = Model.Count();
+}
+
+<style>
+    
+   
+      tbody tr td:first-child {
+             text-align: left !important;
+        }
+
+        tbody tr th: {
+             text-align: center !important;
+        }
+
+    .titledefault {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 64px;
+        max-width:84px;
+        height: 24px;
+        border: 0.5px solid #777;
+        background-color: #ccc; /* Default background color */
+        color: #fff !important;
+        cursor: pointer;
+    }
+
+    .titleinprogress {
+          display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 64px;
+        max-width:84px;
+        height: 24px;
+        border: 0.5px solid #777;
+        color: #fff !important;
+        cursor: pointer;
+        background-color: #ff9800; /* Orange background color */
+    }
+
+    .titlecompleted {
+          display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 64px;
+        max-width:84px;
+        height: 24px;
+        border: 0.5px solid #777;
+        color: #fff !important;
+        cursor: pointer;
+        background-color: #4caf50; /* Green background color */
+    }
+
+    .titlefailed {
+          display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 64px;
+        max-width:84px;
+        height: 24px;
+        border: 0.5px solid #777;
+        color: #fff !important;
+        cursor: pointer;
+        background-color: #f44336; /* Red background color */
+    }
+
+    .titledraft {
+          display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 64px;
+        max-width:84px;
+        height: 24px;
+        border: 0.5px solid #777;
+        color: #fff !important;
+        cursor: pointer;
+        background-color: #ccc; /* Grey background color */
+    }
+      .titlepending {
+          display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 64px;
+        max-width:84px;
+        height: 24px;
+        border: 0.5px solid #777;
+        color: #fff !important;
+        cursor: pointer;
+        background-color: #ccc; /* Grey background color */
+    }
+
+        /* Style for the dropdown button */
+    .btn-dropdown-toggle {
+       /* Default button color */
+     /* Default text color */
+      border: none;
+
+    }
+
+
+
+    /* Style for the dropdown menu */
+    .dropdown-menu {
+      background-color: #fff; /* Background color of the dropdown menu */
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); /* Box shadow for the dropdown menu */
+      height:fit-content;
+      padding:inherit;
+    }
+
+    /* Style for the dropdown items */
+    .dropdown-item {
+      color:rgba(64, 74, 90, 1);/* Text color of dropdown items */
+
+    }
+
+    /* Style for the dropdown items on hover */
+    .dropdown-item:hover {
+      background-color: lightgrey;/* Background color of dropdown items on hover */
+    }
+
+    /* Styling the expand "+" icon */
+    table.dataTable > tbody > tr > td.control::before {
+        font-size: 20px; /* Make the icon bigger */
+        font-weight: bold;
+        color: #007bff; /* Blue color */
+        display: inline-block;
+        text-align: center;
+        width: 24px; /* Ensures proper alignment */
+        height: 24px; /* Ensures proper alignment */
+        line-height: 24px; /* Centers icon vertically */
+        border-radius: 24px;
+    }
+
+    /* Styling the collapse "−" icon */
+    table.dataTable > tbody > tr.parent > td.control::before {
+        font-size: 15px !important;
+        font-weight: bold;
+        display: inline-block;
+        text-align: center;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        border-radius: 20px;
+    }
+
+    table.dataTable tbody tr.parent td.control::before {
+        background-color: forestgreen !important;
+        color: white !important;
+    }
+
+</style>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body ">
+                <div class="row p-b-20">
+                    <div class="col-md-12 col-sm-6 col-6">
+                        <div class="btn-group">
+                            <a id="addRow1" asp-action="GetBulkSignList" class="btn btn-primary">My List</a>
+                        </div>
+                        &nbsp;
+                        <div class="btn-group">
+                            <a id="addRow1" asp-action="GetReceivedBulkSignList" class="btn btn-secondary">Received List</a>
+                        </div>
+                        &nbsp;
+                        <div class="btn-group">
+                            <a id="addRow1" asp-action="GetSentBulkSignList" class="btn btn-primary">Send List</a>
+                        </div>
+                        <div class="btn-group" style="float:right">
+                            <a class="btn btn-primary" asp-action="UploadFiles">
+                                Perform new Bulk Sign
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <table id="scopesTable" class="table table-striped table-bordered table-hover table-checkable order-column full-width" >
+                    <thead>
+                        <tr>
+                            <th>TemplateName</th>
+                            <th>TransactionName</th>
+                            <th>CreatedDate</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || Model.Count() == 0)
+                        {
+                            <tr>
+                                <td style="text-align:center !important" valign="top" colspan="5" class="dataTables_empty">No record found</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr class="odd gradeX">
+
+                                    <td>@item.TemplateName</td>
+                                    <td>@item.Transaction</td>
+                                    <td>@item.CreatedAt</td>
+                                    @if (item.Status == "Completed")
+                                    {
+                                        <td>
+                                            <a class="titlecompleted" asp-action="BulkSigningStatus" asp-controller="BulkSign" asp-route-correlationId="@item.CorelationId">
+                                                @item.Status
+                                            </a>
+                                        </td>
+
+                                    }
+                                    else if (item.Status == "Draft")
+                                    {
+                                        <td>
+                                            <a class="titledraft" onclick="TemplateDetails('@item.CorelationId')">
+                                                @item.Status
+                                            </a>
+
+                                        </td>
+
+
+
+                                    }
+                                    else if (item.Status == "In Progress")
+                                    {
+                                        <td>
+                                            <a class="titleinprogress" asp-action="BulkSigningStatus" asp-controller="BulkSign" asp-route-correlationId="@item.CorelationId">
+                                                @item.Status
+                                            </a>
+                                        </td>
+
+
+                                    }
+                                    else if (item.Status == "Failed")
+                                    {
+                                        <td>
+                                            <a class="titlefailed" onclick="TemplateDetails('@item.CorelationId')">
+                                                @item.Status
+                                            </a>
+
+                                        </td>
+
+
+                                    }
+                                    else if (item.Status == "Pending")
+                                    {
+                                        <td>
+                                            <a class="titlepending" onclick="TemplateDetails('@item.CorelationId')">
+                                                @item.Status
+                                            </a>
+
+                                        </td>
+                                    }
+
+                                    else
+                                    {
+                                        <td>
+                                            <a class="titledefault">
+                                                @item.Status
+                                            </a>
+
+                                        </td>
+
+                                    }
+
+                                    <td class="valigntop">
+                                        <div class="btn-group">
+                                            <button class="btn btn-xs deepGreen-bgcolor dropdown-toggle" type="button" data-toggle="dropdown"
+                                            aria-expanded="false">
+                                                Actions
+                                                <i class="fa fa-angle-down"></i>
+                                            </button>
+                                            <ul class="dropdown-menu pull-left" role="menu">
+                                                <li>
+                                                    @if (item.Status == "Pending")
+                                                    {
+                                                        <a class="dropdown-item" onclick="PerformBulkSign('@item.CorelationId', 'Sign')">
+                                                            <i class="icon-pencil"></i>Sign
+                                                        </a>
+
+                                                    }
+                                                    @if (item.Status == "Completed")
+                                                    {
+                                                        <a class="dropdown-item" asp-action="BulkSigningStatus" asp-controller="BulkSign" asp-route-correlationId="@item.CorelationId">
+                                                            <i class="icon-pencil"></i>View
+                                                        </a>
+                                                    }
+                                                    @if (item.Status != "Completed")
+                                                    {
+                                                        <a class="dropdown-item" href="#" onclick="TemplateDetails('@item.CorelationId')">
+                                                            <i class="icon-pencil"></i> View
+                                                        </a>
+
+                                                        @*   <form asp-action="TemplateDetails" asp-controller="BulkSign" asp-route-CorelationId="@item.CorelationId" method="post">
+                                            <input type="hidden" name="selectedTemplateId" value="@item.TemplateId" />
+                                            <button type="submit" style="border:white;background-color:white">View</button>
+                                            </form>*@
+                                                    }
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src=\"~/local-cdns/Shared/sweetalert2/11/sweetalert2.min.js\"></script>
+<script>
+    $(document).ready(function() {
+        $('#networkOverlay').hide();
+        $('#BulkSign').addClass('active');
+        $('#scopesTable').DataTable({
+            searching: true,
+            paging: true,
+            lengthChange: false,
+            pageLength: 10,
+            orderClasses: false,
+            stripeClasses: [],
+            info: false,
+            "ordering": false
+        });
+        //var count = @len;
+        //if (count>0) {
+        //    if ($("#scopesTable").length) {
+        //        $('#scopesTable').DataTable();
+        //    }
+        //}
+
+        //var bulkSignLink = document.getElementById('builksignModle').querySelector('.nav-link');
+        //bulkSignLink.click();
+        //$('#homeMenu').addClass('breadcrumb-item').append('Bulksign > ReceivedList');
+        //$('#mainMenu').removeClass('breadcrumb-item');
+        //$('#subMenu').removeClass('breadcrumb-item');
+        //$('#TransactionMenuItem').addClass('active');
+    });
+    function TemplateDetails(corelationId) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '@Url.Action("TemplateDetailsReceivedList", "BulkSign")'; // Replace with the correct URL
+
+        var hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.name = 'CorelationId';
+        hiddenField.value = corelationId;
+
+        form.appendChild(hiddenField);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+
+    function PerformBulkSign(CorelationId) {
+        var correlationId = CorelationId;
+        Swal.fire({
+            title: "Enter PIN",
+            text: "Please enter your Signing PIN in your mobile app.",
+            type: "info",
+            showConfirmButton: false,
+            showCancelButton: false,
+            allowOutsideClick: false,
+        });
+        $.ajax({
+            url: '@Url.Action("PerformBulkSign", "BulkSign")',
+            method: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(correlationId),
+            beforeSend: function() {
+                $('#overlay').show();
+            },
+            complete: function() {
+                $('#overlay').hide();
+            },
+            success: function(response) {
+                if (response.success == false) {
+                    //Swal.fire({ type: 'info', title: "Bulk Signing", text: response.message, showCancelButton: false, closeOnConfirm: true }, function(isConfirm) {
+                    //    if (isConfirm) {
+                    //    }
+                    //});
+                    Swal.fire({
+                        type: 'info',
+                        title: "Send Request",
+                        text: response.message,
+                        showCancelButton: true,
+                        confirmButtonText: 'Retry', 
+                        closeOnConfirm: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            PerformBulkSign();
+                        }
+                        else {
+                            $.ajax({
+                                url: '@Url.Action("FailBulkSignRequest", "BulkSign")',
+                                method: 'POST',
+                                contentType: "application/json",
+                                data: JSON.stringify(correlationId),
+                                beforeSend: function() {
+                                    $('#overlay').show();
+                                },
+                                complete: function() {
+                                    $('#overlay').hide();
+                                },
+                                success: function(response) {
+                                    if (response.success == false) {
+                                        Swal.fire({
+                                            type: 'error',
+                                            title: "",
+                                            text: response.message,
+                                            showCancelButton: false,
+                                            closeOnConfirm: true
+                                        })
+                                    }
+                                    else {
+
+                                        Swal.fire({
+                                            type: 'success',
+                                            title: '',
+                                            text: response.message,
+                                            showCancelButton: false,
+                                            closeOnConfirm: true
+                                        }).then((result) => {
+                                            window.location.href = '@Url.Action("GetReceivedBulkSignList", "BulkSign")';
+                                        })
+                                    }
+                                }
+                            })
+                        }
+                    });
+                }
+                else {
+                    Swal.fire({
+                        type: 'success',
+                        title: "Send Request",
+                        text: "Document Signing is initiated.",
+                        showCancelButton: false,
+                        closeOnConfirm: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '@Url.Action("BulkSigningStatus", "BulkSign")' + '?correlationId=' + correlationId;
+                        }
+                    });
+
+                }
+            },
+            error: function(error) {
+                Swal.fire({ type: 'error', title: "Bulk Signing", text: "Error Performing Bulk Signing", showCancelButton: false, closeOnConfirm: true }, function(isConfirm) {
+                    if (isConfirm) {
+                    }
+                });
+                console.error('Error Performing Bulksign:', error);
+            }
+        });
+    }
+
+
+
+
+</script>

@@ -1,0 +1,344 @@
+﻿@model List<SigningPortal.Web.ViewModels.DigitalForms.FormResponse>;
+
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+
+@{
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+}
+<style>
+
+    .custom-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .custom-dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #fff;
+        min-width: 120px;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 1;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+    }
+
+        .custom-dropdown-content a {
+            color: #333;
+            padding: 0.25rem 1rem;
+            text-decoration: none;
+            display: block;
+            font-size: 14px;
+        }
+
+            .custom-dropdown-content a:hover {
+                background-color: rgba(0, 0, 0, 0.05) !important;
+                color: #333 !important;
+            }
+
+    .custom-dropdown:hover .custom-dropdown-content {
+        display: block;
+    }
+
+    .custom-dropdown-content li {
+        list-style: none;
+    }
+
+    .btn {
+        text-transform: capitalize !important;
+    }
+
+    /* ===== RESPONSIVE STYLES ===== */
+    @@media (max-width: 768px) {
+        h3.common-heading-color {
+            font-size: 1.25rem !important;
+            margin: 0 0.5rem !important;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .custom-dropdown-content {
+            min-width: 100px;
+            left: auto;
+            right: 0;
+        }
+
+        .btn {
+            font-size: 0.85rem !important;
+            padding: 0.4rem 0.6rem;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        h3.common-heading-color {
+            font-size: 1.1rem !important;
+        }
+
+        .card-body {
+            padding: 0.75rem;
+        }
+
+        .custom-dropdown-content a {
+            padding: 0.5rem 0.75rem;
+            font-size: 12px;
+        }
+
+        .btn {
+            font-size: 0.75rem !important;
+            padding: 0.3rem 0.5rem;
+        }
+    }
+</style>
+
+
+
+    <div class="row" style="height:100vh">
+        <div class="col-md-12" style="height:100%">
+            <div class="card background-image" style="height:100%">
+
+                <div class="card-body background-image">
+                    <h3 class="common-heading-color" style="margin: -7px 11px -5px; font-size: 25px;">Responses</h3>
+                    <br />
+                    <div class="row">
+                        <div class="tab-content">
+
+                            @if (Model.Count == 0)
+                            {
+                                <div class="text-center">
+                                    <div class="card-body">
+                                        <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">No Responses Available</div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                            <div class="text-center">
+                                <div class="card-body">
+                                <table id="MyOrgFormTb" class="table table-striped table-bordered table-hover table-checkable order-column full-width p-4">
+                                    <thead style="text-align:center">
+                                        <tr>
+
+                                            <th style="text-align:left!important">USER</th>
+                                            <th>SIGNED DATE</th>
+                                            <th>STATUS</th>
+                                            <th>ACTION</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="text-align:center">
+                                        @foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <td style="text-align:left!important">@item.CreatedBy</td>
+                                                <td>@item.CreatedAt</td>
+                                                <td>@item.Status</td>
+                                                <td class="valigntop" style="text-align:center">
+                                                    <div class="btn-group" onclick="modalForm('@item.EdmsId', '@item.SignerName')">
+                                                        <a href="#">
+                                                                <img src='@Url.Content("~/assets/images/eyeicon.png")' asp-append-version="true" alt="View" />
+                                                        </a>
+                                                    </div>
+                                                </td>
+
+
+
+
+
+                                            </tr>
+
+
+                                        }
+                                    </tbody>
+                                </table>
+                                </div>
+                            </div>
+                            }
+
+                  
+  
+    
+                    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+<div class="modal fade" id="digitalShowModal" tabindex="-1" role="dialog" aria-labelledby="digitalFormModalLabel" aria-hidden="false" data-backdrop="true" style="display:none;opacity: 1;padding-top: 1%;background-color: rgba(0, 0, 0, 0.2);">
+    <div class="modal-dialog modal-lg" role="document" style="width:100%;margin-top:0">
+        <div class="modal-content" style="height:90vh">
+            <div class="modal-header" style="justify-content:end">
+                <img data-toggle="tooltip" data-placement="left" title="Download PDF" style="text-align:left;width:20px;height:20px" src='@Url.Content("~/assets/images/download.svg")' asp-append-version="true" onclick="DownloadForm()" />
+                <img data-toggle="tooltip" data-placement="left" title="Close" style="text-align:left;width:16px;height:20px;margin-left:3%" src='@Url.Content("~/assets/images/cross.svg")' asp-append-version="true" onclick="closemodal()" />
+            </div>
+            <div class="modal-body" style="overflow-y:auto">
+
+
+                <div id="pdf-container" style="overflow-y:auto;width:100%;height:100%"></div>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+<script>
+    var pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (!pdfjsLib) {
+        console.error('PDF.js library is not loaded.');
+    } else {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '@Url.Content("/local-cdns/Shared/pdfjs/2.10.377/pdf.worker.min.js")';
+    }
+    $(document).ready(function () {
+       $('#networkOverlay').hide();
+
+        $('#MyOrgFormTb').DataTable({
+            searching: false,
+            paging: true,
+            lengthChange: false,
+            pageLength: 5,
+            orderClasses: false,
+            stripeClasses: [],
+            info: true,
+            "ordering": false
+        });
+    });
+
+
+    var formbase64 = "";
+
+    function renderPDF(pdf) {
+        const pdfContainer = document.getElementById('pdf-container');
+        pdfContainer.innerHTML = '';
+        const numPages = pdf.numPages;
+        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+            pdf.getPage(pageNum).then(page => {
+                const scale = 1.5;
+                const viewport = page.getViewport({ scale });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                canvas.style.width = '100%';
+                const pageContainer = document.createElement('div');
+                pageContainer.className = 'pdf-page';
+                pageContainer.style.position = 'relative';
+                pageContainer.appendChild(canvas);
+                pdfContainer.appendChild(pageContainer);
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                page.render(renderContext)
+            });
+        }
+
+    }
+
+    function base64ToArrayBuffer(base64) {
+        const binaryString = window.atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+    function modalForm(EdmsId, SignerName) {
+        $("#digitalShowModal").modal('show');
+        FileName = SignerName + "_signed";
+
+        $.ajax({
+            url: '@Url.Action("GetPreviewConfig", "DigitalForms")',
+            type: 'GET',
+            data : {
+                edmsId:EdmsId
+            },
+            beforeSend: function () {
+                $('#overlay').show();
+            },
+            complete: function () {
+                $('#overlay').hide();
+            },
+            success: function (resp) {
+                if (resp.success) {
+                    
+                    formbase64 = resp.result;
+                    const pdfArrayBuffer = base64ToArrayBuffer(resp.result);
+                    pdfjsLib.getDocument({ data: pdfArrayBuffer }).promise.then(pdf => {
+                        renderPDF(pdf);
+                    }).catch(error => {
+                        console.error('Error loading PDF:', error);
+                    });
+                    
+                } else {
+                    swal({
+                        title: 'Error',
+                        text: resp.message,
+                        type: 'error',
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            document.getElementById("navigationNetworkOverlay").style.display = "block";
+                            window.location.href = '@Url.Action("Index", "DigitalForms")';
+                        }
+                    });
+                }
+            },
+            // error: function (xhr, status, error) {
+            //     console.log(error);
+            //     swal({
+            //         title: 'Error',
+            //         text: 'Something went wrong!',
+            //         type: 'error',
+            //     }, function (isConfirm) {
+            //         if (isConfirm) {
+            //             window.location.href = '@Url.Action("Index", "DigitalForms")';
+            //         }
+            //     });
+            // }
+            error: function (xhr, status, error) {
+                if (xhr.status === 500) {
+                    swal({
+                        title: "Server Error",
+                        text: "An internal server error occurred. Redirecting...",
+                        type: "error"
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            document.getElementById("navigationNetworkOverlay").style.display = "block";
+                            window.location.href = '@Url.Action("Index", "DigitalForms")';
+                        }
+                    });
+                } else {
+
+                    ajaxErrorHandler(xhr, status, error);
+                }
+            }
+        });
+    }
+    function DownloadForm() {
+        var byteCharacters = atob(formbase64);
+        var byteNumbers = new Array(byteCharacters.length);
+
+        for (var i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        var byteArray = new Uint8Array(byteNumbers);
+        var blob = new Blob([byteArray], { type: 'application/pdf' });
+
+      
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'SignedForm.pdf'; 
+        link.click(); 
+    };
+    function closemodal() {
+        $("#digitalShowModal").modal('hide');
+    }
+</script>

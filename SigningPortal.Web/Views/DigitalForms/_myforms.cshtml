@@ -1,0 +1,946 @@
+﻿@model List<SigningPortal.Web.ViewModels.DigitalForms.DigitalformsViewModel>;
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+@inject IConfiguration Configuration
+
+
+@{
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var currentStaging = Configuration["CurrentStaging"];
+}
+
+<style>
+    /* ============================================
+                           Card-Based Forms UI - EXACT match to MyDocumentsList.cshtml
+                           ============================================ */
+
+    /* Shimmer Loading - EXACT match to MyDocumentsList */
+    .shimmer-wrapper .shimmer-item {
+        height: 80px;
+        margin: 10px;
+        border-radius: 8px;
+        background: #f3f3f3;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .shimmer-wrapper .shimmer-item::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient( to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100% );
+            animation: shimmer-horizontal 1.6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+    @@keyframes shimmer-horizontal {
+        0% {
+            left: -100%;
+        }
+
+        100% {
+            left: 100%;
+        }
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    /* View Button - EXACT match to MyDocumentsList */
+    .viewbutton {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        background: #d1f4e0;
+        color: #198754;
+        font-size: 16px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .viewbutton:hover {
+            background: #0ea66b;
+            border-color: #0ea66b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2);
+        }
+
+    /* Search Bar - EXACT match to MyDocumentsList */
+    .search-bar {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        background: #f9fafb;
+        border: 0.0625rem solid #e2e8f0;
+        box-shadow: 0 0.0625rem 0.25rem rgba(0,0,0,0.08);
+        transition: all 0.2s ease-in-out;
+        border-radius: 0.5rem;
+    }
+
+        .search-bar:hover {
+            box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.12);
+        }
+
+    .search-input {
+        flex: 1;
+        border: none;
+        padding: 0.375rem 1.25rem !important;
+        font-size: 1rem !important;
+        outline: none;
+        background: #ffffff;
+    }
+
+    .search-button {
+        border: none;
+        background: transparent;
+        color: #4a5568;
+        font-size: 0.9375rem;
+        padding: 0.375rem 0.875rem;
+        cursor: pointer;
+    }
+
+        .search-button:hover {
+            background: rgba(0,0,0,0.08);
+        }
+
+    /* Filter Button - EXACT match to MyDocumentsList */
+    .filter-btn {
+        box-shadow: 0 5px 6px rgba(0, 0, 0, 0.07);
+        background-color: rgba(0,0,0,0.07);
+    }
+
+    /* List Toggle Button - EXACT match to MyDocumentsList */
+    .list-toggle-btn {
+        font-size: 15px !important;
+        padding: 5px 11px !important;
+        background-color: rgba(0,0,0,0.07) !important;
+        color: black;
+        border: none;
+    }
+
+    /* ------------------------------
+                           DOCUMENT CARD CONTAINER - EXACT match to MyDocumentsList
+                        ------------------------------- */
+    .document-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 22px;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e0dfdf;
+        margin-bottom: 16px;
+        transition: box-shadow .2s ease;
+        box-shadow: 0 4px 9px rgba(25, 135, 84, 0.2);
+    }
+
+        .document-card:hover {
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .document-card.search-hidden {
+            display: none !important;
+        }
+
+    /* Right side container for status blocks and actions */
+    .doc-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 0 1 50%;
+        justify-content: flex-end;
+    }
+
+    /* ------------------------------
+                           LEFT SIDE : ICON + FILE INFO - EXACT match to MyDocumentsList
+                        ------------------------------- */
+    .doc-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .doc-icon-wrapper {
+        width: 2.5rem;
+        height: 2.5rem;
+        background: linear-gradient(135deg, #0A1F44 0%, #059669 100%);
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .doc-icon-wrapper img {
+            width: 28px;
+            height: 28px;
+        }
+
+    /* Document Title */
+
+    /* Created / Expires Line */
+    .doc-meta {
+        margin: 4px 0 0;
+        font-family: sans-serif;
+        font-weight: 500;
+        font-size: 14px;
+        color: #919aa3 !important;
+    }
+
+    /* ------------------------------
+                           MIDDLE STATUS BLOCK - EXACT match to MyDocumentsList
+                        ------------------------------- */
+    .doc-status-block {
+        text-align: left;
+        min-width: 180px;
+    }
+
+    .doc-status-heading {
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 3px;
+        font-family: 'Arial', sans-serif;
+        font-size: 12px;
+        color: #6c757d;
+        letter-spacing: 0.5px;
+    }
+
+    .doc-status-text {
+        font-size: 15px;
+        font-weight: 600;
+        color: #ff7d00;
+    }
+
+    /* Status colors matching MyDocumentsList */
+    .status-published {
+        color: #4caf50;
+    }
+
+    .status-unpublished {
+        color: #ff9d38;
+    }
+
+    .status-draft {
+        color: #ffa726;
+    }
+
+    /* My Sign Status */
+    .my-sign-status {
+        font-size: 15px;
+        font-weight: 600;
+        color: #dc2626;
+    }
+
+    /* ------------------------------
+                           ACTION BUTTON - EXACT match to MyDocumentsList
+                        ------------------------------- */
+    .doc-actions {
+        position: relative;
+    }
+
+    .doc-action-btn {
+        background: #d1f4e0;
+        color: #198754;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        padding: 7px 22px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+        font-size: 0.8rem;
+    }
+
+        .doc-action-btn:hover {
+            background: #0ea66b;
+            border-color: #0ea66b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2);
+        }
+
+        .doc-action-btn i {
+            font-size: 0.8rem;
+        }
+
+    .actions-dropdown {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background-color: #ffffff;
+        min-width: 200px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 8px;
+        z-index: 100;
+    }
+
+    .doc-actions.open .actions-dropdown {
+        display: block;
+    }
+
+    .actions-dropdown a {
+        color: #333;
+        padding: 10px 12px;
+        text-decoration: none;
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+    }
+
+        .actions-dropdown a:hover {
+            background: #f0f7ff;
+            color: #2C7BE5;
+        }
+
+    /* ------------------------------
+                           SHOW MORE BUTTON - Inside card with divider
+                        ------------------------------- */
+    .show-more-row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 16px 0 8px;
+        margin-top: 8px;
+    }
+
+    .show-more-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        color: #4976af;
+        background-color: #dbeafe;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .show-more-btn:hover {
+            background-color: #bfdbfe;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .show-more-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .show-more-btn:active {
+            transform: translateY(0);
+        }
+
+        .show-more-btn i {
+            font-size: 0.75rem;
+            transition: transform 0.2s ease;
+        }
+
+        .show-more-btn:hover i {
+            transform: translateY(2px);
+        }
+
+    /* All Loaded Message */
+    .all-loaded-msg {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 12px 0 4px;
+        color: #6b7280;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+        .all-loaded-msg::before,
+        .all-loaded-msg::after {
+            content: '';
+            flex: 1;
+            max-width: 80px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #d1d5db);
+            margin: 0 12px;
+        }
+
+        .all-loaded-msg::after {
+            background: linear-gradient(to left, transparent, #d1d5db);
+        }
+
+    /* Stats container matching MyDocumentsList */
+    .stats-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .docstats-heading,
+    .signingstats-heading {
+        font-family: 'Arial', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .docstats-text,
+    .signingstats-text {
+        font-family: 'Arial', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        color: #212529;
+    }
+
+    /* Gap utility */
+    .gap-1 {
+        gap: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* No data message */
+    .no-forms-message {
+        text-align: center;
+        padding: 2rem;
+        background-color: rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        color: #555;
+        font-weight: 500;
+    }
+
+    /* No search results state */
+    .no-search-results {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 2rem;
+        text-align: center;
+        background: #f8fafc;
+        border: 1px dashed #e2e8f0;
+        border-radius: 12px;
+        margin-top: 1rem;
+    }
+
+        .no-search-results.visible {
+            display: flex;
+        }
+
+        .no-search-results i {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .no-search-results h4 {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin: 0 0 0.5rem 0;
+            font-weight: 600;
+        }
+
+        .no-search-results p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+    /* ---------- RESPONSIVE FIX FOR HEADER BAR - EXACT match to MyDocumentsList ---------- */
+    @@media (max-width: 767px) {
+        /* Stack left + right sections */
+        .header-responsive-row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 15px;
+        }
+        /* Make left items wrap and look clean */
+        .left-responsive-wrap {
+            flex-wrap: wrap !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+        /* Search bar full width */
+        #formsSearchContainer {
+            width: 100% !important;
+        }
+
+        .search-bar {
+            width: 100% !important;
+        }
+        /* Filter button full width and centered */
+        .filter-responsive {
+            justify-content: right !important;
+            width: 100% !important;
+        }
+    }
+
+    /* Responsive styles matching MyDocumentsList */
+    @@media (max-width: 992px) {
+        .document-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .doc-status-block {
+            min-width: auto;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .doc-left {
+            gap: 12px;
+        }
+
+        .doc-icon-wrapper {
+            width: 45px;
+            height: 45px;
+            min-width: 45px;
+        }
+
+            .doc-icon-wrapper img {
+                width: 22px;
+                height: 22px;
+            }
+
+        .doc-title {
+            font-size: 16px;
+        }
+
+        .doc-meta {
+            font-size: 13px;
+        }
+
+        .doc-action-btn {
+            padding: 6px 16px;
+            font-size: 13px;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .document-card {
+            padding: 14px 16px;
+        }
+
+        .doc-icon-wrapper {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+        }
+
+        .doc-title {
+            font-size: 15px;
+        }
+
+        .doc-status-heading {
+            font-size: 11px;
+        }
+
+        .doc-status-text {
+            font-size: 14px;
+        }
+    }
+
+    .empty-state-wrapper {
+        display: flex;
+        justify-content: center;
+        min-height: 280px;
+    }
+
+    .empty-state-card {
+        background: #ffffff;
+        border: 1px solid #E5E7EB;
+        border-radius: 14px;
+        padding: 48px 24px;
+        text-align: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    .empty-state-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+    }
+
+        .empty-state-icon i {
+            font-size: 5rem;
+            color: #64748b;
+        }
+
+    .empty-state-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #0F172A;
+        letter-spacing: -0.02em;
+    }
+
+    .empty-state-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748B;
+        margin: 0;
+        line-height: 1.6;
+    }
+</style>
+
+@if (Model.Count == 0)
+{
+    <div class="empty-state-wrapper">
+        @Html.AntiForgeryToken()
+        <div class="empty-state-card">
+            <div class="empty-state-icon">
+                <i class="fa-regular fa-folder-open"></i>
+            </div>
+
+            <h4 class="empty-state-title">No forms created yet</h4>
+
+            <p class="empty-state-text">
+                Forms you create will appear here.
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Forms Cards Container - matching MyDocumentsList draftCardsContainer -->
+    <div id="formsCardsContainer" class="card shadow-sm border rounded-4 p-3">
+        @foreach (var item in Model)
+        {
+            var statusClass = item.Status?.ToLower() switch
+            {
+                "publish" => "status-published",
+                "unpublish" => "status-unpublished",
+                _ => "status-draft"
+            };
+            var statusLabel = item.Status?.ToLower() switch
+            {
+                "publish" => "Published",
+                "unpublish" => "Unpublished",
+                _ => item.Status
+            };
+
+            <div class="document-card" data-form-name="@item.TemplateName.ToLower()">
+                <!-- Left: Icon + Details (EXACT match to MyDocumentsList .doc-left) -->
+                <div class="doc-left">
+                    <div class="doc-icon-wrapper">
+                        <i class="fa-solid fa-file-lines sidebar-icon" style="font-size: 1.5rem;font-weight: 500;"></i>
+                    </div>
+                    <div>
+                        <p class="doc-title fw-semibold text-dark m-0">@item.TemplateName</p>
+                        <p class="doc-meta">
+                            Created:<span class="convert-time" data-timestamp="@item.CreatedAt.ToString("o")">@item.CreatedAt.ToString("dd/MM/yyyy")</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right: Status Blocks + Actions (all right-aligned) -->
+                <div class="doc-right">
+                    <div class="doc-status-block">
+                        <div class="doc-status-heading">Response Count</div>
+                        <div class="doc-status-text">
+                            <a asp-action="FormResponses" asp-route-tempId="@item._id" style="text-decoration:none; color:#0F172A;font-weight:500">
+                                @item.ResponseCount responses
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="doc-status-block">
+                        <div class="doc-status-heading">Status</div>
+                        <div class="doc-status-text @statusClass">@statusLabel</div>
+                    </div>
+
+                    <!-- Actions Dropdown -->
+                    <div class="doc-actions">
+                        <button class="doc-action-btn" type="button">
+                            Actions <i class="fa fa-chevron-down"></i>
+                        </button>
+                        <div class="actions-dropdown">
+                            @if (item.Status == "Publish")
+                            {
+                                <a asp-action="EditForm" asp-route-id="@item._id" asp-route-flag="Duplicate" onclick="document.getElementById('navigationNetworkOverlay').style.display='block'">
+                                    <i class="icon-pencil"></i> Clone Form
+                                </a>
+                                <a asp-action="FillFormData" asp-route-tempId="@item._id" asp-route-edmsId="@item.EdmsId" asp-route-documentName="@item.DocumentName" asp-route-flag="PreviewTemplate" onclick="document.getElementById('navigationNetworkOverlay').style.display='block'">
+                                    <i class="icon-pencil"></i> Preview
+                                </a>
+                                <a asp-action="FormResponses" asp-route-tempId="@item._id" onclick="document.getElementById('navigationNetworkOverlay').style.display='block'">
+                                    <i class="icon-docs"></i> Form Response
+                                </a>
+                                <a asp-action="downloadCSV" asp-route-templateId="@item._id" asp-route-FormName="@item.TemplateName">
+                                    <i class="icon-pencil"></i> Download CSV
+                                </a>
+                                <a href="#" class="btn-unpublish" data-id="@item._id">
+                                    <i class="icon-docs"></i> Unpublish
+                                </a>
+                                <a href="#"
+                                   class="btn-sendform"
+                                   data-id="@item._id"
+                                   data-edmsid="@item.EdmsId"
+                                   data-name="@item.TemplateName"
+                                   data-action="Send"
+                                   data-type="@item.Type">
+                                    <i class="icon-pencil"></i> Send
+                                </a>
+                            }
+                            else
+                            {
+                                @if (item.ResponseCount == 0)
+                                {
+                                    <a asp-action="EditForm" asp-route-id="@item._id" asp-route-flag="Edit" onclick="document.getElementById('navigationNetworkOverlay').style.display='block'">
+                                        <i class="icon-pencil"></i> Edit
+                                    </a>
+                                }
+                                <a asp-action="EditForm" asp-route-id="@item._id" asp-route-flag="Duplicate" onclick="document.getElementById('navigationNetworkOverlay').style.display='block'">
+                                    <i class="icon-pencil"></i> Clone Form
+                                </a>
+                                <a asp-action="FillFormData" asp-route-tempId="@item._id" asp-route-edmsId="@item.EdmsId" asp-route-documentName="@item.DocumentName" asp-route-flag="PreviewTemplate" onclick="document.getElementById('navigationNetworkOverlay').style.display='block'">
+                                    <i class="icon-pencil"></i> Preview
+                                </a>
+                                <a href="#"
+                                   class="btn-publish"
+                                   data-roles='@Html.Raw(JsonConvert.SerializeObject(item.Roles))'
+                                   data-id="@item._id"
+                                   data-sigs="@item.NumberOfSignatures"
+                                   data-allrequired="@item.AllSigRequired">
+                                    <i class="icon-pencil"></i> Publish
+                                </a>
+                                <a href="#"
+                                   class="btn-sendform"
+                                   data-id="@item._id"
+                                   data-edmsid="@item.EdmsId"
+                                   data-name="@item.TemplateName"
+                                   data-action="Send"
+                                   data-type="@item.Type">
+                                    <i class="icon-pencil"></i> Send
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Show More Row - Inside card, anchored at bottom -->
+        <div class="show-more-row" id="showMoreRowForms">
+            <button type="button" id="showMoreBtnForms" class="show-more-btn" style="display: none;">
+                Show More <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="all-loaded-msg" id="allDocsLoadedMsgForms" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- No Search Results State -->
+    <div id="noSearchResultsForms" class="no-search-results">
+        <i class="fa-solid fa-search"></i>
+        <h4>No forms found</h4>
+        <p>Try adjusting your search terms or clear the search field</p>
+    </div>
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="isesealpresent" value="" />
+}
+
+<script>
+    var DigitalFormsIndexUrl = '@Url.Action("Index", "DigitalForms")';
+    var DocumentDetailsByIdUrl = '@Url.Action("DocumentDetailsById", "Documents")';
+    var SendFormUrl = '@Url.Action("SendForm", "DigitalForms")';
+    var changeStatusUrl = '@Url.Action("changeStatus", "DigitalForms")';
+    var NewChangeStatusUrl = '@Url.Action("NewChangeStatus", "DigitalForms")';
+    var OrgDetailsByEmailUrl = '@Url.Action("OrgDetailsByEmail", "DigitalForms")';
+    var ModelCount = '@Model.Count';
+    var OrganizationUid = '@(Model.Any() ? Model[0].OrganizationUid : string.Empty)';
+    var currentStaging = '@currentStaging';
+
+    document.addEventListener("click", function (e) {
+        var actionButton = e.target.closest(".doc-action-btn");
+
+        if (actionButton) {
+            var wrapper = actionButton.closest(".doc-actions");
+
+            document.querySelectorAll(".doc-actions.open").forEach(function (el) {
+                if (el !== wrapper) {
+                    el.classList.remove("open");
+                }
+            });
+
+            if (wrapper) {
+                wrapper.classList.toggle("open");
+            }
+            e.stopPropagation();
+            return;
+        }
+
+        if (e.target.closest(".doc-actions")) {
+            return;
+        }
+
+        document.querySelectorAll(".doc-actions.open").forEach(function (el) {
+            el.classList.remove("open");
+        });
+    });
+
+    // Card-based Show More and Search functionality - matching MyDocumentsList behavior
+    (function () {
+        var pageSize = 5; // Match MyDocumentsList pageSize
+        var currentlyShown = pageSize;
+
+        function getCards() {
+            return document.querySelectorAll('#formsCardsContainer .document-card');
+        }
+
+        function updateVisibility() {
+            var showMoreBtn = document.getElementById('showMoreBtnForms');
+            var allLoadedMsg = document.getElementById('allDocsLoadedMsgForms');
+            var showMoreRow = document.getElementById('showMoreRowForms');
+            var noResultsDiv = document.getElementById('noSearchResultsForms');
+            var searchInput = document.getElementById('df-global-search');
+            var hasSearchQuery = searchInput && searchInput.value.trim() !== '';
+            const card = document.getElementById("formsCardsContainer");
+
+            // Get currently visible cards (not filtered out by search)
+            var visibleCards = Array.from(getCards()).filter(function (card) {
+                return !card.classList.contains('search-hidden');
+            });
+
+            var totalVisible = visibleCards.length;
+
+            if (totalVisible === 0) {
+                if (showMoreBtn) showMoreBtn.style.display = 'none';
+                if (allLoadedMsg) allLoadedMsg.style.display = 'none';
+                if (showMoreRow) showMoreRow.style.display = 'none';
+                // Show no results message only when searching
+                if (noResultsDiv && hasSearchQuery) {
+                    noResultsDiv.classList.add('visible');
+                    card.style.display='none';
+                    }
+                return;
+            } else {
+                // Hide no results message when there are results
+                if (noResultsDiv) {
+                    noResultsDiv.classList.remove('visible');
+                    card.style.display='flex';
+                }
+                // Show the row container when there are results
+                if (showMoreRow) showMoreRow.style.display = 'flex';
+            }
+
+            // Show/hide cards based on currentlyShown
+            visibleCards.forEach(function (card, index) {
+                if (index < currentlyShown) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            // Update Show More button visibility
+            if (showMoreBtn && allLoadedMsg) {
+                   if (totalVisible <= 5) {
+                        showMoreBtn.style.display = 'none';
+                        allLoadedMsg.style.display = 'none';
+                        if (showMoreRow) showMoreRow.style.display = 'none';
+                        return;
+                    }
+                if (currentlyShown >= totalVisible) {
+                    showMoreBtn.style.display = 'none';
+                    allLoadedMsg.style.display = 'flex';
+                    allLoadedMsg.textContent = 'All ' + totalVisible + ' forms loaded';
+                } else {
+                    showMoreBtn.style.display = 'inline-flex';
+                    allLoadedMsg.style.display = 'none';
+                    allLoadedMsg.style.display = 'none';
+                }
+            }
+        }
+
+        function handleShowMore(e) {
+            e.preventDefault();
+            currentlyShown += pageSize;
+            updateVisibility();
+        }
+
+        function handleSearch() {
+            var query = (document.getElementById('df-global-search') && document.getElementById('df-global-search').value || '').toLowerCase().trim();
+            var cards = getCards();
+
+            cards.forEach(function (card) {
+                var formName = card.getAttribute('data-form-name') || '';
+                if (query === '' || formName.indexOf(query) !== -1) {
+                    card.classList.remove('search-hidden');
+                } else {
+                    card.classList.add('search-hidden');
+                    card.classList.add('hidden');
+                }
+            });
+
+            // Reset pagination when searching
+            currentlyShown = pageSize;
+            updateVisibility();
+        }
+
+        function init() {
+            var showMoreBtn = document.getElementById('showMoreBtnForms');
+
+            if (showMoreBtn) {
+                showMoreBtn.addEventListener('click', handleShowMore);
+            }
+
+            // Apply current global search value immediately on load
+            handleSearch();
+
+            // Initial visibility update
+            updateVisibility();
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+        // Expose for external use
+        window.updateMyFormsShowMore = updateVisibility;
+        window.resetMyFormsShowMore = function () {
+            currentlyShown = pageSize;
+            updateVisibility();
+        };
+        // Expose search for global Index search bar
+        window.handleMyFormsSearch = handleSearch;
+    })();
+</script>
+
+@if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    <script src="~/js/DigitalForms/_myforms.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+else
+{
+    <script src="~/dist/DigitalForms/_myforms.min.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+
+
+
+
+
+

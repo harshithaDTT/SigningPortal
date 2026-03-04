@@ -1,0 +1,2328 @@
+﻿@model SigningPortal.Web.ViewModels.BulkSign.UploadFilesViewModel
+@using Newtonsoft.Json;
+@using System.Security.Claims;
+@{
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var bulksign = User.IsInRole("bulkSign");
+    var AccountType = User.FindFirst("AccountType").Value;
+    var OrganizationName = "";
+    var OrganizationUid = "";
+    var login_esealsignatoryrole = User.IsInRole("eSealSignatory");
+    var selfemails = "";
+    if (AccountType != "Self")
+    {
+        selfemails = User.FindFirst("SelfEmails").Value;
+        OrganizationName = User.FindFirst("OrganizationName").Value;
+        OrganizationUid = User.FindFirst("OrganizationUid").Value;
+    }
+}
+<style>
+    /* ===== Upload Documents New UI ===== */
+
+    .ud-wrapper {
+        background: #fff;
+        padding: 20px;
+        border-radius: 14px;
+    }
+
+    .ud-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+    .ud-title {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
+    }
+
+    .ud-subtitle {
+        margin: 4px 0 0;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    /* Toggle */
+    .ud-toggle {
+        background: #eef2f7;
+        padding: 4px;
+        border-radius: 10px;
+        display: flex;
+    }
+
+    .ud-toggle-btn {
+        border: none;
+        background: transparent;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #64748b;
+        cursor: pointer;
+    }
+
+        .ud-toggle-btn.active {
+            background: #ffffff;
+            color: #059669;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+    /* Dropzone */
+    .ud-dropzone {
+        background: linear-gradient(to bottom, #F3FAF6, #ECFDF4);
+        border: 2px dashed #c0ded5;
+        border-radius: 16px;
+        padding: 50px 20px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .ud-dropzone-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .ud-cloud-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: #059669;
+        box-shadow: 0 6px 16px rgba(79,70,229,0.25);
+        margin-bottom: 18px;
+    }
+
+    .ud-main-text {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .ud-sub-text {
+        font-size: 14px;
+        color: #64748b;
+    }
+
+    .ud-browse-link {
+        color: #059669;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .ud-format-text {
+        margin-top: 14px;
+        font-size: 12px;
+        color: #94a3b8;
+        letter-spacing: 1px;
+    }
+
+    tbody tr td:first-child {
+        text-align: left !important;
+    }
+
+    tbody {
+        text-align: end;
+    }
+
+    .dataTables_wrapper .dataTables_length {
+        display: none;
+    }
+
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+        .dataTables_wrapper .dataTables_filter input {
+            box-shadow: 0 3px 8px rgba(59, 130, 246, 0.3);
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.55rem 1.15rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            transition: all 0.2s ease;
+        }
+
+
+
+    .file-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #0f6b5f;
+        color: white;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+
+    #deleteid {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        background: transparent !important;
+        border: none;
+    }
+
+    .remove-button {
+        background: #ff3b3b;
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 14px;
+        border: none;
+        font-size: 14px;
+    }
+
+    .dataTables_info {
+        margin-top: 1rem;
+        font-size: 14px;
+        color: #64748b;
+    }
+
+    .dataTables_paginate .paginate_button {
+        border-radius: 10px !important;
+        padding: 6px 14px !important;
+        margin: 0 4px;
+    }
+
+    .dataTables_paginate .current {
+        background: #4f6df5 !important;
+        color: #fff !important;
+        border: none !important;
+    }
+
+
+    /* Remove All button styling */
+    #removeAllBtn {
+        padding: 6px 14px;
+        font-size: 14px;
+        border-radius: 8px;
+    }
+
+    .sweet-alert button.cancel {
+        background-color: rgb(244, 67, 54) !important;
+    }
+    .sweet-alert .sa-icon.sa-info::after {
+        background-color: #118c6f !important;
+    }
+    .sweet-alert .sa-icon.sa-info::before {
+       background-color: #118c6f !important;
+    }
+
+   
+    .upload-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 26px;
+        background: #0EA5A4;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+    }
+
+    .bulksign-button {
+        padding: 10px 16px;
+        color: #fff;
+        font-weight: 500;
+        background: linear-gradient(135deg, #10b981, #16a34a);
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.15s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    }
+
+
+    .sweet-alert p {
+        color: #797979;
+        font-size: 1.125em !important;
+        text-align: center;
+        font-family: sans-serif;
+        font-weight: 300;
+        position: relative;
+        text-align: inherit;
+        float: none;
+        margin: 0;
+        padding: 0;
+        line-height: normal;
+    }
+
+    .dataTables_paginate paging_simple_numbers {
+        margin-bottom: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .dataTables_wrapper .dataTables_paginate {
+        margin-bottom: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .dataTables_info {
+        margin-left: 0.75rem;
+    }
+
+    .dataTables_filter {
+        margin-right: 1.15rem;
+    }
+
+    .dataTables_length {
+        margin-left: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .table.dataTable tbody td {
+        padding: 8px 17px;
+    }
+
+    .form-control:focus {
+        box-shadow: none !important;
+    }
+
+    @@-moz-document url-prefix() {
+        .dataTables_wrapper {
+            margin-top: 30px;
+        }
+    }
+
+    .selection-row {
+        display: flex;
+        align-items: center;
+        gap: 90px;
+        margin-left: 14px;
+        margin-top: 15px;
+        margin-bottom: 14px;
+    }
+
+    .selection-option {
+        display: flex;
+        align-items: center;
+        gap: 6px; /* space between radio and label text */
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+        .selection-option input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+
+
+    /* Card wrapper */
+    .upload-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        /* Card hover effect */
+        .upload-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+
+    .upload-label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .upload-box {
+        background: linear-gradient(135deg, #FAFBFC 0%, #F8FAFC 100%); /* light blue */
+        border: 2px dashed #cddff3;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.2s;
+        padding: 28px 27px;
+    }
+
+        .upload-box:hover {
+            background: #e6f3ff;
+            border-color: #8cb4e9;
+        }
+
+    .upload-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .upload-icon {
+        font-size: 26px;
+        color: #2f80ed;
+        margin-bottom: 8px;
+    }
+
+    .upload-text {
+        font-size: 14px;
+        color: #444;
+        margin-bottom: 5px;
+    }
+
+    .upload-link {
+        color: #2f80ed;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .upload-formats {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .uploaded-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 18px 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .uploaded-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .uploaded-title {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .required {
+        color: red;
+    }
+
+    .remove-all {
+        color: #ff4d4d;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    /* Search */
+    .search-container {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .search-input {
+        width: 100%;
+        border: 1px solid #ddd;
+        padding: 10px 12px 10px 40px;
+        border-radius: 10px;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 9px;
+        font-size: 18px;
+        color: #888;
+    }
+
+    /* File List */
+    .uploaded-list {
+        margin-bottom: 15px;
+    }
+
+    .uploaded-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        border: 1px solid #e8e8e8;
+    }
+
+
+    .file-details {
+        margin-left: 12px;
+        flex-grow: 1;
+    }
+
+    .file-name {
+        font-size: 14.5px;
+        font-weight: 600;
+    }
+
+    .file-info {
+        font-size: 13px;
+        color: #777;
+    }
+
+    .delete-btn {
+        font-size: 18px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    /* Footer */
+    .uploaded-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .entries-select {
+        font-size: 13px;
+    }
+
+    .entries-dropdown {
+        margin-left: 4px;
+        padding: 3px 6px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        outline: none;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .page-arrow {
+        font-size: 18px;
+        cursor: pointer;
+        color: #555;
+    }
+
+    .page-number {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #e7e7e7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+
+        .page-number.active {
+            background: #0a8a53;
+            color: white;
+        }
+
+    .dropzone-icon {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-blue);
+        font-size: 34px;
+        box-shadow: 0 6px 24px rgba(37, 99, 235, 0.2);
+        margin-bottom: 26px;
+    }
+
+    .file-header, .file-row {
+        display: grid;
+        grid-template-columns: 1fr 140px 100px 80px;
+        align-items: center;
+        padding: 12px 18px;
+    }
+
+    .file-header {
+        background: #f8fafc;
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748b;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+
+
+
+    .file-doc {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .file-icon {
+        width: 38px;
+        height: 38px;
+        background: #0f6b5f;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .file-name {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .file-time {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .file-status {
+        background: #eef4ff;
+        color: #4f6df5;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        width: fit-content;
+    }
+
+    .file-size {
+        color: #64748b;
+    }
+
+    .file-delete {
+        border: none;
+        background: none;
+        color: #ef4444;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .file-header.three-col,
+    .file-row.three-col {
+        display: grid;
+        grid-template-columns: 1fr 140px 80px;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .file-header.two-col,
+    .file-row.two-col {
+        display: grid;
+        grid-template-columns: 1fr 140px;
+        align-items: center;
+        gap: 12px;
+    }
+
+</style>
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+    @Html.AntiForgeryToken()
+    <div class="row d-flex align-items-center flex-wrap mt-2  mb-2">
+        <span class="col-12 col-sm-5 col-md-4 col-lg-3 col-xl-3 col-xxl-2">Template Name<span style="color: red;">*</span> :</span>
+        <div class="col-12 col-sm-6">
+            <div class="form-group" style="max-width: 203px;">
+                <select class="form-control" id="DocumentTemplate" name="templates" @(Model.SelectedTemplateId != null ? "disabled" : "")>
+                    <option value="">Choose Template</option>
+                    @{
+                        foreach (var item in Model.TemplateList)
+                        {
+                                    <option value="@item._id" selected="@(item._id == Model.SelectedTemplateId)">
+                                        @item.TemplateName
+                                    </option>
+
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row d-flex align-items-center flex-wrap mb-2">
+        <span class="col-12 col-sm-5 col-md-4 col-lg-3 col-xl-3 col-xxl-2">Transaction Name<span style="color: red;">*</span>:</span>
+        <div class="col-12 col-sm-6">
+            <div class="form-group mb-0" style="max-width: 203px;">
+                <input class="form-control" type="text" id="inputField1" placeholder="" />
+            </div>
+        </div>
+    </div>
+
+    <br />
+    <div id="uploadpart" class="ud-wrapper" style="opacity:0.5;">
+
+        <!-- Header -->
+        <div class="ud-header">
+            <div>
+                <h3 class="ud-title">Upload Documents</h3>
+                <p class="ud-subtitle">Select files or folders to upload to your secure vault.</p>
+            </div>
+
+            <!-- Toggle -->
+            <div class="ud-toggle">
+                <button type="button" class="ud-toggle-btn active" id="udFilesBtn">Files</button>
+                <button type="button" class="ud-toggle-btn" id="udFolderBtn">Folder</button>
+
+            </div>
+        </div>
+
+        <!-- Inputs -->
+        <input type="file" id="fileInput" multiple hidden />
+        <input type="file" id="folderInput" multiple webkitdirectory hidden />
+
+        <!-- Dropzone -->
+        <div class="ud-dropzone" id="udDropzone">
+
+            <div class="ud-dropzone-inner">
+
+                <div class="ud-cloud-circle">
+                    <i class="fa fa-cloud-upload"></i>
+                </div>
+
+                <!-- MAIN TEXT -->
+                <div class="ud-main-text" id="udMainText">
+                    Upload files here
+                </div>
+
+                <!-- SUB TEXT -->
+                <div class="ud-sub-text">
+                    or <span class="ud-browse-link" id="udBrowseBtn">click to browse</span>
+                </div>
+
+                <div class="ud-format-text" id="udFormatText">
+                    PDF, DOCX, XLSX FORMATS
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div style="display:none;margin-top:1rem;" id="fileTableContainer">
+        <div class="card shadow-sm">
+
+            <!-- Top Bar -->
+            <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                <div id="fileCountDisplay" class="fw-bold">Recent Uploads (0 files)</div>
+                <input type="text" id="searchFiles" class="form-control w-25" placeholder="Search files...">
+            </div>
+
+            <!-- Column Headers -->
+            <!-- Upload Mode Header (3 columns) -->
+            <div class="file-header three-col" id="uploadHeader">
+                <div class="col-doc">DOCUMENT NAME</div>
+                <div class="col-status">STATUS</div>
+                <div class="col-action">ACTION</div>
+            </div>
+
+            <!-- Uploaded Mode Header (2 columns) -->
+            <div class="file-header two-col" id="uploadedHeader">
+                <div class="col-doc">DOCUMENT NAME</div>
+                <div class="col-status">STATUS</div>
+            </div>
+
+
+            <!-- File Rows -->
+            <div id="fileListContainer"></div>
+            <div id="noFilesUI" class="text-center py-4 text-muted" style="display:none;">
+                No documents available
+            </div>
+            <!-- Pagination -->
+            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                <div id="pageInfo" class="text-muted small"></div>
+                <div>
+                    <button class="btn btn-sm btn-light" id="prevPage">Previous</button>
+                    <span id="pageNumber" class="mx-2 fw-bold"></span>
+                    <button class="btn btn-sm btn-light" id="nextPage">Next</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-3 d-flex gap-2" style="justify-content:end;">
+            <button type="button" class="upload-button" id="uploadfiles" style="display:none;">Upload</button>
+            <button type="button" class="bulksign-button" id="bulksignbutton" style="display:none;">Bulk sign</button>
+            <button type="button" class="bulksign-button" id="sendrequest" style="display:none;">Send Request</button>
+            <button type="button" class="bulksign-button" id="saverequest" style="display:none;">Save Request</button>
+        </div>
+    </div>
+
+
+</div>
+
+<div id="file-list"></div>
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+@section scripts {
+    <script type="text/javascript" charset="utf8" src="~/local-cdns/Shared/datatables/1.11.5/jquery.dataTables.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/local-cdns/Shared/datatables/1.11.5/jquery.dataTables.css">
+
+    <!-- DataTables Responsive Extension -->
+    <link rel="stylesheet" href="~/local-cdns/Shared/datatables-responsive/2.2.9/responsive.dataTables.min.css">
+    <script src="~/local-cdns/Shared/datatables-responsive/2.2.9/dataTables.responsive.min.js"></script>
+
+
+    <!-- Load PDF.js -->
+    <script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+
+    <!-- Load PDF.js worker -->
+    <script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.worker.min.js"></script>
+
+
+    <script>
+        let currentPage = 1;
+        const pageSize = 5;   // files per page
+
+        var viewName = "MyDocuments";
+        var loginOrgId = '@OrganizationUid';
+        var bulksignPermisson = '@bulksign';
+        var templateList = [];
+        var totalfilessize = 0;
+        var templatedata = '@Model.TemplateList'
+        var loginEmail = '@userEmail';
+        var loginorgUid = '@OrganizationUid';
+        var loginSuid = '@Suid';
+        if ((Object.keys(templatedata).length != 0)) {
+            templateList = @Html.Raw(JsonConvert.SerializeObject(Model.TemplateList));
+        }
+
+        var BulkSignIndexUrl = '@Url.Action("Index", "BulkSign")';
+        var BulkSignIndexNewurl = '@Url.Action("BulkSignIndexNew", "BulkSign")';
+        var BulkSigningStatusUrl = '@Url.Action("BulkSigningStatus", "BulkSign")';
+        var GetFileConfigurationUrl = '@Url.Action("GetFileConfiguration", "BulkSign")';
+        var UpdateDocumentDetailsUrl = '@Url.Action("UpdateDocumentDetails", "BulkSign")';
+        var SendRequestUrl = '@Url.Action("SendRequest", "BulkSign")';
+        var GetDelegationbyorgidsuidUrl = '@Url.Action("GetDelegationbyorgidsuid", "Documents")';
+        var SendFilesUrl = '@Url.Action("SendFiles", "BulkSign")';
+        var GetOrganizationStatusUrl = '@Url.Action("GetOrganizationStatus", "Documents")';
+        var BulkSigningUrl = '@Url.Action("BulkSigning", "BulkSign")';
+        var PerformBulkSignUrl = '@Url.Action("PerformBulkSign", "BulkSign")';
+        var selectedFiles = [];
+        var selectedTemplateId = '';
+        var worddocCovertedFiles = [];
+        var selectedFilesTotallist = [];
+        let currentTableData = [];
+        let checkuploaded = false;
+
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+        if (!pdfjsLib) {
+            console.error('PDF.js library is not loaded.');
+        } else {
+
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '@Url.Content("/local-cdns/Shared/pdfjs/2.10.377/pdf.worker.min.js")';
+        }
+
+
+        $(document).ready(function () {
+
+            let isFolderMode = false;
+
+            $("#udFilesBtn").on("click", function () {
+                isFolderMode = false;
+
+                $("#udFilesBtn").addClass("active");
+                $("#udFolderBtn").removeClass("active");
+
+                $("#udMainText").text("Upload files here");
+                $("#udFormatText").text("PDF, DOCX, XLSX FORMATS");
+            });
+
+            $("#udFolderBtn").on("click", function () {
+                isFolderMode = true;
+
+                $("#udFolderBtn").addClass("active");
+                $("#udFilesBtn").removeClass("active");
+
+                $("#udMainText").text("Upload folder here");
+                $("#udFormatText").text("PDF, DOCX, XLSX FORMATS");
+            });
+
+            $("#udBrowseBtn, #udDropzone").on("click", function () {
+                if (isFolderMode) {
+                    chooseFolder();
+                } else {
+                    chooseFiles();
+                }
+            });
+
+        });
+
+
+        $('#DocumentTemplate').change(function () {
+
+            selectedTemplateId = $(this).val();
+            if (selectedTemplateId != '') {
+
+                selectedFiles = [];
+                totalfilessize = 0;
+                var uploadpart = document.getElementById('uploadpart');
+                uploadpart.style.opacity = 'unset';
+                // document.getElementById('scopesTable').style.display = 'none';
+                document.getElementById('fileTableContainer').style.display = 'none';
+                document.getElementById('folderInput').value = '';
+                document.getElementById('fileInput').value = '';
+
+            }
+            else {
+                var uploadpart = document.getElementById('uploadpart');
+                uploadpart.style.opacity = 0.5;
+                // document.getElementById('scopesTable').style.display = 'none';
+                document.getElementById('fileTableContainer').style.display = 'none';
+                document.getElementById('folderInput').value = '';
+                document.getElementById('fileInput').value = '';
+
+            }
+
+        });
+        $(document).ready(function () {
+
+            $('#BulkSign').addClass('active');
+            if ($('#DocumentTemplate').val() !== "") {
+                $('#DocumentTemplate').trigger('change');
+            }
+            getFileConfiguration();
+            $("#udFilesBtn").on("click", function () {
+                setUploadToggle("files");
+                showFileInput();
+            });
+
+            $("#udFolderBtn").on("click", function () {
+                setUploadToggle("folder");
+                showFolderInput();
+            });
+
+
+            $("#chooseFilesBtn").on("click", function () {
+                chooseFiles();
+            });
+
+            $("#chooseFolderBtn").on("click", function () {
+                chooseFolder();
+            });
+
+            $("#removeAllBtn").on("click", function () {
+                handleRemoveAll();
+            });
+
+            $("#uploadfiles").on("click", function () {
+                uploadFiles();
+            });
+
+            $("#bulksignbutton").on("click", function () {
+                PerformBulkSign();
+            });
+
+            $("#sendrequest").on("click", function () {
+                SendRequest();
+            });
+
+            $("#saverequest").on("click", function () {
+                SaveRequest();
+            });
+
+            $("#fileInput").on("change", function (event) {
+                handleSelection(event);
+            });
+
+            $("#folderInput").on("change", function (event) {
+                handleSelection1(event);
+            });
+
+        });
+        function setUploadToggle(type) {
+            if (type === "files") {
+                $("#udFilesBtn").addClass("active");
+                $("#udFolderBtn").removeClass("active");
+            } else {
+                $("#udFolderBtn").addClass("active");
+                $("#udFilesBtn").removeClass("active");
+            }
+        }
+
+        function showOverlay(matchedEsealData, matchedSignData) {
+            if (matchedEsealData == null && matchedSignData !== null) {
+                $('#overlay8').css('display', 'flex');
+            } else if (matchedEsealData !== null && matchedSignData === null) {
+                $('#overlay6').css('display', 'flex');
+
+            } else if (matchedEsealData !== null && matchedSignData !== null) {
+                $('#overlay7').css('display', 'flex');
+
+            } else {
+                $('#overlay8').css('display', 'flex');
+
+            }
+        }
+
+        function hideOverlay(matchedEsealData, matchedSignData) {
+            if (matchedEsealData == null && matchedSignData !== null) {
+                $('#overlay8').hide();
+            } else if (matchedEsealData !== null && matchedSignData === null) {
+                $('#overlay6').hide();
+
+            } else if (matchedEsealData !== null && matchedSignData !== null) {
+                $('#overlay7').hide();
+            } else {
+                $('#overlay8').hide();
+
+            }
+
+        }
+
+        function ActivateUploadfilesButton() {
+            document.getElementById('uploadfiles').style.display = 'flex';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('folderInput').value = '';
+        }
+        function handleRemoveAll() {
+            selectedFiles = [];
+            totalfilessize = 0;
+            selectedFilesTotallist = [];
+            var fileInput = document.getElementById('fileInput');
+            fileInput.value = '';
+            var folderInput = document.getElementById('folderInput');
+            folderInput.value = '';
+            var tableContainer = document.getElementById('fileTableContainer');
+            tableContainer.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+        }
+
+
+        function showFileInput() {
+
+            $('#my-dropzone').css('visibility', 'visible');
+
+            selectedFiles = [];
+            selectedFilesTotallist = [];
+
+            $("#fileinputdisplay").show();
+            $("#folderinputdisplay").hide();
+
+            $("#fileInput").val('');
+            $("#folderInput").val('');
+
+            $("#fileTableContainer").hide();
+            $("#uploadfiles").hide();
+
+            // clear new file list container (card UI)
+            $("#udFileList").empty();   // <-- use your new list wrapper id
+        }
+        function showFolderInput() {
+
+            $('#my-dropzone').css('visibility', 'visible');
+
+            selectedFiles = [];
+            selectedFilesTotallist = [];
+
+            $("#fileinputdisplay").hide();
+            $("#folderinputdisplay").show();
+
+            $("#fileInput").val('');
+            $("#folderInput").val('');
+
+            $("#fileTableContainer").hide();
+            $("#uploadfiles").hide();
+
+            $("#udFileList").empty();   // new UI list
+        }
+
+
+
+
+        async function handleSelection1(event) {
+
+            var fileInput = document.getElementById('folderInput');
+
+            if ($.fn.DataTable.isDataTable('#scopesTable')) {
+                $('#scopesTable').DataTable().destroy();
+            }
+
+            if (selectedFiles.length > 0) {
+                var duplicateList = [];
+                for (var i = 0; i < fileInput.files.length; i++) {
+                    var fileNameData = fileInput.files[i].name;
+                    var foundFile = selectedFiles.find(function (item) {
+                        return item.name === fileNameData;
+                    });
+                    if (foundFile) {
+                        duplicateList.push(foundFile.name);
+                    }
+                }
+                if (duplicateList.length > 0) {
+                    var duplicateString = duplicateList.join(', ');
+                    swal({
+                        type: 'info',
+                        title: 'Alert',
+                        text: duplicateString + ': Files Already Existed'
+
+                    });
+                    document.getElementById('folderInput').value = '';
+
+                    return;
+                }
+            }
+
+
+            for (let i = 0; i < fileInput.files.length; i++) {
+                $('#overlay').show();
+                const file = fileInput.files[i];
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+
+                try {
+                    if (fileExtension === 'pdf') {
+                        const valid = await validatePDF(file);
+                        if (!valid) {
+                            document.getElementById('folderInput').value = '';
+                            return;
+                        }
+                    } else if (fileExtension === 'docx') {
+                        console.log("Converting DOCX to PDF:", file);
+                        const pdfFile = await processDocxFile(file); // Process each file one by one
+                        worddocCovertedFiles.push(pdfFile);
+                    } else if (fileExtension === 'xlsx') {
+                        console.log("Converting xlsx to PDF:", file);
+                        const pdfFile = await processDocxFile(file); // Process each file one by one
+                        worddocCovertedFiles.push(pdfFile);
+                    }
+                    else {
+                        alert("Only PDF or DOCX or XLSX files are allowed.");
+                        fileInput.value = ''; // Clear the input if invalid file type
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Error processing file:", error);
+                } finally {
+                    $('#overlay').hide();
+                }
+            }
+
+
+            var totalfiles = selectedFiles.length + fileInput.files.length;
+            if (totalfiles > NumberOfFiles) {
+                swal({
+                    type: 'info',
+                    title: 'Alert',
+                    text: 'You can only select up to  ' + NumberOfFiles + ' files.'
+                });
+                document.getElementById('folderInput').value = '';
+
+                return;
+            }
+            if (fileInput.files.length > NumberOfFiles) {
+                swal({
+                    type: 'info',
+                    title: 'Alert',
+                    text: 'You can only select up to  ' + NumberOfFiles + ' files.'
+                });
+                document.getElementById('folderInput').value = '';
+
+                return;
+            }
+
+            var currentFolderSize = 0;
+            for (var i = 0; i < fileInput.files.length; i++) {
+                var fileName = fileInput.files[i].name;
+                var fileOnlyname = fileName.split('.').slice(0, -1).join('.')
+                const fileExtension = fileName.split('.').pop().toLowerCase();
+                if (fileExtension === 'docx' || fileExtension === 'xlsx') {
+                    var replacefile = worddocCovertedFiles.find(item => item.name.split('.').slice(0, -1).join('.') === fileOnlyname);
+                    var fileSize = replacefile.size;
+                    var maxSize = EachFileSize * 1000000;
+                    currentFolderSize = currentFolderSize + fileSize;
+                    if (fileSize > maxSize) {
+                        swal({
+                            type: 'info',
+                            title: 'Alert',
+                            text: 'File Size Exceeded: ' + fileName + ' exceeds the ' + EachFileSize + 'MB limit.'
+                        });
+                        document.getElementById('folderInput').value = '';
+
+                        return;
+                    }
+                } else {
+                    var fileSize = fileInput.files[i].size;
+                    var maxSize = EachFileSize * 1000000;
+                    currentFolderSize = currentFolderSize + fileSize;
+                    if (fileSize > maxSize) {
+                        swal({
+                            type: 'info',
+                            title: 'Alert',
+                            text: 'File Size Exceeded: ' + fileName + ' exceeds the ' + EachFileSize + 'MB limit.'
+                        });
+                        document.getElementById('folderInput').value = '';
+
+                        return;
+                    }
+                }
+
+            }
+            if (totalfilessize + currentFolderSize > (AllFileSize * 1000000)) {
+                swal({
+                    type: 'info',
+                    title: 'Alert',
+                    text: 'Folder Size Limit Exceeded: Your folder size exceeds the 50 MB limit',
+                });
+                document.getElementById('folderInput').value = '';
+
+                return;
+            }
+            totalfilessize = totalfilessize + currentFolderSize;
+
+            for (var i = 0; i < fileInput.files.length; i++) {
+                var fileName = fileInput.files[i].name;
+                var fileOnlyname = fileName.split('.').slice(0, -1).join('.')
+                const fileExtension = fileName.split('.').pop().toLowerCase();
+                if (fileExtension === 'docx' || fileExtension === 'xlsx') {
+                    var replacefile = worddocCovertedFiles.find(item => item.name.split('.').slice(0, -1).join('.') === fileOnlyname);
+                    var updatedFile2 = new File([replacefile], replacefile.name, { type: replacefile.type });
+
+                    selectedFilesTotallist.push(updatedFile2);
+                } else {
+                    var updatedFile3 = new File([fileInput.files[i]], fileInput.files[i].name, { type: fileInput.files[i].type });
+
+                    selectedFilesTotallist.push(updatedFile3);
+
+                }
+            }
+
+            for (var i = 0; i < fileInput.files.length; i++) {
+                //selectedFiles.push(fileInput.files[i]);
+                var updatedFile1 = new File([fileInput.files[i]], fileInput.files[i].name, { type: fileInput.files[i].type });
+                selectedFiles.push(updatedFile1);
+
+            }
+
+
+            AddTableData();
+        }
+
+
+        async function validatePDF(file) {
+            const reader = new FileReader();
+            return new Promise((resolve) => {
+                reader.readAsArrayBuffer(file);
+                reader.onload = async function () {
+                    const arrayBuffer = reader.result;
+                    try {
+                        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                        const pdf = await loadingTask.promise;
+
+                        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                            const page = await pdf.getPage(pageNum);
+                            const annotations = await page.getAnnotations();
+                            if (annotations.some(ann => ann.subtype === 'Widget' && ann.fieldType === 'Sig')) {
+                                swal({
+                                    type: 'info',
+                                    title: 'Info',
+                                    text: "Invalid Document, Document has already been signed."
+                                });
+                                resolve(false);
+                                return;
+                            }
+                        }
+
+                        resolve(true); // No signatures found
+
+                    } catch (error) {
+                        if (error.name === 'PasswordException') {
+                            swal({
+                                type: 'info',
+                                title: 'Info',
+                                text: "Password-protected documents are not allowed."
+                            });
+                        } else {
+                            swal({
+                                type: 'error',
+                                title: 'Error',
+                                text: "Failed to load the document."
+                            });
+                        }
+                        resolve(false);
+                    }
+                };
+            });
+        }
+
+
+
+        function getFileConfiguration() {
+            $.ajax({
+                type: 'GET',
+                url: GetFileConfigurationUrl,
+                success: function (data) {
+                    EachFileSize = data.eachFileSize;
+                    NumberOfFiles = data.numberOfFiles;
+                    AllFileSize = data.allFileSize;
+                },
+                error: function (xhr, status, error) {
+                    ajaxErrorHandler(xhr, status, error);
+                    resolve({ success: false, message: 'Error while getting fileconfiguration' });
+                },
+            });
+        }
+
+
+        function convertFileToArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+
+                reader.onload = function (event) {
+                    resolve(event.target.result); // This is the ArrayBuffer
+                };
+
+                reader.onerror = function (error) {
+                    reject(error);
+                };
+
+                reader.readAsArrayBuffer(file); // Read the file as ArrayBuffer
+            });
+        }
+
+
+
+
+        async function processDocxFile(wordFile) {
+            try {
+                // Create a FormData object and append the file
+                let formData = new FormData();
+                formData.append("file", wordFile);
+
+                // Send the file to your conversion service
+                let response = await fetch("/ConvertToPdf/ConvertFile", { // Adjust the API endpoint if needed
+                    method: "POST",
+                    headers: {
+
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                    },
+                    body: formData
+                });
+
+                // Check if the response is OK
+                if (!response.ok) {
+                    document.getElementById('fileInput').value = '';
+                    const errorText = await response.text();
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: errorText
+                    });
+                    return;
+                }
+
+                // Convert response to a Blob
+                let blob = await response.blob();
+
+                // Create a new File object for the converted PDF
+                const pdfFile = new File(
+                    [blob],
+                    wordFile.name.replace(/\.\w+$/, ".pdf"), // Ensure correct file extension
+                    { type: "application/pdf", lastModified: wordFile.lastModified }
+                );
+
+                return pdfFile; // Return the converted file
+            } catch (error) {
+                console.error("Error during file conversion:", error);
+                throw error; // Propagate the error
+            }
+        }
+
+
+
+
+        async function handleSelection(event) {
+
+            var fileInput = document.getElementById('fileInput');
+
+            // Reset totalfilessize to 0 at the beginning
+            /*var totalfilessize = 0;*/
+
+            if ($.fn.DataTable.isDataTable('#scopesTable')) {
+                $('#scopesTable').DataTable().destroy();
+            }
+
+            if (selectedFiles.length > 0) {
+                var duplicateList = [];
+                for (var i = 0; i < fileInput.files.length; i++) {
+                    var fileNameData = fileInput.files[i].name;
+                    var foundFile = selectedFiles.find(function (item) {
+                        return item.name === fileNameData;
+                    });
+                    if (foundFile) {
+                        duplicateList.push(foundFile.name);
+                    }
+                }
+                if (duplicateList.length > 0) {
+                    var duplicateString = duplicateList.join(', ');
+                    swal({
+                        type: 'info',
+                        title: 'Alert',
+                        text: duplicateString + ': Files Already Existed'
+                    });
+                    document.getElementById('fileInput').value = '';
+
+                    return;
+                }
+            }
+
+
+            for (let i = 0; i < fileInput.files.length; i++) {
+                $('#overlay').show();
+                const file = fileInput.files[i];
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+
+                try {
+                    if (fileExtension === 'pdf') {
+                        const valid = await validatePDF(file);
+                        if (!valid) {
+                            document.getElementById('fileInput').value = '';
+                            return;
+                        }
+                    } else if (fileExtension === 'docx') {
+                        console.log("Converting DOCX to PDF:", file);
+                        const pdfFile = await processDocxFile(file); // Process each file one by one
+                        worddocCovertedFiles.push(pdfFile);
+                    } else if (fileExtension === 'xlsx') {
+                        console.log("Converting xlsx to PDF:", file);
+                        const pdfFile = await processDocxFile(file); // Process each file one by one
+                        worddocCovertedFiles.push(pdfFile);
+                    }
+                    else {
+                        alert("Only PDF or DOCX or XLSX files are allowed.");
+                        fileInput.value = ''; // Clear the input if invalid file type
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Error processing file:", error);
+                } finally {
+                    $('#overlay').hide();
+                }
+            }
+
+
+            var totalfiles = selectedFiles.length + fileInput.files.length;
+            if (totalfiles > NumberOfFiles) {
+                swal({
+                    type: 'info',
+                    title: 'Alert',
+                    text: 'You can only select up to ' + NumberOfFiles + ' files.'
+                });
+                document.getElementById('fileInput').value = '';
+
+                return;
+            }
+            if (fileInput.files.length > NumberOfFiles) {
+                swal({
+                    type: 'info',
+                    title: 'Alert',
+                    text: 'You can only select up to ' + NumberOfFiles + ' files.'
+                });
+                document.getElementById('fileInput').value = '';
+
+                return;
+            }
+
+            var currentFolderSize = 0;
+            for (var i = 0; i < fileInput.files.length; i++) {
+                var fileName = fileInput.files[i].name;
+                var fileOnlyname = fileName.split('.').slice(0, -1).join('.')
+                const fileExtension = fileName.split('.').pop().toLowerCase();
+                if (fileExtension === 'docx' || fileExtension === 'xlsx') {
+                    var replacefile = worddocCovertedFiles.find(item => item.name.split('.').slice(0, -1).join('.') === fileOnlyname);
+                    var fileSize = replacefile.size;
+                    var maxSize = EachFileSize * 1000000;
+                    currentFolderSize = currentFolderSize + fileSize;
+                    if (fileSize > maxSize) {
+                        swal({
+                            type: 'info',
+                            title: 'Alert',
+                            text: 'File Size Exceeded: ' + fileName + ' exceeds the ' + EachFileSize + 'MB limit.'
+                        });
+                        document.getElementById('fileInput').value = '';
+
+                        return;
+                    }
+                } else {
+                    var fileSize = fileInput.files[i].size;
+                    var maxSize = EachFileSize * 1000000;
+                    currentFolderSize = currentFolderSize + fileSize;
+                    if (fileSize > maxSize) {
+                        swal({
+                            type: 'info',
+                            title: 'Alert',
+                            text: 'File Size Exceeded: ' + fileName + ' exceeds the ' + EachFileSize + 'MB limit.'
+                        });
+                        document.getElementById('fileInput').value = '';
+
+                        return;
+                    }
+                }
+
+            }
+            if (totalfilessize + currentFolderSize > (AllFileSize * 1000000)) {
+                swal({
+                    type: 'info',
+                    title: 'Alert',
+                    text: 'Folder Size Limit Exceeded: Your folder size exceeds the 50 MB limit',
+                });
+                document.getElementById('fileInput').value = '';
+
+                return;
+            }
+            totalfilessize = totalfilessize + currentFolderSize;
+
+            for (var i = 0; i < fileInput.files.length; i++) {
+                var fileName = fileInput.files[i].name;
+                var fileOnlyname = fileName.split('.').slice(0, -1).join('.')
+                const fileExtension = fileName.split('.').pop().toLowerCase();
+                if (fileExtension === 'docx' || fileExtension === 'xlsx') {
+                    var replacefile = worddocCovertedFiles.find(item => item.name.split('.').slice(0, -1).join('.') === fileOnlyname);
+                    selectedFilesTotallist.push(replacefile);
+                } else {
+                    selectedFilesTotallist.push(fileInput.files[i]);
+
+                }
+            }
+
+            for (var i = 0; i < fileInput.files.length; i++) {
+                selectedFiles.push(fileInput.files[i]);
+            }
+
+
+            AddTableData();
+        }
+
+        function chooseFiles() {
+            var fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.click(); // Trigger the click event
+            } else {
+                console.error("File input element not found.");
+            }
+
+        }
+
+        function chooseFolder() {
+            var folderInput = document.getElementById('folderInput');
+            if (folderInput) {
+                folderInput.click(); // Trigger the click event
+            } else {
+                console.error("File input element not found.");
+            }
+
+        }
+
+
+
+        function cropFileNames(full) {
+
+            let start, end;
+
+            const width = window.innerWidth;
+
+            if (width >= 1300) {
+                start = 25;
+                end = 25;
+            } else if (width >= 768) {
+                start = 20;
+                end = 20;
+            } else if (width >= 460) {
+                start = 13;
+                end = 13;
+            }
+            else {
+                start = 10;
+                end = 10;
+            }
+
+            if (full && full.length > start + end) {
+                return full.slice(0, start) + '...' + full.slice(-end);
+            } else {
+                return full
+            }
+
+
+
+        }
+        function filteredFiles() {
+            const val = $("#searchFiles").val()?.toLowerCase() || "";
+            if (!val) return selectedFiles;
+
+            return selectedFiles.filter(f => f.name.toLowerCase().includes(val));
+        }
+
+        $("#searchFiles").on("keyup", function () {
+            currentPage = 1;
+            AddTableData();
+        });
+        function updatePagination(total) {
+
+            const totalPages = Math.ceil(total / pageSize);
+
+            document.getElementById("pageNumber").textContent = currentPage;
+            document.getElementById("pageInfo").textContent =
+                `Showing ${(currentPage - 1) * pageSize + 1} to ${Math.min(currentPage * pageSize, total)} of ${total} entries`;
+
+            $("#prevPage").prop("disabled", currentPage === 1);
+            $("#nextPage").prop("disabled", currentPage === totalPages || totalPages === 0);
+        }
+
+        $("#prevPage").on("click", function () {
+            if (currentPage > 1) {
+                currentPage--;
+                
+                if (checkuploaded){
+                    rendertablepageafterupload();
+                }else{
+
+                    renderTablePage();
+                }
+                updatePagination(currentTableData.length);
+            }
+        });
+
+        $("#nextPage").on("click", function () {
+            const totalPages = Math.ceil(currentTableData.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                if (checkuploaded) {
+                    rendertablepageafterupload();
+                } else {
+
+                    renderTablePage();
+                }
+                updatePagination(currentTableData.length);
+            }
+        });
+
+      
+        function AddTableData() {
+
+            $("#uploadHeader").show();
+            $("#uploadedHeader").hide();
+
+            const container = document.getElementById("fileListContainer");
+            const fileCountDisplay = document.getElementById("fileCountDisplay");
+            const noFilesUI = document.getElementById("noFilesUI");
+            const tableContainer = document.getElementById("fileTableContainer");
+            currentTableData = filteredFiles();
+            const total = currentTableData.length;
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageFiles = currentTableData.slice(start, end);
+            container.innerHTML = "";
+
+            tableContainer.style.display = selectedFiles.length > 0 ? "block" : "none";
+
+            if (total === 0 && selectedFiles.length > 0) {
+                noFilesUI.style.display = "block";
+                updatePagination(0);
+                fileCountDisplay.textContent = `Recent Uploads (0 files)`;
+                ActivateUploadfilesButton();
+                return;
+            } else {
+                noFilesUI.style.display = "none";
+            }
+
+            pageFiles.forEach((file, index) => {
+
+                const realIndex = start + index;
+
+                const row = document.createElement("div");
+                row.className = "file-row three-col";
+
+                const doc = document.createElement("div");
+                doc.className = "file-doc";
+
+                const icon = document.createElement("div");
+                icon.className = "file-icon";
+                icon.innerHTML = '<i class="fa-regular fa-file-lines"></i>';
+
+                const nameBox = document.createElement("div");
+
+                const name = document.createElement("div");
+                name.className = "file-name";
+                name.textContent = file.name.length > 50 ? cropFileNames(file.name) : file.name;
+                name.title = file.name;
+
+                const time = document.createElement("div");
+                time.className = "file-time";
+                time.textContent = "Uploaded just now";
+
+                nameBox.appendChild(name);
+                nameBox.appendChild(time);
+
+                doc.appendChild(icon);
+                doc.appendChild(nameBox);
+
+                const status = document.createElement("div");
+
+                status.className = "file-status";
+                status.textContent = "Ready";
+
+                const del = document.createElement("button");
+                del.className = "file-delete";
+                del.innerHTML = '<i class="fa-regular fa-trash-can"></i>';
+                del.onclick = function () {
+                    removeFile(realIndex);
+                };
+
+                row.appendChild(doc);
+                row.appendChild(status);
+                row.appendChild(del);
+
+                container.appendChild(row);
+            });
+
+            fileCountDisplay.textContent = `Recent Uploads (${total} files)`;
+
+            updatePagination(total);
+            ActivateUploadfilesButton();
+            scrollToRecentUploads();
+        }
+
+        function scrollToRecentUploads() {
+            const section = document.getElementById("fileTableContainer");
+            if (section) {
+                section.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+        }
+
+        function removeFile(index) {
+
+            const removedFile = selectedFiles[index];
+            const removedNameOnly = removedFile.name.split('.').slice(0, -1).join('.');
+
+            selectedFiles.splice(index, 1);
+
+            selectedFilesTotallist = selectedFilesTotallist.filter(f => {
+                const nameOnly = f.name.split('.').slice(0, -1).join('.');
+                return nameOnly !== removedNameOnly;
+            });
+
+            if (selectedFiles.length === 0) {
+                totalfilessize = 0;
+                document.getElementById('fileInput').value = '';
+                document.getElementById('folderInput').value = '';
+            }
+
+            AddTableData();
+        }
+
+
+
+        function UpdateDetails() {
+            var corelationid = CorelationId;
+            $.ajax({
+                url: UpdateDocumentDetailsUrl,
+                method: 'GET',
+                data: { correlationId: corelationid },
+                success: function (data) {
+                    if (data.totalFileCount > 0) {
+                        var fileArray = data.fileArray;
+                        if (data.totalFileCount == data.successFileCount) {
+                            swal({
+                                type: 'success',
+                                title: "Upload files",
+                                text: "All files uploaded successfully",
+                                showCancelButton: false,
+                                closeOnConfirm: true
+
+                            });
+
+                        }
+                        else {
+                            swal({
+                                type: 'info',
+                                title: "Upload files",
+                                text: data.successFileCount + 'out of ' + data.totalFileCount + 'uploaded',
+                                showCancelButton: false,
+                                closeOnConfirm: true
+
+                            });
+
+                        }
+                        updateTable(fileArray);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    ajaxErrorHandler(xhr, status, error);
+                    resolve({ success: false, message: 'Error while updating details of files in bulksign status ' });
+                },
+            });
+        }
+
+        function ActivateBulkSignButton() {
+
+            document.getElementById('bulksignbutton').style.display = 'flex';
+        }
+
+        function ActivateSendRequestButton() {
+            document.getElementById('sendrequest').style.display = 'flex';
+        }
+
+
+        function SendRequest() {
+            var correlationId = CorelationId;
+            $.ajax({
+                url: SendRequestUrl,
+                method: 'POST',
+                headers: {
+
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                },
+                contentType: "application/json",
+                data: JSON.stringify(correlationId),
+                beforeSend: function () {
+                    $('#overlay').show();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                },
+                success: function (response) {
+                    if (response.success == false) {
+
+                        swal({
+                            type: 'error',
+                            title: "Send Request",
+                            text: response.message,
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+
+                            }
+                        });
+
+                    }
+                    else {
+                        swal({
+                            type: 'success',
+                            title: "Send Request",
+                            text: "Successfully sent",
+                            showCancelButton: false,
+                            closeOnConfirm: true
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = BulkSignIndexNewurl + "?viewName=sent";
+                            }
+                        });
+                    }
+
+
+                },
+                error: function (xhr, status, error) {
+                    ajaxErrorHandler(xhr, status, error);
+                    resolve({ success: false, message: 'Error while sending request for bulk signing' });
+                },
+            });
+        }
+
+        async function handle_delegation_orgid_suid_selfloginuser(delegation_req_data) {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: "GET",
+                    url: GetDelegationbyorgidsuidUrl,
+                    data: {
+                        organizationId: delegation_req_data.id,
+                        suid: delegation_req_data.suid
+                    },
+                    beforeSend: function () {
+                        $('#overlay').show();
+                    },
+                    complete: function () {
+                        $('#overlay').hide();
+                    },
+                    success: function (response) {
+                        if (response.success === true) {
+                            var result_list = response.result;
+                            var swal_list = [];
+                            var list_data = [];
+
+                            for (var i = 0; i < result_list.length; i++) {
+                                var obj_data = {
+                                    email: result_list[i].delegateeEmail,
+                                    suid: result_list[i].delegateeSuid,
+                                };
+                                swal_list.push(result_list[i].delegateeEmail);
+                                list_data.push(obj_data);
+                            }
+
+                            let response_data_obj = {
+                                swallist: swal_list,
+                                listdata: list_data,
+                                delegateeid: response.result[0]?.delegationId || '',
+                            };
+
+                            resolve(response_data_obj);
+                        } else {
+                            swal({
+                                title: "Error",
+                                text: response.message || "Unknown error occurred",
+                                type: "error",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = BulkSignIndexUrl;
+                                }
+                            });
+                            resolve(false);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        ajaxErrorHandler(xhr, status, error);
+                        resolve({ success: false, message: 'Error while checking delegation is active or not ' });
+                    },
+                });
+            });
+        }
+
+        async function uploadFiles() {
+            document.getElementById("networkOverlay").style.display = "flex";
+            selectedFiles = selectedFilesTotallist;
+            var transactionName = document.getElementById('inputField1').value;
+            if (transactionName === null || transactionName.trim() === '') {
+                swal({
+                    type: 'info',
+                    title: "Server Message",
+                    text: "Transaction name cannot be empty or blank spaces",
+                    showCancelButton: false,
+                    closeOnConfirm: true
+                });
+                document.getElementById("networkOverlay").style.display = "none";
+                return;
+            }
+
+            if (selectedFiles.length > 0) {
+                var delegation_req_data = {
+                    id: loginOrgId,
+                    suid: loginSuid,
+                    email: loginEmail,
+                };
+
+                // Await the response from delegation check
+                var delegation_response = await handle_delegation_orgid_suid_selfloginuser(delegation_req_data);
+
+                if (delegation_response != undefined && delegation_response.listdata.length > 0) {
+                    console.log("Delegation found. Further processing stopped.");
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: "Signing cannot be performed because there is an active signature delegation",
+                    });
+                    document.getElementById("networkOverlay").style.display = "none";
+                    return false; // Stop further execution
+                } else {
+                    var formData = new FormData();
+                    for (var i = 0; i < selectedFiles.length; i++) {
+                        formData.append('files', selectedFiles[i]);
+                    }
+                    formData.append('displayName', document.getElementById('inputField1').value);
+                    formData.append('id', document.getElementById('DocumentTemplate').value);
+
+                    $.ajax({
+                        url: SendFilesUrl,
+                        method: 'POST',
+                        headers: {
+
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                        },
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        beforeSend: function () {
+                            document.getElementById("networkOverlay").style.display = "flex";
+                        },
+                        complete: function () {
+                            document.getElementById("networkOverlay").style.display = "none";
+                        },
+                        success: function (response) {
+                            if (response.success == true) {
+                                CorelationId = response.correlationid;
+                                swal({
+                                    type: 'success',
+                                    title: "Upload files",
+                                    text: response.message,
+                                    showCancelButton: false,
+                                    closeOnConfirm: true
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                    }
+                                });
+                                checkuploaded = true;
+                                UpdateDetails();
+                                $('#my-dropzone input, #my-dropzone select').prop('readonly', true);
+                                document.getElementById('uploadfiles').style.display = 'none';
+                                document.getElementById('fileInput').disabled = true;
+                                document.getElementById('udFilesBtn').disabled = true;
+                                document.getElementById('udFolderBtn').disabled = true;
+                                document.getElementById('folderInput').disabled = true;
+                                document.getElementById('DocumentTemplate').disabled = true;
+                                document.getElementById('inputField1').disabled = true;
+
+
+                                if (response.ispreparator) {
+                                    ActivateSendRequestButton();
+                                } else {
+                                    ActivateBulkSignButton();
+                                }
+                            } else {
+                                swal({
+                                    type: 'info',
+                                    title: "Upload files",
+                                    text: response.message,
+                                    showCancelButton: false,
+                                    closeOnConfirm: true
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                    }
+                                });
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            ajaxErrorHandler(xhr, status, error);
+                            resolve({ success: false, message: 'Error while uploading files' });
+                        },
+                    });
+                }
+            } else {
+                console.log('No files selected.');
+            }
+        }
+     
+        function rendertablepageafterupload() {
+
+            const container = document.getElementById("fileListContainer");
+            container.innerHTML = "";
+
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageFiles = currentTableData.slice(start, end);
+
+            pageFiles.forEach((file) => {
+
+                const row = document.createElement("div");
+                row.className = "file-row two-col";
+
+                const doc = document.createElement("div");
+                doc.className = "file-doc";
+
+                const icon = document.createElement("div");
+                icon.className = "file-icon";
+                icon.innerHTML = '<i class="fa-regular fa-file-lines"></i>';
+
+                const nameBox = document.createElement("div");
+
+                const name = document.createElement("div");
+                name.className = "file-name";
+                const fileName = file.name || file.fileName || "";
+
+                name.textContent = fileName.length > 50
+                    ? cropFileNames(fileName)
+                    : fileName;
+                name.title = file.fileName;
+
+                const time = document.createElement("div");
+                time.className = "file-time";
+                time.textContent = "Uploaded just now";
+
+                nameBox.appendChild(name);
+                nameBox.appendChild(time);
+
+                doc.appendChild(icon);
+                doc.appendChild(nameBox);
+
+                const status = document.createElement("div");
+                status.className = "file-status";
+
+                if (file.status === "success") {
+                    status.style.background = "#dcfce7";
+                    status.style.color = "#166534";
+                    status.textContent = "Success";
+                } else {
+                    status.style.background = "#fee2e2";
+                    status.style.color = "#991b1b";
+                    status.textContent = "Failed";
+                }
+
+                row.appendChild(doc);
+                row.appendChild(status);
+                container.appendChild(row);
+            });
+        }
+        function renderTablePage() {
+
+            const container = document.getElementById("fileListContainer");
+            if (!container) return;
+
+            container.innerHTML = "";
+
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageFiles = currentTableData.slice(start, end);
+
+            pageFiles.forEach((file, index) => {
+
+                const realIndex = start + index;
+
+                const row = document.createElement("div");
+                row.className = "file-row three-col";
+
+                const doc = document.createElement("div");
+                doc.className = "file-doc";
+
+                const icon = document.createElement("div");
+                icon.className = "file-icon";
+                icon.innerHTML = '<i class="fa-regular fa-file-lines"></i>';
+
+                const nameBox = document.createElement("div");
+
+                const name = document.createElement("div");
+                name.className = "file-name";
+                const fileName = file.name || file.fileName || "";
+
+                name.textContent = fileName.length > 50
+                    ? cropFileNames(fileName)
+                    : fileName;
+
+                name.title = fileName;
+
+
+
+                const time = document.createElement("div");
+                time.className = "file-time";
+                time.textContent = "Uploaded just now";
+
+                nameBox.appendChild(name);
+                nameBox.appendChild(time);
+
+                doc.appendChild(icon);
+                doc.appendChild(nameBox);
+
+                const status = document.createElement("div");
+                status.className = "file-status";
+                status.textContent = "Ready";
+
+                const del = document.createElement("button");
+                del.className = "file-delete";
+                del.innerHTML = '<i class="fa-regular fa-trash-can"></i>';
+                del.onclick = function () {
+                    removeFile(realIndex);
+                };
+
+                row.appendChild(doc);
+                row.appendChild(status);
+                row.appendChild(del);
+
+                container.appendChild(row);
+            });
+        }
+        function goToPage(page) {
+            currentPage = page;
+            renderTablePage();
+        }
+
+
+        function updateTable(fileArray) {
+
+            $("#uploadHeader").hide();
+            $("#uploadedHeader").show();
+
+            currentTableData = fileArray;
+            currentPage = 1;
+
+            const total = currentTableData.length;
+
+            document.getElementById("fileCountDisplay").textContent =
+                `Recent Uploads (${total} files)`;
+
+            document.getElementById("fileTableContainer").style.display =
+                total > 0 ? "block" : "none";
+
+            rendertablepageafterupload();
+            updatePagination(total);
+        }
+
+        function PerformBulkSign() {
+            document.getElementById('overlay6').style.display = 'flex';
+            let okElement = document.getElementById('okButton');
+
+            if (bulksignPermisson != 'False') {
+                var correlationId = CorelationId;
+                var tempId = $('#DocumentTemplate').val();
+                var signcord = "";
+                var esealcord = "";
+                for (var i = 0; i < templateList.length; i++) {
+                    if (templateList[i]._id == tempId) {
+                        signcord = templateList[i].Annotations;
+                        esealcord = templateList[i].EsealAnnotations;
+                    }
+                }
+                if (esealcord !== null) {
+                    var responseFlag = true;
+                    $.ajax({
+                        url: GetOrganizationStatusUrl,
+                        type: 'GET',
+                        dataType: 'json',
+                        data: { loginorgUid: loginOrgId },
+                        success: function (response) {
+                            if (!response.success) {
+                                document.getElementById('overlay6').style.display = 'none';
+                                swal({
+                                    type: 'info',
+                                    title: 'Info',
+                                    text: `You can not perform eseal operation, please contact organization `,
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        window.location.href = BulkSignIndexUrl + "?viewName=MyDocuments";
+                                    }
+                                });
+                                responseFlag = false;
+                            } else {
+                                responseFlag = true;
+                                PerformBulkSigning(correlationId, signcord, esealcord);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            ajaxErrorHandler(xhr, status, error);
+                            resolve({ success: false, message: 'Error while performing bulk signing' });
+                        },
+                    });
+                }
+                else {
+                    PerformBulkSigning(correlationId, signcord, esealcord);
+                }
+
+            }
+
+            else {
+                swal({
+                    title: "info",
+                    text: "You Don't have Bulksing permission",
+                    type: "info",
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        window.location.href = BulkSignIndexUrl + "?viewName=MyDocuments";
+                    }
+                });
+            }
+
+
+        }
+
+
+        function PerformBulkSigning(correlationId, signcord, esealcord) {
+            console.log("Bulk Sign Started");
+            $.ajax({
+                url: PerformBulkSignUrl,
+                method: 'POST',
+                headers: {
+
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                },
+                contentType: "application/json",
+                data: JSON.stringify(correlationId),
+                beforeSend: function () {
+                    showOverlay(esealcord, signcord);
+                },
+                complete: function () {
+                    hideOverlay(esealcord, signcord);
+                },
+                success: function (response) {
+                    document.getElementById('overlay6').style.display = 'none';
+                    if (response.success == false) {
+                        swal({
+                            type: 'info',
+                            title: "Server Message",
+                            text: response.message,
+                            showCancelButton: true,
+                            confirmButtonText: 'Retry',
+                            closeOnConfirm: true
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                PerformBulkSign();
+                            }
+
+                            else {
+
+                            }
+                        });
+                    }
+                    else {
+
+
+                        swal({
+                            title: "info",
+                            text: "Document Signing is initiated.",
+                            type: "info",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = BulkSigningStatusUrl + '?correlationId=' + correlationId;
+                            }
+                        });
+
+                    }
+                },
+                error: function (xhr, status, error) {
+                    ajaxErrorHandler(xhr, status, error);
+                    resolve({ success: false, message: 'Error while performing bulk signing' });
+                },
+            });
+        }
+
+        function Sign() {
+
+            var correlationId = '';
+            $.ajax({
+                url: BulkSigningUrl,
+                method: 'POST',
+                headers: {
+
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                },
+                contentType: "application/json",
+                data: JSON.stringify(selectedTemplateId),
+                success: function (response) {
+                    correlationId = response.result;
+
+                    swal({
+                        icon: 'info',
+                        title: 'Server Message',
+                        text: 'Document Signing is initiated.',
+                        confirmButtonColor: "#acc33e",
+                        iconColor: "#acc33e",
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.href = "/BulkSignList/BulkSigningStatus?correlationId=" + correlationId;
+                        }
+                    });
+
+                },
+                error: function (xhr, status, error) {
+                    ajaxErrorHandler(xhr, status, error);
+                    resolve({ success: false, message: 'Error while sign in bulsign' });
+                },
+            });
+
+        }
+    </script>
+}
+

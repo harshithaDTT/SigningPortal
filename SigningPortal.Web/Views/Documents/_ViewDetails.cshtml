@@ -1,0 +1,1023 @@
+﻿@using Newtonsoft.Json
+@model SigningPortal.Web.ViewModels.Documents.DocumentReportexportViewModel
+
+@{
+    var esealannotationsstring = Model.DocumentDetails.EsealAnnotations;
+    List<string> esealsuidList = new List<string>(); // Declare the list
+
+    if (esealannotationsstring != null)
+    {
+        var esealAnnotations = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(esealannotationsstring);
+
+        // Prepare a list to hold all suids (keys)
+
+        // Loop through the dictionary to get the keys (suid values)
+        foreach (var key in esealAnnotations.Keys)
+        {
+            esealsuidList.Add(key);
+        }
+    }
+    var signannotationsstring = Model.DocumentDetails.SignatureAnnotations;
+    List<string> signsuidList = new List<string>(); // Declare the list
+
+    if (signannotationsstring != null)
+    {
+        var signAnnotations = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(signannotationsstring);
+
+
+
+        // Loop through the dictionary to get the keys (suid values)
+        foreach (var key in signAnnotations.Keys)
+        {
+            signsuidList.Add(key);
+        }
+    }
+    var qrcodeannotationsstring = Model.DocumentDetails.QrCodeAnnotations;
+    List<string> qrcodesuidList = new List<string>(); // Declare the list
+
+    if (qrcodeannotationsstring != null)
+    {
+        var qrcodeAnnotations = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(qrcodeannotationsstring);
+
+
+
+        // Loop through the dictionary to get the keys (suid values)
+        foreach (var key in qrcodeAnnotations.Keys)
+        {
+            qrcodesuidList.Add(key);
+        }
+    }
+
+
+    var formattedDateTime = Model.ReportGeneration;
+    var pdflogo = "data:image/png;base64," + Model.pdflogoimage;
+}
+
+
+<style>
+    .pdfView table {
+        border-collapse: collapse;
+    }
+
+    .pdfView {
+        max-width: 883px;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #eee;
+        box-shadow: 0 0 10px rgba(0, 0, 0, .15);
+        font-size: 16px;
+        line-height: 24px;
+        font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+        color: #555;
+    }
+
+    .alt-email {
+        display: block;
+        width: 200px;
+        height: 30px;
+    }
+
+        .pdfView table td {
+            padding: 8px;
+            vertical-align: top;
+        }
+
+        .pdfView table {
+            width: 100%;
+            line-height: inherit;
+            text-align: left;
+        }
+
+    .logo {
+        width: 100%;
+        height: 150px;
+        text-align: center;
+    }
+
+
+    label {
+        display: inline-block;
+        width: 200px;
+        height: 40px;
+    }
+
+    #signatorieslist {
+        border-bottom: 1px solid black !important;
+    }
+
+        #signatorieslist:last-child {
+            border-bottom: none !important;
+        }
+
+    .container {
+        display: inline;
+        position: relative;
+        padding-left: 35px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        font-size: 16px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+        /* Hide the browser's default checkbox */
+        .container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+    /* Create a custom checkbox */
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background-color: #eee;
+    }
+
+    /* On mouse-over, add a grey background color */
+    .container:hover input ~ .checkmark {
+        background-color: #ccc;
+    }
+
+    /* When the checkbox is checked, add a blue background */
+    .container input:checked ~ .checkmark {
+        background-color: #2196F3;
+        border-radius: 5px;
+    }
+
+    /* Create the checkmark/indicator (hidden when not checked) */
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+
+    /* Show the checkmark when checked */
+    .container input:checked ~ .checkmark:after {
+        display: block;
+    }
+
+    /* Style the checkmark/indicator */
+    .container .checkmark:after {
+        left: 7px;
+        top: 3px;
+        width: 3px;
+        height: 8px;
+        border: solid white;
+        border-width: 0 3px 3px 0;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        transform: rotate(45deg);
+    }
+</style>
+
+<div>
+    <div class="logo">
+        <img style="width:342px;height:93px" asp-append-version="true" src=@pdflogo />
+    </div>
+    <div class="pdfView">
+        @if (Model.DocumentDetails.MultiSign)
+        {
+            <table align='center'>
+                <tr>
+
+                    <td><div style="float:left;font-weight:bold;font-size:20px;">Document Details </div><div style="margin-left:33%; padding-left:3px;"></div></td>
+
+                </tr>
+                <tr>
+                    <th style="min-width:210px"></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+               
+                <tr>
+                    <td>Name of the document</td>
+                    <td>:</td>
+                    <td style="max-width:100%;word-wrap: break-word;word-break: break-word;white-space: normal;">@Model.DocumentDetails.DocumentName</td>
+                </tr>
+                <tr>
+                    <td>Prepared By</td>
+                    <td>:</td>
+                    <td>@Model.DocumentDetails.OwnerName</td>
+                </tr>
+                <tr>
+                    <td> Prepared On</td>
+                    <td>:</td>
+                    <td>@Model.DocumentDetails.CreatedAt</td>
+                </tr>
+                <tr>
+                    <td> Preparator Account Type </td>
+                    <td>:</td>
+                    <td>@Model.DocumentDetails.Organization.AccountType </td>
+                </tr>
+                @if (@Model.DocumentDetails.Organization.AccountType != "self")
+                {
+                    <tr>
+                        <td> Preparator Organization Name</td>
+                        <td>:</td>
+                        <td>@Model.DocumentDetails.Organization.OrganizationName </td>
+                    </tr>
+                }
+                @if (Model.DocumentDetails.SigningStatus == "Completed")
+                {
+                    <tr>
+                        <td> Completed On</td>
+                        <td>:</td>
+                        <td>@Model.DocumentDetails.CompletedAt</td>
+                    </tr>
+                }
+
+                else
+                {
+                    <tr>
+                        <td> Expires On</td>
+                        <td>:</td>
+                        <td>@Model.DocumentDetails.ExpireAt</td>
+                    </tr>
+
+                }
+                @if (qrcodesuidList.Count > 0)
+                {
+                    <tr>
+                        <td> QR Code Available</td>
+                        <td>:</td>
+                        <td>Yes</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td> QR Code Available</td>
+                        <td>:</td>
+                        <td>No</td>
+                    </tr>
+                }
+                @if (esealsuidList.Count > 0)
+                {
+                    <tr>
+                        <td> Eseal Available</td>
+                        <td>:</td>
+                        <td>Yes</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td> Eseal Available</td>
+                        <td>:</td>
+                        <td>No</td>
+                    </tr>
+                }
+
+                @if (Model.DocumentDetails.MultiSign)
+                {
+                    <tr>
+                        <td> Signing By (Self/Others)</td>
+                        <td>:</td>
+                        <td>Others (Others may include self)</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td> Signing By (Self/Others)</td>
+                        <td>:</td>
+                        <td>Self</td>
+
+                    </tr>
+                }
+                @if (Model.SignatoryDetails.Count > 1)
+                {
+                    @if (Model.DocumentDetails.DisableOrder)
+                    {
+                        <tr>
+                            <td> Signing Order</td>
+                            <td>:</td>
+                            <td>Random</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td> Signing Order</td>
+                            <td>:</td>
+                            <td>Sequential</td>
+                        </tr>
+
+                    }
+                }
+              
+
+                @if (Model.DocumentDetails.SigningStatus == "In Progress")
+                {
+                    <tr>
+                        <td style="text-align:left;">Status</td>
+                        <td style="text-align:left;">:</td>
+                        <td id="status" style="color:rgb(229, 184, 0)">@Model.DocumentDetails.SigningStatus</td>
+                    </tr>
+                }
+
+                else if (Model.DocumentDetails.SigningStatus == "Completed")
+                {
+                    <tr>
+                        <td style="text-align:left;">Status</td>
+                        <td style="text-align:left;">:</td>
+                        <td id="status" style="color:rgb(44, 175, 87)">@Model.DocumentDetails.SigningStatus</td>
+                    </tr>
+                }
+                else if (Model.DocumentDetails.SigningStatus == "Declined")
+                {
+                    <tr>
+                        <td style="text-align:left;">Status</td>
+                        <td style="text-align:left;">:</td>
+                        <td id="status" style="color:#fb0404">@Model.DocumentDetails.SigningStatus</td>
+                    </tr>
+                }
+                else if (Model.DocumentDetails.SigningStatus == "Expired")
+                {
+                    <tr>
+                        <td style="text-align:left;">Status</td>
+                        <td style="text-align:left;">:</td>
+                        <td id="status" style="color:#bdbdbd"> @Model.DocumentDetails.SigningStatus</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td style="text-align:left;">Status</td>
+                        <td style="text-align:left;">:</td>
+                        <td id="status" style="color:#bdbdbd"> @Model.DocumentDetails.SigningStatus</td>
+                    </tr>
+                }
+
+            </table>
+            <table align='center'>
+                <tr>
+                    <td><div style="float:left;font-weight:bold;">Signatories</div><div style="margin-left:33%; padding-left:3px"></div></td>
+
+                </tr>
+                <table class="split-table" style="border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, .15);">
+
+
+                    @foreach (var orgUser in Model.SignatoryDetails)
+                    {
+
+                        <tr class="col12" id="signatorieslist">
+                            <td>
+                                <table align='center'>
+                                    <tr>
+                                        <td><label>Signatory Name</label> </td>
+                                        <td> : </td>
+                                        <td>
+                                            @if (string.IsNullOrEmpty(orgUser.RecepientName))
+                                            {
+                                                <label>NA</label>
+                                            }
+                                            else
+                                            {
+                                                <label>@orgUser.RecepientName</label>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><label>Signatory Email</label> </td>
+                                        <td> : </td>
+
+                                        <td>
+                                            @if (string.IsNullOrEmpty(orgUser.RecepientEmail))
+                                            {
+                                                <label>NA</label>
+                                            }
+                                            else
+                                            {
+                                                <label>@orgUser.RecepientEmail</label>
+                                            }
+
+                                        </td>
+                                    </tr>
+                                    @if (orgUser.AlternateSignatories.Count > 0 && !orgUser.HasDelegation)
+                                    {
+                                        <tr>
+
+                                            <td><label>Alternative Signatory</label></td>
+
+                                            <td> : </td>
+
+                                            <td>
+                                                @foreach (var alternatives in orgUser.AlternateSignatories)
+                                                {
+                                                    <div class="alt-email">@alternatives.email</div>
+                                                }
+
+                                            </td>
+
+                                        </tr>
+                                    }
+                                    @if (orgUser.SignStatus == "Rejected")
+                                    {
+                                        <tr>
+
+                                            <td><label>Rejected By</label> </td>
+
+                                            <td> : </td>
+
+                                            <td>
+
+                                                <label>@orgUser.DeclinedBy.email</label>
+
+                                            </td>
+
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td><label>Signed By</label> </td>
+                                            <td> : </td>
+                                            <td>
+                                                @if (string.IsNullOrEmpty(orgUser.SignedBy))
+                                                {
+                                                    <label>NA</label>
+                                                }
+                                                else
+                                                {
+                                                    <label>@orgUser.SignedBy</label>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                    
+                                    <tr>
+                                        <td><label>Account Type</label> </td>
+                                        <td> : </td>
+                                        <td>
+                                            @if (string.IsNullOrEmpty(orgUser.Organization.AccountType))
+                                            {
+                                                <label>NA</label>
+                                            }
+                                            else
+                                            {
+                                                <label>@orgUser.Organization.AccountType</label>
+                                            }
+                                        </td>
+                                    </tr>
+                                    @if (orgUser.Organization.AccountType != "self")
+                                    {
+                                        <tr>
+                                            <td><label>Organization Name</label> </td>
+                                            <td> : </td>
+                                            <td>
+                                                @if (string.IsNullOrEmpty(orgUser.Organization.OrganizationName))
+                                                {
+                                                    <label>NA</label>
+                                                }
+                                                else
+                                                {
+                                                    <label>@orgUser.Organization.OrganizationName</label>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+
+                                    <tr>
+
+                                        <td><label>Requested On</label></td>
+                                        <td> : </td>
+                                        <td>
+                                            <lable>@orgUser.SigningReqTime</lable>
+                                        </td>
+
+
+                                    </tr>
+                                    <tr>
+
+                                        <td><label>Signed On</label></td>
+                                        <td> : </td>
+                                        <td>
+                                            @if (orgUser.SignStatus == "Signed")
+                                            {
+
+                                                <lable>@orgUser.SigningCompleteTime</lable>
+
+                                            }
+                                            else
+                                            {
+                                                <lable>NA</lable>
+
+                                            }
+                                        </td>
+
+                                    </tr>
+                                    <tr>
+                                        <td><label>Allow Comments</label></td>
+                                        <td> : </td>
+                                        <td>
+                                            @if (orgUser.AllowComments)
+                                            {
+                                                <label>
+                                                    Yes
+                                                </label>
+                                            }
+                                            else
+                                            {
+                                                <label>
+                                                    No
+                                                </label>
+
+                                            }
+                                        </td>
+
+                                    </tr>
+                                    <tr>
+
+                                        <td><label>Signature Mandatory</label></td>
+                                        <td> : </td>
+                                        <td>
+                                            @if (orgUser.SignatureMandatory)
+                                            {
+                                                <label>
+                                                    Yes
+                                                </label>
+                                            }
+                                            else
+                                            {
+                                                <label>
+                                                    No
+                                                </label>
+
+                                            }
+                                        </td>
+
+                                    </tr>
+
+                                    <tr>
+                                        @if (Model.DocumentDetails.EsealAnnotations != null)
+                                        {
+                                            var recepientSuid = orgUser.RecepientSuid;
+                                            bool findesealrecepient = esealsuidList.Contains(recepientSuid);
+                                            <td><label>Eseal Applied</label></td>
+                                            <td> : </td>
+                                            <td>
+                                                @if (findesealrecepient)
+                                                {
+                                                    <label>
+                                                        Yes
+                                                    </label>
+                                                }
+                                                else
+                                                {
+                                                    <label>
+                                                        No
+                                                    </label>
+
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td><label>Eseal Applied</label></td>
+                                            <td> : </td>
+                                            <td>
+                                                <label>
+                                                    No
+                                                </label>
+                                            </td>
+                                        }
+
+                                    </tr>
+
+                                    @if (orgUser.Initial)
+                                    {
+                                        <tr>
+                                            <td><label>Initials Applied</label></td>
+                                            <td> : </td>
+                                            <td>
+                                                <label>
+                                                    Yes
+                                                </label>
+                                            </td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td><label>Initials Applied</label></td>
+                                            <td> : </td>
+                                            <td>
+                                                <label>
+                                                    No
+                                                </label>
+                                            </td>
+                                        </tr>
+                                    }
+
+                                    <tr>
+                                        <td><label>Has Delegation</label></td>
+                                        <td> : </td>
+                                        <td>
+                                            @if (orgUser.HasDelegation)
+                                            {
+                                                <label>
+                                                    Yes
+                                                </label>
+                                            }
+                                            else
+                                            {
+                                                <label>
+                                                    No
+                                                </label>
+
+                                            }
+                                        </td>
+
+                                    </tr>
+                                    @if (orgUser.HasDelegation)
+
+                                    {
+                                        <tr>
+
+                                            <td><label>Delegate Email</label></td>
+
+                                            <td> : </td>
+
+                                            <td>
+                                                @foreach (var delegatees in orgUser.DelgationDetails)
+                                                {
+                                                    <label>
+                                                        @delegatees.DelegateeEmail <br>
+
+                                                    </label>
+                                                }
+
+                                            </td>
+
+                                        </tr>
+
+                                    }
+                                    <tr>
+
+                                        @if (Model.DocumentDetails.SignatureAnnotations != null)
+                                        {
+                                            var recepientSuid = orgUser.RecepientSuid;
+                                            bool findsignrecepient = signsuidList.Contains(recepientSuid);
+                                            <td><label>Signature Type</label></td>
+                                            <td> : </td>
+                                            <td>
+                                                <label>
+                                                    @(findsignrecepient ? "Visible" : "Invisible")
+                                                </label>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td><label>Signature Type</label></td>
+                                            <td> : </td>
+                                            <td>
+                                                <label style="margin-left:30px;">
+                                                    Invisible
+                                                </label>
+                                            </td>
+                                        }
+
+                                    </tr>
+                                    <tr>
+
+                                        <td> <label>Signing Status</label> </td>
+                                        <td> : </td>
+                                        <td>
+                                            @if (string.IsNullOrEmpty(orgUser.SignStatus))
+                                            {
+                                                <label>NA</label>
+                                            }
+                                            else
+                                            {
+                                                @if (orgUser.SignStatus == "Signed")
+                                                {
+                                                    <lable style="color:rgb(44, 175, 87);">@orgUser.SignStatus</lable>
+                                                }
+                                                else if (orgUser.SignStatus == "Need to sign")
+                                                {
+                                                    <lable style="color:rgb(229, 184, 0);">@orgUser.SignStatus</lable>
+                                                }
+                                                else if (orgUser.SignStatus == "Rejected")
+                                                {
+                                                    <lable style="color:#fb0404;">@orgUser.SignStatus</lable>
+                                                }
+                                            }
+                                        </td>
+
+                                    </tr>
+
+                                </table>
+
+                            </td>
+
+                        </tr>
+
+                    }
+                </table>
+            </table>
+        }
+        else
+        {
+            <table align='center'>
+                <tr>
+                    <th style="min-width:210px"></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+                <tr>
+
+                    <td><div style="float:left;font-weight:bold;font-size:20px;">Document Details </div><div style="margin-left:33%; padding-left:3px;"></div></td>
+
+                </tr>
+
+                <tr>
+                    <td>Name of the document</td>
+                    <td>:</td>
+                    <td style="max-width:100%;word-wrap: break-word;word-break: break-word;white-space: normal;">@Model.DocumentDetails.DocumentName</td>
+                </tr>
+                <tr>
+                    <td>Prepared By</td>
+                    <td>:</td>
+                    <td>@Model.DocumentDetails.OwnerName</td>
+                </tr>
+                <tr>
+                    <td> Prepared On</td>
+                    <td>:</td>
+                    <td>@Model.DocumentDetails.CreatedAt</td>
+                </tr>
+
+
+
+                @if (Model.DocumentDetails.SigningStatus == "Declined" || Model.DocumentDetails.SigningStatus == "In Progress")
+                {
+                    <tr>
+                        <td> Expires On</td>
+                        <td>:</td>
+                        <td>@Model.DocumentDetails.ExpireAt</td>
+                    </tr>
+
+                }
+
+                else
+                {
+                    <tr>
+                        <td> Signed On</td>
+                        <td>:</td>
+                        <td>@Model.DocumentDetails.CompletedAt</td>
+                    </tr>
+
+                }
+                @if (qrcodesuidList.Count > 0)
+                {
+                    <tr>
+                        <td> QR Code Available</td>
+                        <td>:</td>
+                        <td>Yes</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td> QR Code Available</td>
+                        <td>:</td>
+                        <td>No</td>
+                    </tr>
+                }
+                @if (esealsuidList.Count > 0)
+                {
+                    <tr>
+                        <td> Eseal Available</td>
+                        <td>:</td>
+                        <td>Yes</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td> Eseal Available</td>
+                        <td>:</td>
+                        <td>No</td>
+                    </tr>
+                }
+
+                @if (Model.DocumentDetails.MultiSign)
+                {
+                    <tr>
+                        <td> Signing By (Self/Others)</td>
+                        <td>:</td>
+                        <td>Others (Others may include self)</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td> Signing By (Self/Others)</td>
+                        <td>:</td>
+                        <td>Self</td>
+                    </tr>
+
+                }
+                @foreach (var orgUser in Model.SignatoryDetails)
+                {
+
+                    <tr>
+                        <td><label>Signatory Email</label> </td>
+                        <td> : </td>
+
+                        <td>
+                            @if (string.IsNullOrEmpty(orgUser.RecepientEmail))
+                            {
+                                <label>NA</label>
+                            }
+                            else
+                            {
+                                <label>@orgUser.RecepientEmail</label>
+                            }
+
+                        </td>
+                    </tr>
+
+                    <tr>
+
+                        <td><label>Initials Applied</label></td>
+
+                        <td> : </td>
+
+                        <td>
+
+                            @if (orgUser.Initial)
+
+                            {
+
+                                <label>
+
+                                    Yes
+
+                                </label>
+
+                            }
+
+                            else
+
+                            {
+
+                                <label>
+
+                                    No
+
+                                </label>
+
+
+
+                            }
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td><label>Account Type</label> </td>
+                        <td> : </td>
+                        <td>
+                            @if (string.IsNullOrEmpty(orgUser.Organization.AccountType))
+                            {
+                                <label>NA</label>
+                            }
+                            else
+                            {
+                                <label>@orgUser.Organization.AccountType</label>
+                            }
+                        </td>
+                    </tr>
+                    @if (orgUser.Organization.AccountType != "self")
+                    {
+                        <tr>
+                            <td><label>Organization Name</label> </td>
+                            <td> : </td>
+                            <td>
+                                @if (string.IsNullOrEmpty(orgUser.Organization.OrganizationName))
+                                {
+                                    <label>NA</label>
+                                }
+                                else
+                                {
+                                    <label>@orgUser.Organization.OrganizationName</label>
+                                }
+                            </td>
+                        </tr>
+                    }
+
+                    <tr>
+
+                        @if (Model.DocumentDetails.SignatureAnnotations != null)
+                        {
+                            var recepientSuid = orgUser.RecepientSuid;
+                            bool findsignrecepient = signsuidList.Contains(recepientSuid);
+                            <td><label>Signature Type</label></td>
+                            <td> : </td>
+                            <td>
+                                <label>
+                                    @(findsignrecepient ? "Visible" : "Invisible")
+                                </label>
+                            </td>
+                        }
+                        else
+                        {
+                            <td><label>Signature Type</label></td>
+                            <td> : </td>
+                            <td>
+                                <label>
+                                    Invisible
+                                </label>
+                            </td>
+                        }
+
+                    </tr>
+                    @if (orgUser.SignStatus == "Rejected")
+                    {
+                        <tr>
+                            <td style="text-align:left;">Decline Remarks</td>
+                            <td style="text-align:left;">:</td>
+                            <td id="declineRemarks">@orgUser.DeclineRemark</td>
+                        </tr>
+                    }
+
+                }
+                @if (Model.DocumentDetails.SigningStatus == "In Progress")
+                {
+                    <tr>
+                        <td style="text-align:left;">Signing Status</td>
+                        <td style="text-align:left;">:</td>
+                        <td id="status" style="color:rgb(229, 184, 0)">@Model.DocumentDetails.SigningStatus</td>
+                    </tr>
+                }
+
+                else if (Model.DocumentDetails.SigningStatus == "Completed")
+                {
+                    <tr>
+                        <td style="text-align:left;">Signing Status</td>
+                        <td style="text-align:left;">:</td>
+                        <td id="status" style="color:rgb(44, 175, 87)">@Model.DocumentDetails.SigningStatus</td>
+                    </tr>
+                }
+                else if (Model.DocumentDetails.SigningStatus == "Declined")
+                {
+                    <tr>
+                        <td style="text-align:left;">Signing Status</td>
+                        <td style="text-align:left;">:</td>
+                        <td id="status" style="color:#fb0404">@Model.DocumentDetails.SigningStatus</td>
+                    </tr>
+                }
+                else if (Model.DocumentDetails.SigningStatus == "Expired")
+                {
+                    <tr>
+                        <td style="text-align:left;">Signing Status</td>
+                        <td style="text-align:left;">:</td>
+                        <td id="status" style="color:#bdbdbd"> @Model.DocumentDetails.SigningStatus</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td style="text-align:left;">Signing Status</td>
+                        <td style="text-align:left;">:</td>
+                        <td id="status" style="color:#bdbdbd"> @Model.DocumentDetails.SigningStatus</td>
+                    </tr>
+                }
+
+            </table>
+        }
+
+
+
+
+    </div>
+    <div class="col-md-12" style="text-align: right;">
+        <label style="font-size:18px; margin-top:2%; white-space: nowrap !important;">
+            Report Generated On :
+        </label>
+
+    <label style="font-size:18px; margin-top:2%; width:160px !important; margin-right:10px;white-space: nowrap !important;">
+            @formattedDateTime
+        </label>
+    </div> 
+    
+
+
+</div>
+<script>
+    $(document).ready(function () {
+        $('#networkOverlay').hide();
+
+    });
+</script>
+

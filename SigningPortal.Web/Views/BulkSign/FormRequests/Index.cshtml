@@ -1,0 +1,670 @@
+﻿@model SigningPortal.Web.ViewModels.FormRequests.Sentformspresent
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+@{
+	ViewData["Title"] = "View";
+}
+@{
+	var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+	var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+	var AccountType = User.FindFirst("AccountType").Value;
+	var OrganizationUid = "";
+	if (AccountType != "Self")
+	{
+
+		OrganizationUid = User.FindFirst("OrganizationUid").Value;
+	}
+	var issentpresent = Model.isformspresent;
+
+
+}
+@{
+	await Html.RenderPartialAsync("_AlertBox");
+}
+
+<style>
+	/* Custom dropdown menu style */
+	.custom-dropdown {
+		position: relative;
+		display: inline-block;
+	}
+
+	.custom-dropdown-content {
+		display: none;
+		position: absolute;
+		background-color: #fff;
+		min-width: 120px;
+		box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+		z-index: 1;
+		border: 1px solid #ced4da;
+		border-radius: 0.25rem;
+	}
+
+		.custom-dropdown-content a {
+			color: #333;
+			padding: 0.25rem 1rem;
+			text-decoration: none;
+			display: block;
+			font-size: 14px;
+		}
+
+			.custom-dropdown-content a:hover {
+				background-color: #333;
+				color: white;
+			}
+
+	.custom-dropdown:hover .custom-dropdown-content {
+		display: block;
+	}
+
+	.custom-dropdown-content li {
+		list-style: none;
+	}
+
+	.btn {
+		text-transform: capitalize !important;
+		font-size: 12px !important;
+	}
+
+	/* Ensure full width for table */
+	.table-container {
+		width: 100%;
+		overflow-x: auto;
+	}
+
+	.table {
+		width: 100%;
+		max-width: 100%;
+		margin-bottom: 1rem;
+		background-color: transparent;
+	}
+
+	.dataTables_wrapper {
+		position: relative !important;
+		clear: both !important;
+		width: 100% !important;
+	}
+
+	.card-title {
+		margin-bottom: 10px !important;
+	}
+
+
+	.popup {
+		display: none;
+		position: absolute;
+		min-width: 280px;
+		padding: 15px;
+		background-image: linear-gradient(90deg, #30b6ac, #81bc73);
+		color: #000;
+		border-radius: 6px;
+		box-shadow: 0 0 24px rgba(0, 0, 0, .25);
+		font-size: 80%;
+		z-index: 10000;
+		opacity: 0;
+		transition: opacity 0.3s, visibility 0.3s;
+		bottom: 100%;
+		/*/ Position above the status / */
+		right: 0;
+		/*/ Align to the right of the status container / */
+		transform: translateX(0) translateY(-10px);
+		/*/ Adjust vertical positioning /*/
+	}
+
+	.status-container:hover .popup {
+		display: block;
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.popup::after {
+		content: "";
+		position: absolute;
+		bottom: -10px;
+		/*/ Position the arrow / */
+		right: 20px;
+		/*/ Adjust arrow to align with the popup /*/
+		width: 0;
+		height: 0;
+		border-left: 10px solid transparent;
+		/*/ Transparent left side /*/
+		border-top: 10px solid #81bc73;
+		/*/ Visible top side /*/
+	}
+
+	.popup .header {
+		font-weight: 600;
+		text-align: center;
+		margin-bottom: 0;
+		font-size: 14px;
+	}
+
+	.popup .headersp {
+		padding-bottom: 5px;
+		border-bottom: 1px solid;
+	}
+
+	.popup .row {
+		display: contents;
+	}
+
+	.popup p {
+		line-height: 1 !important;
+		margin-bottom: 0;
+		padding-bottom: 5px;
+		color: #fff;
+		font-weight: 600;
+		font-size: 13px;
+	}
+
+	.popup ul {
+		padding-left: 0;
+		color: #fff;
+		display: flex;
+		flex-direction: column;
+		/*/ Ensure vertical alignment /*/
+		list-style: none;
+	}
+
+		.popup ul li {
+			font-size: 14px;
+			font-weight: 600;
+			position: relative;
+			margin-bottom: 0;
+		}
+
+			.popup ul li.first-email::before {
+				content: "";
+				position: absolute;
+				left: 0;
+				top: 50%;
+				transform: translateY(-50%);
+				width: 14px;
+				height: 14px;
+				background-color: transparent;
+				border: 2px solid #fff;
+				border-radius: 50%;
+			}
+
+			.popup ul li.first-email::after {
+				content: "";
+				width: 6px;
+				height: 6px;
+				background-color: #fff;
+				border-radius: 50%;
+				position: absolute;
+				top: 50%;
+				left: 7px;
+				transform: translate(-50%, -50%);
+			}
+
+			.popup ul li.no-bullet,
+			.popup ul li.delegator-section {
+				padding-left: 0;
+				list-style-type: none;
+				margin-left: 0;
+				/*/ Reset margin for left alignment /*/
+			}
+
+	/*/ Ensure alignment of items in the popup /*/
+	.popup ul {
+		padding-left: 0;
+		color: #fff;
+		display: flex;
+		flex-direction: column;
+		list-style: none;
+	}
+
+	@@media (max-width: 575px) {
+		
+		.nav-tabs .active {
+			background-color: transparent !important;
+			border: none !important;
+			color: black !important;
+			opacity: 1;
+			border-bottom: 3px solid #acc33e !important;
+		}
+	}
+	
+	/* Enhanced responsive styles */
+	@@media (max-width: 768px) {
+		.card-body {
+			padding: 1rem;
+		}
+		
+		.common-heading-color {
+			font-size: 1.25rem !important;
+			margin-bottom: 1rem !important;
+		}
+		
+		.nav-tabs {
+			flex-direction: column;
+			border-bottom: none;
+			gap: 0.25rem;
+		}
+		
+		.nav-tabs .nav-item {
+			width: 100%;
+		}
+		
+		.nav-tabs .nav-link {
+			width: 100%;
+			text-align: left;
+			padding: 0.75rem 1rem;
+			border-radius: 8px;
+			background: #f8fafc;
+			margin: 0 !important;
+		}
+		
+		.nav-tabs .nav-link.active {
+			background: linear-gradient(135deg, #10b981, #059669) !important;
+			color: white !important;
+			border: none !important;
+		}
+		
+		.tab-content {
+			padding: 0.75rem;
+		}
+		
+		.popup {
+			position: fixed !important;
+			left: 50% !important;
+			right: auto !important;
+			top: 50% !important;
+			bottom: auto !important;
+			transform: translate(-50%, -50%) !important;
+			max-width: calc(100vw - 2rem);
+			z-index: 10001;
+		}
+		
+		.popup::after {
+			display: none;
+		}
+		
+		.modal-dialog {
+			margin: 0;
+			max-width: 100%;
+		}
+		
+		.modal-content {
+			border-radius: 16px 16px 0 0;
+			min-height: auto;
+		}
+	}
+	
+	@@media (max-width: 480px) {
+		.card-body {
+			padding: 0.75rem;
+		}
+		
+		.common-heading-color {
+			font-size: 1.125rem !important;
+		}
+		
+		.nav-tabs .nav-link {
+			font-size: 0.8125rem;
+			padding: 0.625rem 0.75rem;
+		}
+	}
+</style>
+
+<div class="row" style="height:100vh">
+	<div class="col-md-12 pl-0 pr-0 pl-md-2 pr-md-2" style="height:100%">
+		<div class="card background-image" style="height: 100%;">
+
+			<div class="card-body">
+
+				<h3 class="common-heading-color mb-sm-3" style=" font-size: 25px;">Form Requests</h3>
+				
+				<div class="row">
+                    <div class="@(Model.isformspresent ? "col-12 col-lg-9 col-xl-7 col-xxl-5 d-flex flex-column flex-sm-row" : (AccountType.ToLower() != "self" ? "col-12 col-sm-9 col-md-7 col-lg-6 col-xl-5 col-xxl-4 d-flex flex-column flex-sm-row" : "col-12 col-sm-7 col-sm-5 col-md-4 col-lg-4 col-xl-3  d-flex flex-column flex-sm-row"))" style="margin-left: inherit;">
+                        <div class="slider d-none d-sm-flex "></div>
+
+                        <ul class="nav nav-tabs nav-justified row  d-flex flex-column justify-content-start align-items-start flex-sm-row w-100 ml-3 ms-sm-3" role="tablist">
+                            @{
+                                // var tabZero = string.Empty;
+                                var tabOne = string.Empty;
+                                var tabTwo = string.Empty;
+                                // tabOne = "active";
+
+
+
+                            }
+
+                            <li class="nav-item " style="display:@(Model.isformspresent ? "un-set" : "none")">
+                                <a style="white-space:nowrap;" class="nav-link  @tabOne ml-3 ml-sm-0" id="home-tab" data-toggle="tab" href="#Send" role="tab" aria-controls="SendTb" aria-selected="false" onclick="sendDocument()"> SENT FORMS</a>
+                            </li>
+                            <li class="nav-item ">
+                                <a style="white-space:nowrap;" class="nav-link @tabTwo ml-3 ml-sm-0" id="profile-tab" data-toggle="tab" href="#recived" role="tab" aria-controls="RecvTb" aria-selected="false" onclick="receivedDoc()"> RECEIVED FORMS</a>
+                            </li>
+                            <li class="nav-item " style="display:@(AccountType.ToLower() != "self"? "un-set" : "none")">
+                                <a style="white-space:nowrap;" class="nav-link @tabTwo ml-3 ml-sm-0" id="profile-tab1" data-toggle="tab" href="#reffered" role="tab" aria-controls="ReffTb" aria-selected="false" onclick="refferedDoc()"> REFFERED FORMS</a>
+                            </li>
+
+                        </ul>
+
+
+                    </div>
+				
+
+
+				</div>
+			
+				@*----------------------------------------------------------------------------------------v-------*@
+				<div class="row">
+					<div class="tab-content" style="width:100%;">
+						@*-------------------------------------------MY DOCUMENTS----------------------------------------------------*@
+						@* <div id="myDoc" style="display:none;padding:15px;">
+						</div> *@
+						@*---------------------------------------------SEND DOCUMENTS--------------------------------------------------*@
+						<div id="sendDoc" style="display:none;padding:15px;">
+						</div>
+						@*------------------------------------------------RECEVIED DOCUMENTS-----------------------------------------------*@
+						<div id="receiveDoc" style="display:none;padding:15px;">
+						</div>
+						<div id="refferedDoc" style="display:none;padding:15px;">
+						</div>
+
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="classshide">
+	<div id='viewer'></div>
+</div>
+<div class="modal fade" id="digitalShowModal" tabindex="-1" role="dialog" aria-labelledby="digitalFormModalLabel" aria-hidden="false" data-backdrop="true" style="display:none;opacity: 1;padding-top: 1%;background-color: rgba(0, 0, 0, 0.2);">
+	<div class="modal-dialog modal-lg" role="document" style="width:100%;margin-top:0">
+		<div class="modal-content" style="height:90vh">
+			<div class="modal-header">
+				<button type="button" class="btn btn-primary" id="downloadbutton" onclick="DownloadForm()">Download PDF</button>
+				<img data-toggle="tooltip" id="showclose" data-placement="left" title="Close" style="text-align:left;width:16px;height:20px;margin-left:3%" src='@Url.Content("~/assets/images/cross.svg")' onclick="closemodal()" asp-append-version="true" />
+
+			</div>
+			<div class="modal-body" style="overflow-y:auto">
+
+
+				<div id="pdf-container" style="overflow-y:auto;width:100%;height:100%"></div>
+
+			</div>
+
+
+		</div>
+	</div>
+</div>
+<script>
+	var loginEmail = '@userEmail';
+	var loginorgUid = '@OrganizationUid';
+	var loginSuid = '@Suid';
+	var issent = '@issentpresent';
+	$(document).ready(function () {
+		$('#networkOverlay').hide();
+		var viewName = '@ViewBag.ViewName';
+		// if (viewName == "MyDocuments") {
+		// 	myDocument();
+		// }
+		// else
+		if (viewName == "SentDocuments") {
+			// $("select.form-control").val("Send");
+			sendDocument();
+		} else if (viewName == "RecievedDocuments") {
+			// $("select.form-control").val("recived");
+			receivedDoc();
+		}
+		else if (viewName == "RefferedDocuments") {
+			// $("select.form-control").val("reffered");
+			refferedDoc();
+		}
+		else {
+			if (issent === 'False') {
+				// $("select.form-control").val("recived");
+				receivedDoc();
+			}
+			else {
+				// $("select.form-control").val("Send");
+				sendDocument();
+			}
+		}
+		$(".dropdown-toggle").dropdown();
+	});
+
+	// Set initial slider position and max-width
+	updateSlider();
+
+	$(".nav-tabs a").click(function () {
+		var tabName = $(this).attr("aria-controls");
+		activateTab(tabName);
+		deleteList = [];
+	});
+
+
+	function updateSlider() {
+		var $activeTab = $(".nav-tabs .nav-link.active");
+		if ($activeTab.length === 0) return;
+
+		var tabWidth = $activeTab.outerWidth();
+		var textWidth = $activeTab[0].scrollWidth; // Get accurate text width
+		var tabPosition = $activeTab.position();
+
+		var sliderWidth = Math.min(textWidth + 20, 150); // Add padding but limit max-width to 150px
+
+		if (tabPosition) {
+			$(".slider").css({
+				"left": tabPosition.left + (tabWidth / 2) - (sliderWidth / 2), // Center under text
+				"width": sliderWidth + "px", // Dynamic width with max limit
+				"max-width": "180px", // Maximum width constraint
+				"transition": "left 0.3s ease-in-out, width 0.3s ease-in-out" // Smooth animation
+			});
+		}
+	}
+
+
+	// function changeTab(selectedTab) {
+	// 	if (selectedTab === "Send") {
+	// 		sendDocument();
+	// 	} else if (selectedTab === "recived") {
+	// 		receivedDoc();
+	// 	} else if (selectedTab === "reffered") {
+	// 		refferedDoc();
+	// 	}
+	// }
+
+
+	function activateTab(tabName) {
+		$(".RowCheckbox").prop('checked', false);
+		$("#del").addClass('classshide');
+
+		var $tab = $(`[aria-controls=${tabName}]`);
+		if ($tab.length === 0) {
+			return;
+		}
+
+		
+
+		$(".nav-link").removeClass('active');
+
+		// Add 'active' class to the current tab
+		$tab.addClass('active');
+
+		updateSlider();
+
+		// Add 'show active' classes to the active tab content and remove from others
+		$(`#${tabName}`).addClass('show active').siblings().removeClass('show active');
+
+		// Add 'active-tab' class to the active tab and remove from others
+		$(".nav-link").removeClass('active-tab');
+		$tab.addClass('active-tab');
+	}
+
+
+
+
+	function myDocument() {
+		const currentUrl = window.location.href.split('?')[0];
+		const newUrl = `${currentUrl}?viewName=MyDocuments`;
+		window.history.pushState(null, '', newUrl);
+
+		$.ajax({
+			type: 'GET',
+			url: '@Url.Action("draft", "FormRequests")',
+			beforeSend: function () {
+				$('#overlay').show();
+			},
+			complete: function () {
+				$('#overlay').hide();
+			},
+			error: ajaxErrorHandler,
+			success: function (data) {
+				
+				if (data != null) {
+					$('#sendDoc').css('display', 'none');
+					$('#receiveDoc').css('display', 'none');
+
+					$('#myDoc').css('display', 'block');
+
+					
+					$('#myDoc').html(data);
+					activateTab('List');
+				}
+				else {
+					swal({
+						type: 'error',
+						title: 'Error',
+						text: response.message
+					});
+				}
+			}
+
+
+		});
+	}
+
+	function sendDocument() {
+		const currentUrl = window.location.href.split('?')[0];
+		const newUrl = `${currentUrl}?viewName=SentDocuments`;
+		window.history.pushState(null, '', newUrl);
+		$(".home-tab").removeClass('active');
+		$.ajax({
+			type: 'GET',
+			url: '@Url.Action("sent", "FormRequests")',
+			beforeSend: function () {
+				$('#overlay').show();
+			},
+			complete: function () {
+				$('#overlay').hide();
+			},
+			error: ajaxErrorHandler,
+			success: function (data) {
+				if (data != null) {
+					$('#myDoc').css('display', 'none');
+					$('#receiveDoc').css('display', 'none');
+					$('#refferedDoc').css('display', 'none');
+
+					$('#sendDoc').css('display', 'block');
+
+
+					$('#sendDoc').html(data);
+					activateTab('SendTb');
+				}
+				else {
+					swal({
+						type: 'error',
+						title: 'Error',
+						text: response.message
+					});
+				}
+			}
+
+
+		});
+	}
+
+	function receivedDoc() {
+		const currentUrl = window.location.href.split('?')[0];
+		const newUrl = `${currentUrl}?viewName=RecievedDocuments`;
+		window.history.pushState(null, '', newUrl);
+		$(".home-tab").removeClass('active');
+		$.ajax({
+			type: 'GET',
+			url: '@Url.Action("recived", "FormRequests")',
+			beforeSend: function () {
+				$('#overlay').show();
+			},
+			complete: function () {
+				$('#overlay').hide();
+			},
+			error: ajaxErrorHandler,
+			success: function (data) {
+				if (data != null) {
+					$('#myDoc').css('display', 'none');
+					$('#sendDoc').css('display', 'none');
+					$('#refferedDoc').css('display', 'none');
+
+					$('#receiveDoc').css('display', 'block');
+
+					
+					$('#receiveDoc').html(data);
+					activateTab('RecvTb');
+				}
+				else {
+					swal({
+						type: 'error',
+						title: 'Error',
+						text: response.message
+					});
+				}
+			}
+
+
+		});
+	}
+
+	function refferedDoc() {
+		const currentUrl = window.location.href.split('?')[0];
+		const newUrl = `${currentUrl}?viewName=RefferedDocuments`;
+		window.history.pushState(null, '', newUrl);
+		$(".home-tab").removeClass('active');
+		$.ajax({
+			type: 'GET',
+			url: '@Url.Action("reffered", "FormRequests")',
+			beforeSend: function () {
+				$('#overlay').show();
+			},
+			complete: function () {
+				$('#overlay').hide();
+			},
+			error: ajaxErrorHandler,
+			success: function (data) {
+				if (data != null) {
+					$('#myDoc').css('display', 'none');
+					$('#sendDoc').css('display', 'none');
+					$('#receiveDoc').css('display', 'none');
+
+					$('#refferedDoc').css('display', 'block');
+					$('#refferedDoc').html(data);
+					activateTab('ReffTb');
+				}
+				else {
+					swal({
+						type: 'error',
+						title: 'Error',
+						text: response.message
+					});
+				}
+			}
+
+
+		});
+	}
+	function closemodal() {
+		$("#digitalShowModal").modal('hide');
+	}
+
+
+</script>
+
+
+

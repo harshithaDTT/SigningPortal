@@ -1,0 +1,893 @@
+﻿@model SigningPortal.Web.ViewModels.DigitalForms.StatusDoc;
+@using System.Security.Claims;
+@using Newtonsoft.Json
+
+<style>
+    /* ========================================
+           MODERN UI DESIGN SYSTEM - DocumentStatus
+           Aligned with SendPdfBulk.cshtml theme
+           ======================================== */
+    :root {
+        --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        --primary-green: #10b981;
+        --primary-green-dark: #059669;
+        --primary-green-light: #d1fae5;
+        --accent-blue: #3b82f6;
+        --accent-purple: #8b5cf6;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --bg-page: #f8fafc;
+        --bg-card: #ffffff;
+        --bg-section: #f7f8fa;
+        --border-color: #e2e8f0;
+        --border-light: #f1f5f9;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 20px;
+        --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ========================================
+           CARD & LAYOUT
+           ======================================== */
+    .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+    }
+
+    .card-content {
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    /* ========================================
+           DOCUMENT HEADER SECTION
+           ======================================== */
+    .document-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.25rem;
+        padding: 1rem;
+        background: #ebedef;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--primary-green-light);
+    }
+
+    .document-image {
+        width: 80px;
+        max-height: 100px;
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .document-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+    }
+
+        .document-details div {
+            font-size: 0.9375rem !important;
+            color: var(--text-secondary);
+            margin: 0.25rem !important;
+        }
+
+            .document-details div:first-child {
+                font-weight: 600;
+                color: var(--text-primary);
+                font-size: 1.0625rem !important;
+            }
+
+    /* ========================================
+           PROGRESS STEPS
+           ======================================== */
+    .container {
+        width: 100%;
+        padding: 0.5rem 1rem;
+    }
+
+        .container .steps {
+            display: flex;
+            width: 100%;
+            margin-top: 1.5rem;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .container .qwer {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-top: 0.75rem;
+        }
+
+    .steps .circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        background: var(--bg-card);
+        border: 4px solid var(--border-color);
+        z-index: 1;
+        transition: all var(--transition-smooth);
+    }
+
+        .steps .circle.active {
+            border-color: var(--primary-green);
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+    .steps .progress-bar {
+        position: absolute;
+        height: 4px;
+        width: 100%;
+        background: var(--border-color);
+        border-radius: 4px;
+    }
+
+    .progress-bar .indicator {
+        position: absolute;
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--primary-green), var(--primary-green-dark));
+        border-radius: 4px;
+        transition: all var(--transition-smooth);
+    }
+
+    /* ========================================
+           STATUS ICON CONTAINER
+           ======================================== */
+    .jss17 {
+        width: 72px;
+        height: 72px;
+        display: flex;
+        margin-left: 0;
+        max-width: 72px;
+        align-items: center;
+        border-radius: 50%;
+        justify-content: center;
+        background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+        box-shadow: var(--shadow-md);
+    }
+
+    .jss19 {
+        width: 44px;
+        height: 44px;
+    }
+
+    .MuiPaper-root {
+        color: var(--text-primary);
+        transition: box-shadow var(--transition-smooth);
+        background-color: var(--bg-card);
+    }
+
+    .MuiPaper-elevation4 {
+        box-shadow: var(--shadow-md);
+    }
+
+    /* ========================================
+           BUTTONS
+           ======================================== */
+    .submit-button {
+        background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        transition: all var(--transition-base);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+    .cancel {
+        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+        border-radius: var(--radius-sm);
+    }
+
+    .btn[style*="background-color: #acc33e"],
+    .btn[style*="background-color:#acc33e"] {
+        background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark)) !important;
+        border-radius: var(--radius-md) !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+        transition: all var(--transition-base) !important;
+    }
+
+        .btn[style*="background-color: #acc33e"]:hover,
+        .btn[style*="background-color:#acc33e"]:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
+        }
+
+    /* ========================================
+           TABLE STYLING
+           ======================================== */
+    h4 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--primary-green-light);
+    }
+
+    #MyListTb {
+        border-collapse: separate;
+        border-spacing: 0 10px;
+        width: 100%;
+    }
+
+        #MyListTb thead th {
+            background: #ebedef;
+            border: none;
+            padding: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+            #MyListTb thead th:first-child {
+                border-radius: var(--radius-md) 0 0 var(--radius-md);
+            }
+
+            #MyListTb thead th:last-child {
+                border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            }
+
+        #MyListTb tbody tr {
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-base);
+        }
+
+            #MyListTb tbody tr:hover {
+                box-shadow: var(--shadow-md);
+                transform: translateY(-1px);
+            }
+
+        #MyListTb tbody td {
+            border: none;
+            padding: 1rem;
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+
+            #MyListTb tbody td:first-child {
+                border-radius: var(--radius-md) 0 0 var(--radius-md);
+            }
+
+            #MyListTb tbody td:last-child {
+                border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            }
+
+    tbody tr td:first-child {
+        text-align: left !important;
+    }
+
+    tbody, td, tfoot, th, thead, tr {
+        border: none !important;
+    }
+
+    table tbody > tr {
+        border-bottom: none !important;
+    }
+
+        table tbody > tr:first-child > td {
+            background-color: transparent !important;
+        }
+
+    label {
+        display: inline-block;
+        width: 200px;
+        height: 10px;
+    }
+
+    #signatorieslist:last-child {
+        border-bottom: none !important;
+    }
+
+    /* DataTable expand/collapse icons */
+    table.dataTable > tbody > tr > td.control::before {
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--primary-green-dark);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        line-height: 1;
+        border-radius: 50%;
+        background: var(--primary-green-light);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+
+    table.dataTable > tbody > tr.parent > td.control::before {
+        background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark)) !important;
+        color: white !important;
+    }
+
+    /* ========================================
+           PDF VIEW (Legacy Support)
+           ======================================== */
+    .pdfView {
+        max-width: 883px;
+        margin: auto;
+        padding: 2rem;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        line-height: 1.5;
+        font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+        color: var(--text-secondary);
+        background: var(--bg-card);
+    }
+
+        .pdfView table {
+            border-collapse: collapse;
+            width: 100%;
+            line-height: inherit;
+            text-align: left;
+        }
+
+            .pdfView table td {
+                padding: 0.5rem;
+                vertical-align: top;
+            }
+
+    /* ========================================
+           SWEET ALERT
+           ======================================== */
+    .sweet-alert p {
+        color: var(--text-secondary);
+        font-size: 1.125em !important;
+        text-align: center;
+        font-family: sans-serif;
+        font-weight: 300;
+        position: relative;
+        float: none;
+        margin: 0;
+        padding: 0;
+        line-height: normal;
+    }
+
+    /* ========================================
+           DATATABLE WRAPPER
+           ======================================== */
+    .dataTables_wrapper .dataTables_info {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        padding-top: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: var(--radius-sm);
+        padding: 0.5rem 0.875rem;
+        margin: 0 0.25rem;
+        border: 1px solid var(--border-color);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        font-weight: 500;
+        transition: all var(--transition-base);
+    }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: var(--primary-green-light);
+            border-color: var(--primary-green);
+            color: var(--primary-green-dark);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            border-color: var(--primary-green);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+    /* ========================================
+           RESPONSIVE ADJUSTMENTS
+           ======================================== */
+    @@media (max-width: 992px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .document-container {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .jss17 {
+            width: 60px;
+            height: 60px;
+        }
+
+        .jss19 {
+            width: 36px;
+            height: 36px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .card-body {
+            padding: 1rem;
+        }
+
+        #MyListTb thead th,
+        #MyListTb tbody td {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.8125rem;
+        }
+
+        .submit-button {
+            padding: 0.625rem 1.5rem;
+            font-size: 0.875rem;
+        }
+    }
+    
+    /* Additional responsive enhancements */
+    @@media (max-width: 768px) {
+        .document-container {
+            padding: 0.75rem;
+            gap: 0.75rem;
+        }
+        
+        .document-image {
+            width: 60px;
+            max-height: 75px;
+        }
+        
+        .document-details div {
+            font-size: 0.8125rem !important;
+        }
+        
+        .container .steps {
+            margin-top: 1rem;
+        }
+        
+        .container .qwer {
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: center;
+        }
+        
+        .steps .circle {
+            width: 16px;
+            height: 16px;
+            border-width: 3px;
+        }
+        
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_length {
+            width: 100%;
+            float: none !important;
+            text-align: left !important;
+            margin-bottom: 0.75rem;
+        }
+        
+        .dataTables_wrapper .dataTables_filter input {
+            width: 100% !important;
+            margin-left: 0 !important;
+        }
+        
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            float: none !important;
+            text-align: center !important;
+        }
+    }
+    
+    @@media (max-width: 480px) {
+        .card-body {
+            padding: 0.75rem;
+        }
+        
+        .document-container {
+            padding: 0.5rem;
+        }
+        
+        .document-image {
+            width: 50px;
+            max-height: 60px;
+        }
+        
+        .document-details div {
+            font-size: 0.75rem !important;
+        }
+        
+        .jss17 {
+            width: 48px;
+            height: 48px;
+        }
+        
+        .jss19 {
+            width: 28px;
+            height: 28px;
+        }
+    }
+</style>
+
+<div class="row m-0" style="height:100vh">
+
+    <div class="col-md-12 p-0">
+
+        <div class="card " style="height:100%">
+            <div class="card-content background-image">
+                <div class="card-body  ">
+                    <div class="row">
+                        <div class="col-9 col-sm-12 col-lg-5">
+                            <div class="document-container">
+                                <img src='@Url.Content("~/img/icon/pdf.png")' asp-append-version="true" id="pdfcustom" alt="Document Image" class="document-image">
+                                <div class="document-details">
+                                    @if (Model.Status == "Completed")
+                                    {
+                                        <div style="margin:4px;font-size:0.95rem !important">@Model.DocumentName </div>
+                                        <div style="margin:4px;font-size:0.95rem !important">Submitted on <span class="convert-time" data-timestamp="@Model.CreateTime.ToString("o")">@Model.CreateTime</span></div>
+                                        <div style="margin:4px;font-size:0.95rem !important">Completed on <span class="convert-time" data-timestamp="@Model.CompleteTime.ToString("o")">@Model.CompleteTime</span></div>
+                                    }
+                                    else
+                                    {
+                                        <div style="margin:4px;font-size:0.95rem !important">@Model.DocumentName </div>
+                                        <div style="margin:4px;font-size:0.95rem !important">Submitted on <span class="convert-time" data-timestamp="@Model.CreateTime.ToString("o")">@Model.CreateTime</span></div>
+                                    }
+
+                                </div>
+                            </div>
+                            <br />
+
+                        </div>
+                        <div class="col-12 order-1 order-sm-0 col-sm-9 col-lg-5">
+                            <div class="container">
+
+                                <div class="steps">
+                                    @if (Model.Status == "Completed" || Model.Status == "In Progress" || Model.Status == "New")
+                                    {
+                                        <span class="circle active"></span>
+                                        <span class="circle"></span>
+                                        <span class="circle"></span>
+                                        <div class="progress-bar">
+                                            <span class="indicator"></span>
+                                        </div>
+                                    }
+                                    else if (Model.Status == "Expired" || Model.Status == "Failed")
+                                    {
+                                        <span class="circle active"></span>
+                                        <span class="circle"></span>
+
+                                        <div class="progress-bar">
+                                            <span class="indicator"></span>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="qwer">
+                                    <span>Sent</span>
+
+                                    @if (Model.Status == "Completed" || Model.Status == "New")
+                                    {
+                                        <span>Signed</span>
+                                        <span>Completed</span>
+                                    }
+                                    else if (Model.Status == "In Progress")
+                                    {
+                                        <span>In Progress</span>
+                                        <span>Completed</span>
+                                    }
+                                    else if (Model.Status == "Declined")
+                                    {
+                                        <span>Declined</span>
+                                    }
+                                    else if (Model.Status == "Expired")
+                                    {
+                                        <span>Expired</span>
+                                    }
+                                    else if (Model.Status == "Failed")
+                                    {
+                                        <span>Expired</span>
+                                    }
+                                </div>
+
+
+                            </div>
+                        </div>
+                        <div class="col-3 col-lg-2 p-0">
+                            <div class="d-flex justify-content-center align-items-center ml-0 p-2">
+
+                                <div class="MuiPaper-root jss17 MuiPaper-elevation4 ml-0">
+                                    <img src='@Url.Content("~/img/icon/Viewed-icons-orange.png")' asp-append-version="true" id="viewedImage" alt="Document Image" class="document-image jss19" style="display:none;">
+                                    <img src='@Url.Content("~/img/icon/Sent-icons-purple.png")' asp-append-version="true" id="sentImage" alt="Document Image" class="document-image jss19" style="display:none;">
+                                    <img src='@Url.Content("~/img/icon/Signed-icons-green.png")' asp-append-version="true" id="completedImage" alt="Document Image" class="document-image jss19" style="display:none;">
+                                    <img src='@Url.Content("~/img/icon/Declined-icons-gray.png")' asp-append-version="true" id="declinedExpiredImage" alt="Document Image" class="document-image jss19" style="display:none;">
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div>
+                                <span>
+                                    @if (Model.Status == "Completed")
+                                    {
+                                        <button id="downloadbutton" class="submit-button" onclick="modalForm('@Model.DocumentName','@Model.EdmsId')">
+                                            Download
+
+                                        </button>
+                                    }
+
+
+                                </span>
+
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Signatories:</h4>
+                        <table id="MyListTb" class="table table-striped table-bordered table-hover table-checkable order-column full-width" style="width:100%;">
+
+                            <thead style="text-align:center">
+                                <tr>
+                                    <th></th>
+                                    <th style="text-align:left !important">SIGNATORY E-MAIL</th>
+                                    <th>Organisation</th>
+                                    <th>SIGNED BY</th>
+                                    <th>ORDER</th>
+                                    <th>ACTION TAKEN</th>
+                                    <th>DELEGATOR</th>
+
+
+                                </tr>
+                            </thead>
+                            <tbody style="text-align:center">
+                                @foreach (var item in Model.TemplateRecepients)
+                                {
+                                    <tr>
+                                        <td></td>
+                                        <td style="text-align:left !important">@item.Signer.email</td>
+                                        @if (item.OrganizationName != "")
+                                        {
+                                            <td>@item.OrganizationName</td>
+                                        }
+                                        else
+                                        {
+                                            <td>self</td>
+                                        }
+                                        <td>@item.SignedBy</td>
+
+                                        <td>@item.Order</td>
+                                        <td>@item.Status</td>
+                                        @if (item.HasDelegation == true)
+                                        {
+                                            <td>@item.Signer.email</td>
+                                        }
+                                        else
+                                        {
+                                            <td>---</td>
+                                        }
+
+
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <div style="display:flex;width:100%;justify-content:end">
+                            <button class="btn mt-3" style="background-color: #acc33e; color: white;padding:0.5rem 2rem" onclick="backhandle()">Back</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(document).ready(function () {
+    $('#networkOverlay').hide();
+
+
+
+     $('#MyListTb').DataTable({
+     paging: true,
+     lengthChange: false,
+     pageLength: 5,
+     orderClasses: false,
+     stripeClasses: [],
+     info: true,
+     "ordering": false,
+     searching:false
+    });
+
+
+
+    var sentImage = document.getElementById('sentImage');
+    var viewedImage = document.getElementById('viewedImage');
+    var completedImage = document.getElementById('completedImage');
+    var declinedExpiredImage = document.getElementById('declinedExpiredImage');
+
+
+        var status = "@Model.Status";
+
+
+        // conditions to to show show the status bar with accrding colors andd numbers
+        switch (status.toLowerCase()) {
+            case "new":
+                updateProgressBar(1, "#10b981");
+                updateCircleColors(1, "#10b981");
+                sentImage.style.display = 'block';
+                break;
+            case "in progress":
+                updateProgressBar(2, "#e5b800");
+                updateCircleColors(2, "#e5b800");
+                viewedImage.style.display = 'block';
+                break;
+            case "completed":
+                updateProgressBar(3, "#2caf57");
+                updateCircleColors(3, "#2caf57");
+                completedImage.style.display = 'block';
+                break;
+            case "expired":
+                updateProgressBar(2, "#a05eea");
+                updateCircleColors(2, "#a05eea");
+                sentImage.style.display = 'block';
+                break;
+            case "declined":
+                updateProgressBar(2, "#f80402");
+                updateCircleColors(2, "#f80402");
+                declinedExpiredImage.style.display = 'block';
+                break;
+            default:
+                updateProgressBar(1, "#a05eea");
+                break;
+        }
+
+
+
+        updateTimestamps_statuspage();
+
+
+    });
+
+    var steps = document.querySelectorAll('.steps .circle');
+    var line = document.querySelector('.progress-bar .indicator');
+
+    function updateProgressBar(step, color) {
+        steps.forEach((stepElement, index) => {
+            stepElement.classList[index < step ? 'add' : 'remove']('active');
+        });
+
+        // Calculate the width of the progress bar based on the step
+        var width = ((step - 1) / (steps.length - 1)) * 100;
+        line.style.width = width + '%';
+        line.style.background = color;
+
+    }
+
+    // function to update colors of progress bar/status bar
+    function updateCircleColors(step, color) {
+        steps.forEach((stepElement, index) => {
+            stepElement.style.borderColor = index < step ? color : '#e0e0e0';
+            stepElement.style.color = index < step ? color : '#e0e0e0';
+        });
+    }
+
+
+    function modalForm(documentname,EdmsId) {
+
+
+
+        $.ajax({
+            url: '@Url.Action("GetPreviewConfig", "DigitalForms")',
+            type: 'GET',
+            data : {
+                edmsId:EdmsId
+            },
+            beforeSend: function () {
+                $('#overlay').show();
+            },
+            complete: function () {
+                $('#overlay').hide();
+            },
+            success: function (resp) {
+                if (resp.success) {
+
+                    formbase64 = resp.result;
+                    DownloadForm(documentname,formbase64);
+
+                } else {
+                    swal({
+                        title: 'Error',
+                        text: resp.message,
+                        type: 'error',
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            document.getElementById("navigationNetworkOverlay").style.display = "block";
+                            window.location.href = '@Url.Action("Index", "DigitalForms")';
+                        }
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+
+                swal({
+                    title: 'Error',
+                    text: 'Something went wrong!',
+                    type: 'error',
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        document.getElementById("navigationNetworkOverlay").style.display = "block";
+                        window.location.href = '@Url.Action("Index", "DigitalForms")';
+                    }
+                });
+            }
+        });
+    }
+
+    function DownloadForm(documentname,formbase64) {
+        var byteCharacters = atob(formbase64);
+        var byteNumbers = new Array(byteCharacters.length);
+
+        for (var i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        var byteArray = new Uint8Array(byteNumbers);
+        var blob = new Blob([byteArray], { type: 'application/pdf' });
+
+
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = documentname;
+        link.click();
+    };
+
+    function backhandle() {
+
+        window.history.back();
+
+    }
+</script>
+

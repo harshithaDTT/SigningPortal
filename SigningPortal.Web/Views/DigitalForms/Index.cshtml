@@ -1,0 +1,1290 @@
+﻿@model SigningPortal.Web.ViewModels.DigitalForms.DocumentTypeViewModel
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+@{
+    var formsprivillage = User.IsInRole("DigitalForms");
+}
+
+<style>
+
+    .digital-forms-dashboard {
+        padding: 2.5rem 2.25rem;
+        background: #F6F7FB;
+        min-height: 100%;
+    }
+
+    .df-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+    }
+
+    .df-heading {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .df-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 20px;
+        background: #0E7C5A;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+    }
+
+    .df-heading h3 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .df-heading p {
+        margin: 0;
+        color: #475467;
+        font-size: 0.9rem;
+    }
+
+    .df-primary-btn {
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.85rem 1.9rem;
+        font-weight: 600;
+        color: #ffffff;
+        background: #0E7C5A;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .df-primary-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .df-primary-btn img {
+            width: 20px;
+            height: 20px;
+        }
+
+
+
+
+
+    .df-tabs { /* outer container */
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1.75rem;
+    }
+
+    /* the pill bar that holds segments */
+    .df-tabbar {
+        width: 100%;
+        display: flex;
+        padding: 0;
+        border-radius: 0.5rem;
+        background: #FFFFFF;
+        justify-content: space-between;
+        color: #475569;
+        border: 1px solid #E2E8F0;
+    }
+
+    .df-tab {
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        padding: 0.55rem 1.1rem;
+        color: #4c5a71;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        cursor: pointer;
+        min-width: 120px;
+        justify-content: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.03);
+        flex-grow: 1;
+    }
+
+        .df-tab .df-tab-inner {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .df-tab .df-tab-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* inactive look (flat & muted) */
+        .df-tab:not(.active) {
+            background: rgba(255, 255, 255, 0.35);
+            color: #5b6478;
+        }
+
+        /* active segment: raised with white background and subtle shadow */
+        .df-tab.active {
+            background: #F2F4F7;
+            border: 1px solid #E4E7EC;
+            box-shadow: 0 1px 7px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1)
+        }
+
+        /* icon sizing and spacing */
+        .df-tab i {
+            font-size: 1rem;
+            color: inherit;
+        }
+
+    /* small numeric count placed at right inside the segment */
+    .df-tab-count {
+        border-radius: 999px;
+        padding: 0.08rem 0.55rem;
+        background: rgba(15,23,42,0.05);
+        color: #485568;
+        font-size: 0.78rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 26px;
+        text-align: center;
+        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+        display: none;
+    }
+
+    .df-tab.active .df-tab-count {
+        background: rgba(82, 109, 255, 0.12);
+        color: #1e1b4b;
+        box-shadow: none;
+    }
+
+    /* focus and hover for accessibility */
+    .df-tab:focus {
+        outline: 2px solid rgba(37,99,235,0.12);
+        outline-offset: 2px;
+    }
+
+    .df-tab:hover:not(.active) {
+        background: #F6F8FA;
+        color: #1f2937;
+        border-color: rgba(148, 163, 184, 0.35);
+        box-shadow: 0 10px 16px rgba(15, 23, 42, 0.03);
+    }
+
+    /* responsive adjustments */
+    @@media (max-width: 900px) {
+        .df-tabbar {
+            padding: 0.35rem;
+            gap: 0.35rem;
+        }
+
+        .df-tab {
+            min-width: 88px;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .df-tab-label {
+            font-size: 0.9rem;
+        }
+
+        .df-tab i {
+            font-size: 0.9rem;
+        }
+
+        .df-tab-count {
+            min-width: 22px;
+            font-size: 0.72rem;
+            padding: 0.06rem 0.4rem;
+        }
+    }
+
+    .df-panels {
+        margin-top: 1.75rem;
+    }
+
+    /* ─── Centralized Global Search Bar ─── */
+    .df-search-section {
+        margin-top: 1.25rem;
+    }
+
+    .df-global-search-bar {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        height: 44px;
+        padding: 0 4px 0 8px;
+    }
+
+        .df-global-search-bar:hover {
+            border-color: rgba(0, 0, 0, 0.15);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .df-global-search-bar:focus-within {
+            border-color: rgba(14, 124, 90, 0.35);
+            box-shadow: 0 0 0 3px rgba(14, 124, 90, 0.07);
+        }
+
+    .df-global-search-icon {
+        border: none;
+        background: transparent;
+        color: #9ca3af;
+        font-size: 0.9375rem;
+        padding: 0 8px 0 4px;
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        pointer-events: none;
+    }
+
+    .df-global-search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 0 0.5rem;
+        font-size: 0.9375rem;
+        color: #1e293b;
+    }
+
+        .df-global-search-input::placeholder {
+            color: #94a3b8;
+        }
+
+    .df-global-search-clear {
+        border: none;
+        background: transparent;
+        color: #94a3b8;
+        font-size: 0.8125rem;
+        padding: 0 10px;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        flex-shrink: 0;
+        transition: color 0.15s ease;
+    }
+
+        .df-global-search-clear:hover {
+            color: #64748b;
+        }
+
+    .df-panel {
+        display: none;
+        animation: dfFade 0.35s ease;
+    }
+
+        .df-panel.active {
+            display: block;
+        }
+
+    .df-empty-state {
+        margin-top: 1.2rem;
+        padding: 1.75rem;
+        border: 1px dashed #e2e8f0;
+        border-radius: 18px;
+        text-align: center;
+        color: #475467;
+        font-weight: 500;
+        display: none;
+    }
+
+    .df-panel table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+
+        .df-panel table thead th {
+            background: #f8fafc;
+            border: none;
+            padding: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #0f172a;
+            text-transform: uppercase;
+        }
+
+        .df-panel table tbody tr {
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.96), rgba(244, 246, 255, 0.96));
+            box-shadow: 0 18px 35px rgba(15, 23, 42, 0.1);
+            border-radius: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+
+            .df-panel table tbody tr:hover {
+                box-shadow: 0 22px 45px rgba(15, 23, 42, 0.14);
+            }
+
+        .df-panel table tbody td {
+            border: none;
+            padding: 15px 18px;
+            vertical-align: middle;
+            font-size: 0.95rem;
+            color: #0f172a;
+        }
+
+            .df-panel table tbody td:first-child {
+                border-top-left-radius: 20px;
+                border-bottom-left-radius: 20px;
+            }
+
+            .df-panel table tbody td:last-child {
+                border-top-right-radius: 20px;
+                border-bottom-right-radius: 20px;
+            }
+
+    .df-panel .dataTables_wrapper .dataTables_filter input,
+    .df-panel .dataTables_wrapper .dataTables_length select {
+        border-radius: 0.5rem;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        padding: 0.55rem 1.15rem;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+
+        .df-panel .dataTables_wrapper .dataTables_filter input:focus,
+        .df-panel .dataTables_wrapper .dataTables_length select:focus {
+            outline: none;
+            border-color: rgba(82, 109, 255, 0.5);
+            box-shadow: 0 18px 35px rgba(82, 109, 255, 0.18);
+            background: #ffffff;
+        }
+
+    /* Ensure buttons in partials match the theme */
+    .df-panel .btn-primary,
+    .df-panel .submit-button {
+        border-radius: 12px !important;
+        padding: 0.6rem 1.2rem !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .df-panel .btn-primary {
+        background: linear-gradient(120deg, #ff2d55, #ec4899) !important;
+        border: none !important;
+    }
+
+        .df-panel .btn-primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 20px rgba(236, 72, 153, 0.35) !important;
+        }
+
+    /* Status badges styling */
+    .df-panel .badge,
+    .df-panel .status-badge {
+        border-radius: 0.5rem !important;
+        padding-left: 2px;
+        font-size: 0.77rem !important;
+        font-weight: 600 !important;
+    }
+
+
+    /* DataTables integration */
+    .df-panel .dataTables_wrapper .dataTables_info,
+    .df-panel .dataTables_wrapper .dataTables_paginate {
+        padding: 1rem 0 !important;
+        color: #64748b !important;
+        font-size: 0.9rem !important;
+    }
+
+        .df-panel .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 8px !important;
+            padding: 0.5rem 0.75rem !important;
+            margin: 0 0.25rem !important;
+        }
+
+            .df-panel .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+                background: linear-gradient(120deg, #ff2d55, #ec4899) !important;
+                color: #ffffff !important;
+                border: none !important;
+            }
+
+    @@keyframes dfFade {
+        0% {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+
+    .loaderfile {
+        width: 40px;
+        height: 40px;
+        border: 5px solid #ddd;
+        border-bottom-color: #2e93e6;
+        border-radius: 50%;
+        display: inline-block;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+    }
+
+    @@keyframes rotation {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+
+    .dropzone p {
+        color: #4950576b !important;
+        font-size: 18px !important;
+        text-align: center;
+    }
+
+    .pdf-page {
+        width: 98%;
+        position: relative;
+        display: inline-block;
+        margin: 1%;
+        border: 1px solid #ccc;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #docname {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        width: fit-content;
+        font-size: 16px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* New styles for document type modal cards */
+    .doctype-modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .doctype-options {
+        display: flex;
+        gap: 1.5rem;
+        align-items: flex-start;
+        justify-content: center;
+        flex-wrap: nowrap;
+    }
+
+    .doctype-card {
+        width: 150px;
+        height: 188px;
+        border-radius: 12px;
+        border: 1px solid rgba(15,23,42,0.06);
+        background: #ffffff;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        cursor: pointer;
+        padding: 12px;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.15s ease;
+    }
+
+        .doctype-card:hover {
+            transform: translateY(-3px);
+            border-color: #CBD5E1;
+        }
+
+        .doctype-card input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            border: 2px solid rgba(15,23,42,0.12);
+            margin: 6px;
+            align-self: flex-start;
+            position: relative;
+        }
+
+        .doctype-card .card-content {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 1.6rem;
+        }
+
+    .doctype-label {
+        text-align: center;
+        margin-top: 0.6rem;
+        color: #374151;
+        font-size: 0.92rem;
+        font-weight: 600;
+    }
+
+    .doctype-card.selected {
+        border-color: rgba(82,109,255,0.18);
+        background: linear-gradient(180deg, rgba(82,109,255,0.03), #ffffff);
+        box-shadow: 0 18px 36px rgba(82,109,255,0.06);
+    }
+
+    /* visually lighter drag hint */
+    .dropzone p {
+        color: #6b7280 !important;
+        font-size: 0.95rem !important;
+        opacity: 0.9;
+    }
+
+    /* Shimmer / skeleton loading styles for lists */
+    .shimmer-wrapper {
+        display: grid;
+        gap: 0.9rem;
+        width: 100%;
+    }
+
+    .shimmer-card {
+        display: grid;
+        grid-template-columns: 56px 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 1rem 1rem;
+        border-radius: 12px;
+        background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(249,250,253,0.96));
+        border: 1px solid rgba(219, 227, 240, 0.6);
+        box-shadow: 0 14px 30px rgba(15,23,42,0.06);
+        min-height: 72px;
+        overflow: hidden;
+    }
+
+    .shimmer-rect {
+        background: linear-gradient( 90deg, rgba(226,232,240,0.6) 0%, rgba(245,246,255,0.9) 20%, rgba(226,232,240,0.6) 40% );
+        background-size: 200% 100%;
+        animation: shimmer 1.4s linear infinite;
+        border-radius: 6px;
+    }
+
+
+    .shimmer-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+    }
+
+    .shimmer-title {
+        height: 14px;
+        width: 40%;
+        border-radius: 6px;
+    }
+
+    .shimmer-meta {
+        height: 12px;
+        width: 30%;
+        border-radius: 6px;
+    }
+
+    .shimmer-status {
+        height: 18px;
+        width: 80px;
+        border-radius: 999px;
+    }
+
+    .shimmer-action {
+        height: 32px;
+        width: 90px;
+        border-radius: 8px;
+    }
+
+    @@keyframes shimmer {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+
+    @@media (max-width: 900px) {
+        .shimmer-card {
+            grid-template-columns: 48px 1fr auto;
+            padding: 0.8rem;
+        }
+
+        .shimmer-title {
+            width: 55%;
+        }
+
+        .shimmer-meta {
+            width: 40%;
+        }
+    }
+
+    /* ========================================
+                   PAGE-SPECIFIC MODAL ENHANCEMENTS
+                   Base modal layout is handled by responsive-layout.css
+                   ======================================== */
+
+    /* Publish Modal Radio Options */
+    .modal-body label[style*="border: 1px solid #ddd"] {
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        background: #ffffff !important;
+        transition: all 0.25s ease !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+
+        .modal-body label[style*="border: 1px solid #ddd"]:hover {
+            transform: translateY(-2px) !important;
+        }
+
+    /* Send Form Modal Images */
+    .modal-body label img {
+        filter: grayscale(20%);
+        transition: all 0.25s ease;
+    }
+
+    .modal-body label:hover img {
+        filter: grayscale(0%);
+        transform: scale(1.05);
+    }
+
+    /* Continue Button in Modals */
+    #digitalFormModalContinueButton,
+    #sendFormModalcontinueBtn {
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+        border-radius: 12px !important;
+        padding: 0.625rem 1.5rem !important;
+        font-weight: 600 !important;
+        transition: all 0.25s ease !important;
+        color: white !important;
+    }
+
+        #digitalFormModalContinueButton:hover,
+        #sendFormModalcontinueBtn:hover {
+            transform: translateY(-2px) !important;
+        }
+
+    /* Digital Show Modal - Full height preview */
+    #digitalShowModal .modal-dialog {
+        max-width: 90%;
+    }
+
+    #digitalShowModal .modal-content {
+        height: 85vh;
+        max-height: 85vh;
+    }
+
+    #digitalShowModal .modal-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    #digitalShowModal #DownloadPDF {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: none;
+        border-radius: 10px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        transition: all 0.25s ease;
+    }
+
+        #digitalShowModal #DownloadPDF:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+    #digitalShowModal #closedigitalShowModalBtn {
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+
+        #digitalShowModal #closedigitalShowModalBtn:hover {
+            opacity: 1;
+        }
+
+
+    /* ============================================================
+                   ENHANCED RESPONSIVE STYLES FOR DIGITAL FORMS
+                   ============================================================ */
+
+    @@media (max-width: 768px) {
+        .digital-forms-dashboard {
+            padding: 1.25rem 1rem;
+        }
+
+        .df-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .df-heading {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.75rem;
+        }
+
+        .df-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.25rem;
+            margin: 0 auto;
+        }
+
+        .df-heading h3 {
+            font-size: 1.375rem;
+        }
+
+        .df-heading p {
+            font-size: 0.875rem;
+        }
+
+        .df-primary-btn {
+            width: 100%;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .df-tabs {
+            margin-top: 1.25rem;
+        }
+
+        .df-search-section {
+            margin-top: 1rem;
+        }
+
+        .df-tabbar {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .df-tab {
+            width: 100%;
+            min-width: unset;
+            padding: 0.75rem 1rem;
+        }
+
+        .df-panels {
+            margin-top: 1.25rem;
+        }
+
+        .df-panel table thead {
+            display: none;
+        }
+
+        .df-panel table tbody tr {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            gap: 0.5rem;
+        }
+
+        .df-panel table tbody td {
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 !important;
+        }
+
+            .df-panel table tbody td:first-child,
+            .df-panel table tbody td:last-child {
+                border-radius: 0 !important;
+            }
+
+        .doctype-modal-body {
+            gap: 0.75rem;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .digital-forms-dashboard {
+            padding: 1rem 0.75rem;
+        }
+
+        .df-heading h3 {
+            font-size: 1.25rem;
+        }
+
+        .df-tab-label {
+            font-size: 0.8125rem;
+        }
+    }
+
+    .main-content-wrapper {
+        background: #F6F7FB;
+    }
+
+    .modal-content {
+        box-shadow: 0px 12px 32px rgba(0, 0, 0, 0.2);
+    }
+</style>
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+
+
+
+<div class="row m-0">
+    <div class="col-md-12 p-0" style="height:100%">
+        <div class="card background-image border-0">
+
+            <div class="card-body digital-forms-dashboard">
+
+                <div class="df-header">
+                    <div class="df-heading">
+                        <div class="df-icon">
+                            <i class="fa-regular fa-file-lines"></i>
+                        </div>
+                        <div>
+                            <h3>Digital Forms</h3>
+                            <p>Create, publish and manage digital forms</p>
+
+                        </div>
+                    </div>
+
+                    <button id="createform" class="df-primary-btn">
+                        <img src='@Url.Content("~/img/plus button.svg")' asp-append-version="true" alt="Create form">
+                        Create Form
+                    </button>
+                </div>
+
+                <div class="bg-white border rounded-3  mt-3 shadow-sm bulk-search-card" style="padding:13px">
+                    <div class="df-global-search-bar">
+                        <span class="df-global-search-icon"><i class="fas fa-search"></i></span>
+                        <input type="text" id="df-global-search" class="df-global-search-input" placeholder="Search Forms..." autocomplete="off" />
+                        <button type="button" id="df-global-search-clear" class="df-global-search-clear" title="Clear search">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="df-tabs" role="tablist">
+                    <div class="df-tabbar">
+                        <button type="button" class="df-tab active" data-tab="myTemplates" aria-controls="panel-myTemplates" aria-selected="true" role="tab" onclick="loadMyTemplates()">
+                            <span class="df-tab-inner">
+                                <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
+                                <span class="df-tab-label">My Templates</span>
+                                <span class="df-tab-count" id="badge-myTemplates">0</span>
+                            </span>
+                        </button>
+
+                        <button type="button" class="df-tab" data-tab="sent" aria-controls="panel-sent" aria-selected="false" role="tab" onclick="loadSent()">
+                            <span class="df-tab-inner">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                                <span class="df-tab-label">Sent</span>
+                                <span class="df-tab-count" id="badge-sent">0</span>
+                            </span>
+                        </button>
+
+                        <button type="button" class="df-tab" data-tab="received" aria-controls="panel-received" aria-selected="false" role="tab" onclick="loadReceived()">
+                            <span class="df-tab-inner">
+                                <i class="fa-solid fa-inbox" aria-hidden="true"></i>
+                                <span class="df-tab-label">Received</span>
+                                <span class="df-tab-count" id="badge-received">0</span>
+                            </span>
+                        </button>
+
+                        @{
+                            var AccountType = User.FindFirst("AccountType")?.Value ?? "Self";
+                        }
+                        @if (AccountType.ToLower() != "self")
+                        {
+                            <button type="button" class="df-tab" data-tab="referred" aria-controls="panel-referred" aria-selected="false" role="tab" onclick="loadReferred()">
+                                <span class="df-tab-inner">
+                                    <i class="fa-solid fa-share" aria-hidden="true"></i>
+                                    <span class="df-tab-label">Referred</span>
+                                    <span class="df-tab-count" id="badge-referred">0</span>
+                                </span>
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div class="df-panels">
+                    <section id="panel-myTemplates" class="df-panel active" role="tabpanel">
+                        <div id="myforms" style="display:none;"></div>
+                        <div id="myTemplatesEmptyState" class="df-empty-state" style="display:none;">
+                            <i class="fa-regular fa-file-lines" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                            <p style="font-size: 1.1rem; color: #64748b; margin: 0;">No templates found</p>
+                            <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.5rem;">Create your first form template to get started</p>
+                        </div>
+                    </section>
+
+                    <section id="panel-sent" class="df-panel" role="tabpanel">
+                        <div id="sendDoc" style="display:none;"></div>
+                        <div id="sentEmptyState" class="df-empty-state" style="display:none;">
+                            <i class="fa-solid fa-paper-plane" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                            <p style="font-size: 1.1rem; color: #64748b; margin: 0;">No sent forms</p>
+                            <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.5rem;">Forms you send will appear here</p>
+                        </div>
+                    </section>
+
+                    <section id="panel-received" class="df-panel" role="tabpanel">
+                        <div id="receiveDoc" style="display:none;"></div>
+                        <div id="receivedEmptyState" class="df-empty-state" style="display:none;">
+                            <i class="fa-solid fa-inbox" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                            <p style="font-size: 1.1rem; color: #64748b; margin: 0;">No received forms</p>
+                            <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.5rem;">Forms sent to you will appear here</p>
+                        </div>
+                    </section>
+
+                    @if (AccountType.ToLower() != "self")
+                    {
+                        <section id="panel-referred" class="df-panel" role="tabpanel">
+                            <div id="refferedDoc" style="display:none;"></div>
+                            <div id="referredEmptyState" class="df-empty-state" style="display:none;">
+                                <i class="fa-solid fa-share" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                                <p style="font-size: 1.1rem; color: #64748b; margin: 0;">No referred forms</p>
+                                <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.5rem;">Forms referred to you will appear here</p>
+                            </div>
+                        </section>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="sendtempid" value="" />
+    <input type="hidden" id="sendedmsid" value="" />
+    <input type="hidden" id="senddocname" value="" />
+    <input type="hidden" id="sendflag" value="" />
+    <input type="hidden" id="sendtype" value="" />
+</div>
+
+<div class="modal fade" id="DocType_Modal" tabindex="-1" aria-labelledby="docTypeModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 550px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p style="margin-bottom: 0;padding: 0;">How do you want to start?</p>
+            </div>
+            <div class="modal-body">
+                <form id="docTypeForm" asp-action="CreateDigitalForm" asp-controller="DigitalForms" method="post" enctype="multipart/form-data">
+                    <div class="row d-flex flex-row justify-content-center align-items-center doctype-modal-body">
+                        <div class="doctype-options">
+                            <label id="docOption" class="doctype-card selected" for="docOption_radio" tabindex="0">
+                                <input id="docOption_radio" type="radio" name="documentOption" value="option2" checked />
+                                <div class="card-content">DOC</div>
+                                <div class="doctype-label">Existing Document</div>
+                            </label>
+
+                            <label id="blankOption" class="doctype-card" for="blankOption_radio" tabindex="0">
+                                <input id="blankOption_radio" type="radio" name="documentOption" value="option1" />
+                                <div class="card-content">+</div>
+                                <div class="doctype-label">Blank Document</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <br />
+                    <div class="row p-4" id="filedropzoneWrapper" style="border:2px dashed #eee">
+                        <div class="col-md-12">
+                            <div>
+                                <div id="filedropzone" role="button" style="cursor:pointer;" tabindex="0" class="dropzone">
+                                    <div style="overflow:hidden;width: 0px; height: 0px;cursor:pointer;">
+                                        <input id="File" type="file" accept=".pdf" autocomplete="off" tabindex="-1">
+                                    </div>
+
+                                    <p>Drag 'n' drop one file here (PDF,DOCX), or click to select</p>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div id="docname"></div>
+
+                    <input type="hidden" id="ExistingDoc" name="ExistingDoc" value="true">
+                    <input type="hidden" id="BlankDoc" name="BlankDoc" value="false">
+                    <input type="hidden" id="FileBase64" name="FileBase64" value="">
+                    <input type="hidden" id="FileName" name="FileName" value="">
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="CancelButton" class="btn" style="background-color: #dc143c !important; color: white;">Cancel</button>
+                <button type="submit" form="docTypeForm" id="ContinueButton" class="btn" style="background-color: #acc33e; color: white;" disabled>Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="digitalFormModal" tabindex="-1" aria-labelledby="digitalFormModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" id="publishmodalroles" role="document" style="max-width: 500px;">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h3 class="modal-title" id="digitalFormModalLabel">Choose an Option to Publish</h3>
+            </div>
+
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 20px; align-items: stretch;">
+
+
+                <div class="d-flex flex-column flex-sm-row justify-content-center">
+
+                    <label style="margin-right:2%;margin-left:2%;display: flex; flex: 1; gap: 15px; border: 1px solid #ddd; border-radius: 12px; padding: 15px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: white; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                        <input type="radio" id="Organization" name="publishOption" value="Publish" checked style="transform: scale(1.3); cursor: pointer;">
+                        <div>
+                            <div style="font-size: 1rem; font-weight: 600; color: #333;">Organization</div>
+                            <div style="font-size: 0.8rem; color: #777;">Publish for your organization</div>
+                        </div>
+                    </label>
+
+
+
+                    <label style="margin-right:2%;margin-left:2%;display: flex; flex: 1; gap: 15px; border: 1px solid #ddd; border-radius: 12px; padding: 15px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: white; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                        <input type="radio" id="Globally" name="publishOption" value="PublishAll" style="transform: scale(1.3); cursor: pointer;">
+                        <div>
+                            <div style="font-size: 1rem; font-weight: 600; color: #333;">Globally</div>
+                            <div style="font-size: 0.8rem; color: #777;">Publish for all subscribers</div>
+                        </div>
+                    </label>
+                </div>
+                <div id="publishroles">
+                </div>
+                <span style="text-align:center" id="publisherrorspan"></span>
+            </div>
+
+            <div class="modal-footer">
+                <button id="digitalFormModalContinueButton" type="button" class="btn">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+
+<div class="modal fade" id="digitalShowModal" tabindex="-1" aria-labelledby="digitalShowModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" id="digitalShowModalContent">
+            <div class="modal-header">
+                <button id="DownloadPDF" type="button" class="btn btn-primary">Download PDF</button>
+                <img id="closedigitalShowModalBtn" data-toggle="tooltip" data-placement="left" title="Close" style="width:16px;height:20px;cursor:pointer;" src='@Url.Content("~/assets/images/cross.svg")' asp-append-version="true" />
+
+            </div>
+            <div class="modal-body">
+
+
+                <div id="pdf-container" style="width:100%;min-height:400px;"></div>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="sendFormModal" tabindex="-1" aria-labelledby="sendFormModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 650px;">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h3 class="modal-title" id="sendFormModalLabel">Choose an Option to Send</h3>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body d-flex flex-column flex-sm-row justify-content-center align-items-center" style="gap: 20px;">
+
+                <!-- Individual Send Option -->
+                <label class="col-12 col-sm-6" style="display: flex; width:100%;max-width:300px; flex: 1; justify-content: center; gap: 15px; border: 1px solid #ddd; border-radius: 12px; padding: 15px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: white; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                    <input type="radio" id="indv" name="sendOption" value="Individual" checked style="transform: scale(1.3); cursor: pointer; height: 20%;margin-top:2%;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1rem; font-weight: 600; color: #333;">Individual Send</div>
+                        <div style="font-size: 0.8rem; color: #777;">Send single document</div>
+                        <!-- Image below the description -->
+                        <img src='@Url.Content("~/assets/images/individualsend.png")' asp-append-version="true" alt="Individual Send" style="width: 50px; height: auto; margin-top: 10px;">
+                    </div>
+                </label>
+
+                <!-- Bulk Send Option -->
+                <label class="col-12 col-sm-6 " style="display: flex;width:100%;max-width:300px; flex: 1; justify-content: center; gap: 15px; border: 1px solid #ddd; border-radius: 12px; padding: 15px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: white; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                    <input type="radio" id="bulk" name="sendOption" value="Bulk" style="transform: scale(1.3); cursor: pointer; height: 20%;margin-top:2%;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1rem; font-weight: 600; color: #333;">Bulk Send</div>
+                        <div style="font-size: 0.8rem; color: #777;">Send multiple documents</div>
+                        <!-- Image below the description -->
+                        <img src='@Url.Content("~/assets/images/bulksend.png")' asp-append-version="true" alt="Bulk Send" style="width: 60px; height: auto; margin-top: 10px;">
+                    </div>
+                </label>
+
+                <!-- Bulk Send CSV Option -->
+                @* <label style="display: flex; flex: 1; justify-content: center; gap: 15px; border: 1px solid #ddd; border-radius: 12px; padding: 15px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: white; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                    <input type="radio" id="bulkcsv" name="sendOption" value="Bulkcsv" style="transform: scale(1.3); cursor: pointer; height: 20%;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1rem; font-weight: 600; color: #333;">Bulk Send CSV</div>
+                        <div style="font-size: 0.8rem; color: #777;">Send multiple documents</div>
+                       
+                        <img src="~/assets/images/csvuploadsend.png" alt="Bulk Send CSV" style="width: 50px; height: auto; margin-top: 15px;">
+                    </div>
+                </label> *@
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button id="sendFormModalcontinueBtn" type="button" class="btn">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts {
+
+    <script>
+            var myDigitalformsUrl="@Url.Action("myforms", "DigitalForms")";
+            var GetDelegationbyorgidsuidUrl="@Url.Action("GetDelegationbyorgidsuid", "Documents")";
+            var currentviewName='@ViewBag.ViewName';
+        var sentFormsPartialUrl="@Url.Action("sent", "FormRequests")";
+        var receivedFormsPartialUrl="@Url.Action("recived", "FormRequests")";
+        var referredFormsPartialUrl="@Url.Action("reffered", "FormRequests")";
+
+            var isFileUploaded = false;
+            var PerpareDocumentContext = {
+
+                filesizerestrict: @ViewBag.FileSizeLimit * 1024 * 1024,
+                filesize: "@ViewBag.FileSizeLimit.ToString("0")",
+            }
+
+        // Bootstrap 5 Modal Initialization for DocType_Modal
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize modal instances using Bootstrap 5 API
+            var docTypeModalEl = document.getElementById('DocType_Modal');
+            var docTypeModal = docTypeModalEl ? new bootstrap.Modal(docTypeModalEl) : null;
+
+            var digitalFormModalEl = document.getElementById('digitalFormModal');
+            var digitalFormModal = digitalFormModalEl ? new bootstrap.Modal(digitalFormModalEl) : null;
+
+            var digitalShowModalEl = document.getElementById('digitalShowModal');
+            var digitalShowModal = digitalShowModalEl ? new bootstrap.Modal(digitalShowModalEl) : null;
+
+            var sendFormModalEl = document.getElementById('sendFormModal');
+            var sendFormModal = sendFormModalEl ? new bootstrap.Modal(sendFormModalEl) : null;
+
+            // Handle createform button click to show DocType_Modal
+            var createFormBtn = document.getElementById('createform');
+            if (createFormBtn && docTypeModal) {
+                createFormBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    docTypeModal.show();
+                });
+            }
+
+            // Handle Cancel button to close DocType_Modal
+            var cancelBtn = document.getElementById('CancelButton');
+            if (cancelBtn && docTypeModal) {
+                cancelBtn.addEventListener('click', function() {
+                    docTypeModal.hide();
+                });
+            }
+
+            // Expose modals globally for external JS compatibility
+            window.docTypeModal = docTypeModal;
+            window.digitalFormModal = digitalFormModal;
+            window.digitalShowModal = digitalShowModal;
+            window.sendFormModal = sendFormModal;
+
+            // Legacy jQuery compatibility wrappers for external JS files
+            if (typeof jQuery !== 'undefined') {
+                jQuery.fn.modal = function(action) {
+                    var el = this[0];
+                    if (!el) return this;
+
+                    var modalId = el.id;
+                    var modalInstance = window[modalId.replace('_', '')] ||
+                                        window[modalId.charAt(0).toLowerCase() + modalId.slice(1)] ||
+                                        bootstrap.Modal.getInstance(el) ||
+                                        new bootstrap.Modal(el);
+
+                    if (action === 'show') {
+                        modalInstance.show();
+                    } else if (action === 'hide') {
+                        modalInstance.hide();
+                    } else if (action === 'toggle') {
+                        modalInstance.toggle();
+                    }
+                    return this;
+                };
+            }
+
+            // ─── Centralized Global Search ───────────────────────
+            var globalSearchInput = document.getElementById('df-global-search');
+            var globalSearchClear = document.getElementById('df-global-search-clear');
+
+            function dispatchGlobalSearch() {
+                var activeTabEl = document.querySelector('.df-tab.active');
+                var tab = activeTabEl ? activeTabEl.getAttribute('data-tab') : '';
+                if (tab === 'myTemplates' && typeof window.handleMyFormsSearch === 'function') {
+                    window.handleMyFormsSearch();
+                } else if (tab === 'sent' && typeof window.handleSentFormsSearch === 'function') {
+                    window.handleSentFormsSearch();
+                } else if (tab === 'received' && typeof window.handleReceivedFormsSearch === 'function') {
+                    window.handleReceivedFormsSearch();
+                } else if (tab === 'referred' && typeof window.handleRefferedFormsSearch === 'function') {
+                    window.handleRefferedFormsSearch();
+                }
+            }
+
+            if (globalSearchInput) {
+                globalSearchInput.addEventListener('input', function () {
+                    // Show/hide clear button
+                    if (globalSearchClear) {
+                        globalSearchClear.style.display = this.value.length > 0 ? 'flex' : 'none';
+                    }
+                    dispatchGlobalSearch();
+                });
+
+                globalSearchInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') { e.preventDefault(); dispatchGlobalSearch(); }
+                });
+            }
+
+            if (globalSearchClear) {
+                globalSearchClear.addEventListener('click', function () {
+                    if (globalSearchInput) { globalSearchInput.value = ''; }
+                    this.style.display = 'none';
+                    dispatchGlobalSearch();
+                });
+            }
+            // ─────────────────────────────────────────────────────
+        });
+
+
+    </script>
+
+    @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+    {
+        <script src="~/js/DigitalForms/Index.js" type="text/javascript" asp-append-version="true" defer></script>
+    }
+    else
+    {
+        <script src="~/dist/DigitalForms/Index.min.js" type="text/javascript" asp-append-version="true" defer></script>
+    }
+
+
+}
+

@@ -1,0 +1,737 @@
+﻿@model SigningPortal.Web.ViewModels.Documents.AllDocumentViewModel
+
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+
+@using SigningPortal.Web.Enums
+
+@{
+    ViewData["Title"] = "View";
+    var viewId = ViewBag.ViewId as int?;
+}
+
+@{
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var AccountType = User.FindFirst("AccountType").Value;
+}
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+
+@{
+
+    var documentStatusOptions = new List<(string Id, string Display)>
+    {
+        ("All", "All"),
+        ("In Progress","Signatures Pending"),
+        ("Completed", "Completed"),
+        ("Expired", "Expired"),
+        ("Recalled", "Recalled"),
+        ("Declined", "Declined")
+    };
+
+    var signingStatusOptions = new List<(string Id, string Display)>
+    {
+        ("All", "All"),
+        ("Need to sign","Need to Sign"),
+        ("Signed","Signed"),
+        ("Signing_in_Progress", "Signing in Progress"),
+        ("Failed","Failed"),
+        ("Rejected","Rejected"),
+        ("Waiting_for_Others","Waiting for Others")
+
+    };
+}
+<style>
+    /* ================================
+                                                                       STAT CARDS (REM BASED)
+                                                                       ================================ */
+    .statics-container {
+        display: flex;
+        gap: 1.25rem; /* 20px */
+        padding: 1.25rem 0; /* 20px 0 */
+        flex-wrap: wrap;
+    }
+
+    /* Each Stat Card */
+    .stat-card {
+        flex: 1 1 calc(25% - 1.25rem);
+        min-width: 10rem;
+        background: #ffffff;
+        border-radius: 0.625rem;
+        padding: 1.25rem 2.25rem 1rem 1rem;
+        box-shadow: 0 0.625rem 0.75rem rgba(0,0,0,0.07);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+
+        /* Hover Lift */
+        .stat-card:hover {
+            transform: scale(1.05); /* slight zoom */
+            box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.12);
+        }
+
+    /* Header Row (Label + Icon Right) */
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Label */
+    .stat-label {
+        font-size: 1rem; /* 16px */
+        font-weight: 600;
+        letter-spacing: 0.0625rem; /* 1px */
+        color: #6b7280;
+    }
+
+    .stat-card:hover .stat-label-text-total {
+        color: #2563eb;
+    }
+
+    .stat-card:hover.totalcard {
+        box-shadow: inset 0 0 0 2px #2563eb, 0 0.5rem 1.25rem rgba(0,0,0,0.12);
+    }
+
+    .stat-card:hover.progresscard {
+        box-shadow: inset 0 0 0 2px #d97706, 0 0.5rem 1.25rem rgba(0,0,0,0.12);
+    }
+
+    .stat-card:hover.expiredcard {
+        box-shadow: inset 0 0 0 2px #6b7280, 0 0.5rem 1.25rem rgba(0,0,0,0.12);
+    }
+
+    .stat-card:hover.completedcard {
+        box-shadow: inset 0 0 0 2px #059669, 0 0.5rem 1.25rem rgba(0,0,0,0.12);
+    }
+
+    .stat-card .stat-label-text-completed:hover {
+        color: #059669;
+    }
+
+    .stat-card:hover .stat-label-text-progress {
+        color: #d97706;
+    }
+
+    .stat-card:hover .stat-label-text-completed {
+        color: #059669;
+    }
+
+    .stat-card:hover .stat-label-text-expired {
+        color: #6b7280;
+    }
+
+
+    /* Icon Circle */
+    .stat-icon {
+        width: 2.625rem; /* 42px */
+        height: 2.625rem; /* 42px */
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem; /* 20px */
+        color: white;
+    }
+
+    /* Value Number */
+    .stat-value {
+        margin-top: 0.25rem; /* 4px */
+        font-size: 1.5625rem; /* 25px */
+        font-weight: 700;
+        color: #111827;
+    }
+
+    /* ================================
+                                                                       COLORS
+                                                                    ================================ */
+
+    /* Icon Backgrounds */
+    .stat-icon.total {
+        background: #2563eb;
+    }
+
+    .stat-icon.progress {
+        background: #d97706;
+    }
+
+    .stat-icon.completed {
+        background: #059669;
+    }
+
+    .stat-icon.expired {
+        background: #6b7280;
+    }
+
+    .total-text {
+        color: #2563eb;
+    }
+    /* Number Colors */
+    .progress-text {
+        color: #d97706;
+    }
+
+    .completed-text {
+        color: #059669;
+    }
+
+    .expired-text {
+        color: #6b7280;
+    }
+
+
+    /* =================================
+                                                                       RESPONSIVE BEHAVIOR
+                                                                    ================================= */
+    @@media (max-width: 768px) {
+        .stat-card {
+            padding: 1rem 1.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            font-size: 1.15rem;
+        }
+    }
+
+    @@media (max-width: 767px) and (min-width: 567px) {
+
+        .stat-card {
+            flex: 1 1 calc(50% - 1.25rem); /* 2 per row */
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+        }
+
+        .stat-icon {
+            width: 2.3rem;
+            height: 2.3rem;
+            font-size: 1.1rem;
+        }
+    }
+    /* Final number styling */
+    .stat-number {
+        font-size: 1.875rem;
+        font-weight: 700;
+        display: inline-block;
+        margin-bottom: 0.25rem;
+        line-height: 1.875rem;
+        height: 1.875rem;
+    }
+
+        .stat-number.loading {
+            width: 48px;
+            height: 28px;
+            border-radius: 6px;
+            background: linear-gradient( 90deg, #f3f4f6 25%, #e2e8f0 50%, #f3f4f6 75% );
+            background-size: 400px 100%;
+            background-repeat: no-repeat;
+            animation: shimmer 0.5s infinite linear;
+            color: transparent !important;
+        }
+
+    @@keyframes shimmer {
+        0% {
+            background-position: -200px 0;
+        }
+
+        100% {
+            background-position: 200px 0;
+        }
+    }
+
+    @@media screen and (min-width: 1200px) {
+        .stats-container {
+            min-width: 130px;
+        }
+    }
+
+    /* Tabs */
+    .bulk-tabs {
+        margin-top: 25px;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+        border: 1px solid #d7d7d7; /* 👈 border here */
+    }
+
+    .tab-item {
+        padding: 12px 20px;
+        text-align: center;
+        font-size: .875rem;
+        cursor: pointer;
+        color: #414b58;
+        font-weight: 500;
+        transition: all 0.25s ease;
+        border-right: 1px solid #eaeaea;
+    }
+
+        .tab-item:last-child {
+            border-right: none;
+        }
+
+        .tab-item.active {
+            background: #f2f2f3;
+            color: black;
+            font-weight: 600;
+            border: none; /* 👈 remove active border */
+        }
+
+        .tab-item.active {
+            background: #f2f2f3;
+            box-shadow: inset 0 0 0 1px #d7d7d7;
+        }
+
+</style>
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+    @Html.AntiForgeryToken()
+    <!-- Header Row -->
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="fw-bold" style="font-size: 36px; color:#1a1a1a;">Documents</h1>
+            <small class="text-muted" style="font-size: 15px;">Documents you've created for signing</small>
+        </div>
+
+        <button id="createDocumentBtn" class="btn btn-success rounded-3 py-2 fw-semibold" style="font-size:15px;">
+            <i class="fa fa-plus me-2"></i> New Document
+        </button>
+    </div>
+
+    <div class="statics-container">
+
+        <div class="stat-card totalcard">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label stat-label-text-total">Total</div>
+                    <div class="stat-value total-text ">
+                        <div id="Totalcount" class="stat-number  loading">
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="stat-icon total">
+                    <i class="far fa-file-lines"></i>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card progresscard">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label stat-label-text-progress">In Progress</div>
+                    <div class="stat-value progress-text">
+                        <div id="InProgresscount" class="stat-number  loading">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-icon progress">
+                    <i class="far fa-clock"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card completedcard">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label stat-label-text-completed">Completed</div>
+                    <div class="stat-value completed-text">
+                        <div id="Completedcount" class="stat-number  loading">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-icon completed">
+                    <i class="far fa-check-circle"></i>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="stat-card expiredcard">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-label stat-label-text-expired">Expired</div>
+                    <div class="stat-value expired-text">
+                        <div id="expiredcount" class="stat-number  loading">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-icon expired">
+                    <i class="fa fa-circle-exclamation"></i>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="bulk-tabs rounded-3 row g-0 mb-4" id="tab-container">
+
+        <div class="col-3 tab-item active"
+             id="home-tab"
+             data-tab="List">
+            <i class="fa-solid fa-layer-group me-1"></i>
+            My Documents
+        </div>
+
+        <div class="col-3 tab-item"
+             id="home1-tab"
+             data-tab="SendTb">
+            <i class="fa-solid fa-paper-plane me-1"></i>
+            Sent Documents
+        </div>
+
+        <div class="col-3 tab-item"
+             id="profile-tab"
+             data-tab="RecvTb">
+            <i class="fa-solid fa-envelope me-1"></i>
+            Received Documents
+        </div>
+
+        <div class="col-3 tab-item"
+             id="contact-tab"
+             data-tab="CompTb">
+            <i class="fa-solid fa-user-group"></i>
+            Referred Documents
+        </div>
+
+    </div>
+
+    <!-- Search + Filters + OLD UI MERGED -->
+    <div class="bg-white border rounded-4 p-3 mb-4 shadow-sm">
+
+        <!-- HEADER ROW -->
+        <!-- HEADER ROW -->
+        <div class="header-responsive-row d-flex flex-wrap align-items-center gap-3">
+
+
+            <!-- LEFT AREA: Checkbox + ShowGroup + Search -->
+            <div class="col-md-7 d-flex align-items-center left-responsive-wrap" style="gap:10px;">
+
+
+                <!-- Select All Checkbox (NOW FIRST) -->
+                <div id="selectAllCheckboxContainer" style="display:none;">
+                    <input type="checkbox" class="custom-checkbox" id="selectAllCheckbox" style="margin-top:6px;">
+                    <label for="selectAllCheckbox" class="custom-checkmark">
+                        <svg class="check-icon" viewBox="0 0 24 24">
+                            <path d="M20 6L9 17l-5-5" fill="none" stroke="white" stroke-width="3" />
+                        </svg>
+                    </label>
+                </div>
+
+                <!-- Show Group Button -->
+                @if (AccountType.ToString().ToLower() != "self")
+                {
+                    <button id="toggleCheckboxesBtn" class="submit-button rounded-3"
+                            title="Click here for multiple selection mode"
+                            style="font-size:15px !important; padding:5px 11px !important; background-color:rgba(0,0,0,0.07) !important;color:black;border:none;">
+                        <i id="checkboxToggleIcon" class="fa fa-list"></i>
+                    </button>
+                }
+                else
+                {
+                    <button id="toggleCheckboxesBtn" class="submit-button rounded-3" style="display:none;"
+                            title="Click here for multiple selection mode"
+                            style="font-size:15px !important; padding:5px 11px !important; background-color:rgba(0,0,0,0.07) !important;color:black;border:none;">
+                        <i id="checkboxToggleIcon" class="fa fa-list"></i>
+                    </button>
+                }
+
+                <!-- Search Bar -->
+                <div id="docsSearchContainer" class="flex-grow-1">
+                    <div class="df-search-bar">
+                        <button class="df-search-icon-btn" id="searchButton" type="button" title="Search">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <input type="text" class="df-search-input" id="searchInput" placeholder="Search documents..." />
+                        <button class="df-search-clear-btn" id="searchClearBtn" type="button" title="Clear" style="display:none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT AREA: Filter Button -->
+            <div class="filter-responsive ms-auto">
+
+                <button id="filterDataBtn"
+                        class="btn border rounded-3 filter-btn" style="box-shadow: 0 5px 6px rgba(0, 0, 0, 0.07);background-color:rgba(0,0,0,0.07);">
+                    <i class="fa fa-filter" id="filterIcon"></i> Filter
+                </button>
+            </div>
+
+        </div> <!-- END HEADER ROW -->
+        <!-- FILTER BAR -->
+        <div class="mt-4 d-flex flex-wrap align-items-center gap-3">
+
+            <!-- Select All Checkbox -->
+            <div id="selectAllCheckboxContainer" style="display:none;">
+                <input type="checkbox" class="custom-checkbox" id="selectAllCheckbox">
+                <label for="selectAllCheckbox" class="custom-checkmark">
+                    <svg class="check-icon" viewBox="0 0 24 24">
+                        <path d="M20 6L9 17l-5-5" fill="none" stroke="white" stroke-width="3" />
+                    </svg>
+                </label>
+            </div>
+
+            <!-- Applied Filters Label -->
+            <div style="font-weight:600; font-size:15px; color:#555;">
+                Applied Filters:
+            </div>
+
+            <!-- Filter Days -->
+            <div id="filterDaysStatusContainer"
+                 style="background-color: rgba(0,0,0,0.05); color:#555; font-size:14px; border-radius:28px;"
+                 class="btn no-hover">
+                <i id="timePeriodIcon" class="bi bi-calendar-date" style="color:black;"></i>
+                <span id="filterdays" class="ms-2">Last 90 Days</span>
+            </div>
+
+            <!-- Document Status -->
+            <div id="documentStatusContainer"
+                 style="display:none;background-color:rgba(0,0,0,0.05); font-size:14px; border-radius:28px;"
+                 class="btn no-hover">
+                Document Status:
+                <span id="filterDocumentStatusText" class="ms-1">All</span>
+            </div>
+
+            <!-- Signing Status -->
+            <div id="signingStatusContainer"
+                 style="display:none;background-color:rgba(0,0,0,0.05); font-size:14px; border-radius:28px;"
+                 class="btn no-hover">
+                Signing Status:
+                <span id="filterSigningStatusText" class="ms-1">All</span>
+            </div>
+
+            <!-- Sign Selected Button -->
+            <div id="signingButtonGroup" style="display:none;">
+                <button class="btn btn-success rounded-3 py-2 fw-semibold" id="signSelectedBtn"
+                        style="font-size:15px !important; padding:3px 7px !important;">
+                    Sign Selected
+                    <span id="selectedCount"
+                          style="font-size:14px; font-weight:500; color:white"></span>
+                </button>
+            </div>
+
+        </div>
+        <!-- END FILTER BAR -->
+
+    </div>
+
+
+    <div class="card shadow-sm border rounded-4 mt-4">
+        <div class="tab-content">
+
+            <div id="myDoc" style="padding:15px 15px 0 15px;"></div>
+
+            <div id="sendDoc" style="display:none;padding:15px 15px 0 15px;"></div>
+
+            <div id="receiveDoc" style="display:none;padding:15px 15px 0 15px;"></div>
+
+            <div id="referredDoc" style="display:none;padding:15px 15px 0 15px;"></div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="Filter_Modal" role="dialog" aria-labelledby="digitalFormModalLabel" aria-hidden="false" data-backdrop="static" style="display:none;opacity: 1;background-color: rgba(0, 0, 0, 0.2);">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:580px;">
+            <div class="modal-content" style="max-height:80vh;overflow-y:auto;">
+                <div class="modal-header pt-1 pb-1" style="display:flex;justify-content:space-between;align-items:center;padding-left:30px;">
+                    <h4 class="modal-title" id="filterModalLabel">Document Filters</h4>
+                    <i id="closeFilterIcon" class="bi bi-x" style="color: gray; margin-left: 10px; font-size: 35px;cursor:pointer;"></i>
+                </div>
+                <div class="modal-body" style="padding-left:30px;height:80%;overflow-y:auto;">
+
+
+
+                    <div class="mb-3 bg-gray-50 p-2 p-md-3 rounded-lg border border-gray-200" style="background-color:#FAFAFB;">
+                        <label class="custom-label mb-4">
+                            <i id="timeIcon" class="bi bi-calendar-date" style="color:#198754"></i>
+                            <i id="latestCountIcon" style="display:none;color:#198754;" class="bi bi-list-ol"></i>Filter by
+                            <select class="form-select custom-select" id="filterSelector">
+                                <option value="time">Days/Year</option>
+                                <option value="latest">Count</option>
+                            </select>
+                        </label>
+                        <!-- Filter by Days -->
+                        <div id="daysFilterSection" class="row ml-1 ml-md-2">
+                            <div class="col-6 col-sm-4">
+                                <div class="form-check custom-radio p-0">
+                                    <input class="form-check-input" type="radio" name="filterDays" id="days30" value="last30days">
+                                    <label class="form-check-label" for="days30">Last 30 Days</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4">
+                                <div class="form-check custom-radio p-0 ">
+                                    <input class="form-check-input" type="radio" name="filterDays" id="days90" value="last90days" checked>
+                                    <label class="form-check-label" for="days90">Last 90 Days</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Filter by latest Documents -->
+                        <div class="row ml-1 ml-md-2" id="docsFilterSection">
+                            <div class="col-6">
+                                <div class="form-check custom-radio p-0">
+                                    <input class="form-check-input" type="radio" name="filterCount" id="latest30" value="latest30">
+                                    <label class="form-check-label" for="latest30">Latest 30 Documents</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check custom-radio p-0 ">
+                                    <input class="form-check-input" type="radio" name="filterCount" id="latest50" value="latest50" checked>
+                                    <label class="form-check-label" for="latest50">Latest 50 Documents</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="mb-3 bg-gray-50 p-2 p-md-3 rounded-lg border border-gray-200" style="background-color:#FAFAFB;">
+                        <label class="custom-label mb-3" style="font-weight:600;font-size:16px;">
+                            <i class="bi bi-file-earmark-text pr-2" style="color:#198754"></i>
+                            Document Status
+                        </label>
+
+                        <div class="row ml-1 ml-md-2">
+                            @foreach (var status in documentStatusOptions)
+                            {
+                                <div class="col-6 col-sm-4">
+                                    <div class="form-check custom-radio p-0">
+                                        <input class="form-check-input"
+                                               type="radio"
+                                               name="filterDocumentStatus"
+                                               id="docstatus_@status.Id"
+                                               value="@status.Id"
+                                        @(status.Id == "All" ? "checked" : "") />
+
+                                        <label class="form-check-label" for="docstatus_@status.Id">
+                                            @status.Display
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                    </div>
+                    <div class="bg-gray-50 p-2 p-md-3 rounded-lg border border-gray-200" style="background-color:#FAFAFB;">
+                        <label class="form-label mb-3" style="font-weight:600;font-size:16px;">
+                            <i class="bi bi-pencil me-1 pr-1" style="color:#198754"></i> My Sign Status
+                        </label>
+                        <div class="row ml-1 ml-md-2">
+                            @foreach (var status in signingStatusOptions)
+                            {
+                                <div class="col-6 col-sm-4">
+                                    <div class="form-check custom-radio p-0">
+                                        <input class="form-check-input"
+                                               type="radio"
+                                               name="filterSigningStatus"
+                                               id="signingStatus_@status.Id"
+                                               value="@status.Id"
+                                        @(status.Id == "All" ? "checked" : "") />
+
+                                        <label class="form-check-label" for="signingStatus_@status.Id">
+                                            @status.Display
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    @* <button type="button" class="btn btn-secondary" style="text-transform: none;" data-bs-dismiss="modal" onclick="closefilter()">Cancel</button> *@
+                    <button id="applyFilterBtn" type="button" class="btn" style="text-transform: none;background-color: #198754;color:white;"><i class="bi bi-funnel" style="color:white;"></i>Apply</button>
+                    <button id="resetFilterBtn" type="button" class="btn btn-secondary" style="text-transform: none;"><i class="fas fa-rotate-left"></i>Reset</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+</div>
+
+@section scripts {
+
+    <script>
+        var viewname = '@ViewBag.ViewName';
+        var UserEmail = '@userEmail';
+        var CreateDocuments = '@Url.Action("CreateDocuments", "Documents")';
+        var draftDocuments = '@Url.Action("draft", "Documents")';
+        var DocumentsIndexUrl = '@Url.Action("Index", "Documents")';
+        var sentDocumentslist = '@Url.Action("sent", "Documents")';
+        var recivedDocumentslist = '@Url.Action("recived", "Documents")';
+        var referredDocumentslist = '@Url.Action("referred", "Documents")';
+        var GroupSigningStatus = '@Url.Action("GroupSigningStatus", "GroupSigning")';
+        var PerformGroupSigning = '@Url.Action("PerformGroupSigning", "GroupSigning")';
+        var DocumentDetailsUrl = '@Url.Action("DocumentDetails", "Documents")';
+
+        let initialLoading = true;
+        let currentSentAjaxRequest = null;
+        var activeTab = "";
+        var initialFilterActiveTab = "";
+        var initialFilterdaysVal = "";
+        var initialFilterCountVal = "";
+        var initialFilterDocumentStatusVal = "";
+        var initialFilterSigningStatusVal = "";
+        var documentFilterActiveTab = "timePeriod";
+        var selectedIdListData = [];
+        const currentYear = new Date().getFullYear();
+        const container = document.getElementById('daysFilterSection');
+        let isAllSelected = false; // Global flag
+
+
+        const filterSelector = document.getElementById("filterSelector");
+        const daysFilterSection = document.getElementById("daysFilterSection");
+        const docsFilterSection = document.getElementById("docsFilterSection");
+
+    </script>
+    @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+    {
+        <script src="~/js/Documents/Index.js" type="text/javascript" asp-append-version="true" defer></script>
+    }
+    else
+    {
+        <script src="~/dist/Documents/Index.min.js" type="text/javascript" asp-append-version="true" defer></script>
+    }
+}
+

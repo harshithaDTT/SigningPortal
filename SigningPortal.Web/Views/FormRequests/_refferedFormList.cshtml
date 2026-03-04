@@ -1,0 +1,1071 @@
+﻿@model SigningPortal.Web.ViewModels.FormRequests.AllFormRequestsListViewModel
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+
+@{
+    ViewData["Title"] = "View";
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var bulksign = User.IsInRole("bulkSign");
+    var AccountType = User.FindFirst("AccountType").Value;
+    var OrganizationName = "";
+    var OrganizationUid = "";
+    var login_esealsignatoryrole = User.IsInRole("eSealSignatory");
+    var selfemails = "";
+    if (AccountType != "Self") { selfemails = User.FindFirst("SelfEmails").Value; OrganizationName = User.FindFirst("OrganizationName").Value; OrganizationUid = User.FindFirst("OrganizationUid").Value; }
+}
+
+<style>
+    /* ============================================
+                   Card-Based Forms UI - EXACT match to _receivedFormList.cshtml
+                   ============================================ */
+
+    .hidden {
+        display: none !important;
+    }
+
+    /* Search Bar - EXACT match to _receivedFormList.cshtml */
+    .search-bar {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        background: #f9fafb;
+        border: 0.0625rem solid #e2e8f0;
+        box-shadow: 0 0.0625rem 0.25rem rgba(0,0,0,0.08);
+        transition: all 0.2s ease-in-out;
+    }
+
+        .search-bar:hover {
+            box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.12);
+        }
+
+    .search-input {
+        flex: 1;
+        border: none;
+        padding: 0.375rem 1.25rem;
+        font-size: 0.875rem;
+        outline: none;
+        background: transparent;
+    }
+
+    .search-button {
+        border: none;
+        background: transparent;
+        color: #4a5568;
+        font-size: 0.9375rem;
+        padding: 0.375rem 0.875rem;
+        cursor: pointer;
+    }
+
+        .search-button:hover {
+            background: rgba(0,0,0,0.08);
+        }
+
+    /* DOCUMENT CARD CONTAINER - EXACT match to _receivedFormList.cshtml */
+    .document-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 22px;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e0dfdf;
+        margin-bottom: 16px;
+        transition: box-shadow .2s ease;
+        box-shadow: 0 4px 9px rgba(25, 135, 84, 0.2);
+    }
+
+        .document-card:hover {
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .document-card.search-hidden {
+            display: none !important;
+        }
+
+    /* Right side container for status blocks and actions */
+    .doc-right {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        flex: 0 1 50%;
+        justify-content: space-between;
+    }
+
+    /* LEFT SIDE : ICON + FILE INFO - EXACT match to _receivedFormList.cshtml */
+    .doc-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .doc-icon-wrapper {
+        width: 2.5rem;
+        height: 2.5rem;
+        background: linear-gradient(135deg, #0A1F44 0%, #059669 100%);
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .doc-icon-wrapper i {
+            font-size: 1.25rem;
+            color: #ffffff;
+        }
+
+        .doc-icon-wrapper img {
+            width: 28px;
+            height: 28px;
+        }
+
+    .doc-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .doc-meta {
+        margin: 4px 0 0;
+        font-family: sans-serif;
+        font-weight: 500;
+        font-size: 14px;
+        color: #919aa3 !important;
+    }
+
+    .doc-status-block {
+        text-align: left;
+        min-width: 120px;
+    }
+
+    .doc-column {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        min-width: auto;
+    }
+
+    .doc-column-heading {
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 3px;
+        font-family: 'Arial', sans-serif;
+        font-size: 12px;
+        color: #6c757d;
+        letter-spacing: 0.5px;
+    }
+
+    .doc-status-heading {
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 3px;
+        font-family: 'Arial', sans-serif;
+        font-size: 12px;
+        color: #6c757d;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge {
+        padding: 0.375rem 0.875rem;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .status-new {
+        color: #1d4ed8;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    .status-completed {
+        color: #047857;
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    .status-inprogress {
+        color: #b45309;
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    .status-other {
+        color: #64748b;
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    .doc-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .show-more-row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 16px 0 8px;
+        margin-top: 8px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .show-more-wrapper {
+        padding: 14px 0 5px;
+        text-align: right;
+    }
+
+    .show-more-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        color: #4976af;
+        background-color: #dbeafe;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .show-more-btn:hover {
+            background-color: #bfdbfe;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .show-more-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .show-more-btn:active {
+            transform: translateY(0);
+        }
+
+        .show-more-btn i {
+            font-size: 0.75rem;
+            transition: transform 0.2s ease;
+        }
+
+        .show-more-btn:hover i {
+            transform: translateY(2px);
+        }
+
+    .all-loaded-msg {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 12px 0 4px;
+        color: #6b7280;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+        .all-loaded-msg::before,
+        .all-loaded-msg::after {
+            content: '';
+            flex: 1;
+            max-width: 80px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #d1d5db);
+            margin: 0 12px;
+        }
+
+        .all-loaded-msg::after {
+            background: linear-gradient(to left, transparent, #d1d5db);
+        }
+
+    .no-forms-message {
+        text-align: center;
+        padding: 2rem;
+        background-color: rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        color: #555;
+        font-weight: 500;
+    }
+
+    .no-search-results {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 2rem;
+        text-align: center;
+        background: #f8fafc;
+        border: 1px dashed #e2e8f0;
+        border-radius: 12px;
+        margin-top: 1rem;
+    }
+
+        .no-search-results.visible {
+            display: flex;
+        }
+
+        .no-search-results i {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .no-search-results h4 {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin: 0 0 0.5rem 0;
+            font-weight: 600;
+        }
+
+        .no-search-results p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+    .status-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .popup {
+        display: none;
+        position: absolute;
+        min-width: 280px;
+        padding: 15px;
+        background: #059669;
+        color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        font-size: 0.875rem;
+        z-index: 10000;
+        bottom: 100%;
+        right: 0;
+    }
+
+    .status-container:hover .popup {
+        display: block;
+    }
+
+    .popup .header {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        padding-bottom: 0.5rem;
+    }
+
+    .popup p {
+        line-height: 1.4;
+        margin: 8px 0 4px;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .popup ul {
+        padding-left: 0;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        list-style: none;
+        gap: 6px;
+        margin: 0;
+        text-align: left;
+    }
+
+        .popup ul li {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            position: relative;
+            padding-left: 24px;
+        }
+
+            .popup ul li.first-email::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 14px;
+                height: 14px;
+                background-color: transparent;
+                border: 2px solid #fff;
+                border-radius: 50%;
+            }
+
+            .popup ul li.first-email::after {
+                content: "";
+                width: 6px;
+                height: 6px;
+                background-color: #fff;
+                border-radius: 50%;
+                position: absolute;
+                top: 50%;
+                left: 7px;
+                transform: translate(-50%, -50%);
+            }
+
+            .popup ul li.no-bullet {
+                padding-left: 0;
+            }
+
+   
+    @@media (max-width: 1200px) {
+        .doc-right {
+            flex: 0 1 55%;
+        }
+    }
+
+    @@media (max-width: 992px) {
+        .document-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .doc-right {
+            width: 100%;
+            flex: 1;
+            justify-content: space-between;
+        }
+
+        .doc-status-block {
+            min-width: auto;
+            text-align: left;
+        }
+
+        .popup {
+            display: none !important;
+        }
+
+        .doc-actions {
+            justify-self: end;
+            width: auto;
+        }
+
+        .doc-column {
+            min-width: auto;
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .doc-left {
+            gap: 12px;
+        }
+
+        .doc-icon-wrapper {
+            width: 2.25rem;
+            height: 2.25rem;
+        }
+
+            .doc-icon-wrapper i {
+                font-size: 1.1rem;
+            }
+
+        .doc-title {
+            font-size: 16px;
+        }
+
+        .doc-meta {
+            font-size: 13px;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .document-card {
+            padding: 14px 16px;
+        }
+
+        .doc-icon-wrapper {
+            width: 2rem;
+            height: 2rem;
+        }
+
+            .doc-icon-wrapper i {
+                font-size: 1rem;
+            }
+
+        .doc-title {
+            font-size: 15px;
+        }
+
+        .doc-status-heading {
+            font-size: 11px;
+        }
+
+        .doc-right {
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .doc-column {
+            min-width: auto;
+            width: 100%;
+        }
+
+        .from-badge {
+            max-width: calc(100% - 40px);
+        }
+    }
+    .view-btn,
+    .doc-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.5rem 1rem;
+        background: #d1f4e0;
+        color: #198754;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .view-btn:hover,
+        .doc-action-btn:hover {
+            background: #0ea66b;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .view-btn i,
+        .doc-action-btn i {
+            font-size: 14px;
+        }
+
+    .empty-state-wrapper {
+        display: flex;
+        justify-content: center;
+        min-height: 280px;
+    }
+
+    .empty-state-card {
+        background: #ffffff;
+        border: 1px solid #E5E7EB;
+        border-radius: 14px;
+        padding: 48px 24px;
+        text-align: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    .empty-state-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+    }
+
+        .empty-state-icon i {
+            font-size: 5rem;
+            color: #64748b;
+        }
+
+    .empty-state-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #0F172A;
+        letter-spacing: -0.02em;
+    }
+
+    .empty-state-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748B;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+</style>
+
+@if (Model.receiveRequests.Count == 0)
+{
+    <div class="empty-state-wrapper">
+        <div class="empty-state-card">
+            <div class="empty-state-icon">
+                <i class="fa-regular fa-folder-open"></i>
+            </div>
+
+            <h4 class="empty-state-title">No forms reffered yet</h4>
+
+            <p class="empty-state-text">
+                reffered forms will appear here.
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <div id="refferedFormsCardsContainer" class="card shadow-sm border rounded-4 p-3">
+        @foreach (var item in Model.receiveRequests)
+        {
+            var statusClass = "status-new";
+            var statusLabel = item.Status;
+            if (item.Status == "Completed") { statusClass = "status-completed"; }
+            else if (item.Status == "In Progress") { statusClass = "status-inprogress"; }
+            else if (item.Status == "New") { statusClass = "status-new"; }
+            else { statusClass = "status-other"; }
+
+            var firstUser = item.PendingSignList?.FirstOrDefault();
+            var canSign = false;
+            if (item.DisableOrder == false)
+            {
+                if (item.Status == "New" || item.Status == "In Progress")
+                {
+                    if (firstUser != null)
+                    {
+                        foreach (var recipient in item.TemplateRecepients)
+                        {
+                            if (recipient.Signer.suid == firstUser.suid)
+                            {
+                                foreach (var alternativeSignatory in recipient.AlternateSignatories)
+                                {
+                                    if (alternativeSignatory.suid == Suid)
+                                    {
+                                        canSign = true;
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (item.CompleteSignList!=null && !item.CompleteSignList.Any(sign => sign.suid == Suid))
+                {
+                    canSign = true;
+                }
+            }
+
+            <div class="document-card" data-form-name="@item.DocumentName.ToLower()">
+                <div class="doc-left">
+                    <div class="doc-icon-wrapper"><i class="fa-solid fa-file-lines" style="color: #ffffff;"></i></div>
+                    <div>
+                        <p class="doc-title">@item.DocumentName</p>
+                        <p class="doc-meta">Created: <span class="convert-time" data-timestamp="@item.CreatedAt.ToString("o")">@item.CreatedAt.ToString("dd/MM/yyyy")</span><span class="mx-1 pl-1 pr-1">•</span>Expires: <span class="convert-time" data-timestamp="@item.ExpieryDate.ToString("o")">@item.ExpieryDate.ToString("dd/MM/yyyy")</span></p>
+                    </div>
+                </div>
+                <div class="doc-right">
+                    <div class="doc-column doc-from-block">
+                        <div class="doc-column-heading">FROM</div>
+                        <div class="status-other" title="@item.Owner.email">@item.Owner.email</div>
+                    </div>
+                    <div class="doc-column doc-status-block">
+                        <div class="doc-column-heading">Status</div>
+                        <div class="status-container">
+                            <span class="@statusClass status-badge" style="cursor:pointer;">@statusLabel</span>
+                            @if (item.Status == "Completed" && item.CompleteSignList != null)
+                            {
+                                <div class="popup">
+                                    <p class="header"><span>TOTAL RECIPIENTS: @(item.CompleteSignList?.Count() + item.PendingSignList?.Count())</span></p>
+                                    <div class="row">
+                                        <p style="text-align:left">SIGNED: @(item.CompleteSignList?.Count() ?? 0)</p>
+                                        <ul>
+                                            @if (item.CompleteSignList.Count > 0)
+                                            {
+                                                foreach (var i in item.TemplateRecepients)
+                                                {
+                                                    if (i.Status == "Signed")
+                                                    {
+                                                        if (i.HasDelegation)
+                                                        {
+                                                            <li class="first-email">
+                                                                @foreach (var alt in i.AlternateSignatories.Take(1))
+                                                                {
+                                                                    @alt.email
+                                                                }
+                                                            </li>
+                                                            @foreach (var alt in i.AlternateSignatories.Skip(1))
+                                                            {
+                                                                <li class="no-bullet">@alt.email</li>
+                                                            }
+                                                            <li class="no-bullet">Delegator:</li>
+                                                            <li class="no-bullet">@i.Signer.email</li>
+                                                        }
+                                                        else
+                                                        {
+                                                            <li class="first-email">@i.Signer.email</li>
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            }
+                            @if ((item.Status == "In Progress" || item.Status == "New") && item.PendingSignList != null)
+                            {
+                                <div class="popup">
+                                    <p class="header"><span>TOTAL RECIPIENTS: @(item.CompleteSignList?.Count() + item.PendingSignList?.Count())</span></p>
+                                    <div class="row">
+                                        <p style="text-align:left">PENDING: @(item.PendingSignList?.Count() ?? 0)</p>
+                                        <ul>
+                                            @if (item.PendingSignList.Count > 0)
+                                            {
+                                                foreach (var i in item.TemplateRecepients)
+                                                {
+                                                    if (i.Status == "Pending")
+                                                    {
+                                                        if (i.HasDelegation)
+                                                        {
+                                                            <li class="first-email">
+                                                                @foreach (var alt in i.AlternateSignatories.Take(1))
+                                                                {
+                                                                    @alt.email
+                                                                }
+                                                            </li>
+                                                            @foreach (var alt in i.AlternateSignatories.Skip(1))
+                                                            {
+                                                                <li class="no-bullet">@alt.email</li>
+                                                            }
+                                                            <li class="no-bullet">Delegator:</li>
+                                                            <li class="no-bullet">@i.Signer.email</li>
+                                                        }
+                                                        else
+                                                        {
+                                                            <li class="first-email">@i.Signer.email</li>
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        </ul>
+                                    </div>
+                                    @if (item.TemplateRecepients?.Count() != item.PendingSignList?.Count())
+                                    {
+                                        <div class="row">
+                                            <p style="text-align:left">SIGNED: @(item.CompleteSignList?.Count() ?? 0)</p>
+                                            <ul>
+                                                @if (item.CompleteSignList.Count > 0)
+                                                {
+                                                    foreach (var i in item.TemplateRecepients)
+                                                    {
+                                                        if (i.Status == "Signed")
+                                                        {
+                                                            if (i.HasDelegation)
+                                                            {
+                                                                <li class="first-email">
+                                                                    @foreach (var alt in i.AlternateSignatories.Take(1))
+                                                                    {
+                                                                        @alt.email
+                                                                    }
+                                                                </li>
+                                                                @foreach (var alt in i.AlternateSignatories.Skip(1))
+                                                                {
+                                                                    <li class="no-bullet">@alt.email</li>
+                                                                }
+                                                                <li class="no-bullet">Delegator:</li>
+                                                                <li class="no-bullet">@i.Signer.email</li>
+                                                            }
+                                                            else
+                                                            {
+                                                                <li class="first-email">@i.Signer.email</li>
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="doc-actions">
+                        @if (canSign)
+                        {
+                            <a href="#" onclick="fillFormData('@item.FormId', '@item.EdmsId', '@item.DocumentName', 'RefferedDocuments', '@item._id', '@item.Status')" class="view-btn">
+                                <i class="fa fa-pen-to-square"></i>
+                                <span>Fill</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="DocumentStatus" asp-route-tempId="@item.FormId" asp-route-docuid="@item._id" onclick="document.getElementById('navigationNetworkOverlay').style.display='block'" class="view-btn">
+                                <i class="fa fa-eye"></i>
+                                <span>View</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="show-more-wrapper"><button type="button" id="showMoreBtnRefferedForms" class="show-more-btn" style="display: none;">Show More <i class="fas fa-chevron-down"></i></button></div>
+    </div>
+
+    <div id="noSearchResultsRefferedForms" class="no-search-results">
+        <i class="fa-solid fa-search"></i><h4>No forms found</h4><p>Try adjusting your search terms or clear the search field</p>
+    </div>
+
+    <div class="d-flex justify-content-center mt-3"><div class="all-loaded-msg mb-3" id="allDocsLoadedMsgRefferedForms" style="display: none;"></div></div>
+
+}
+
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+<script>
+    var pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (!pdfjsLib) { console.error('PDF.js library is not loaded.'); } else { pdfjsLib.GlobalWorkerOptions.workerSrc = '@Url.Content("/local-cdns/Shared/pdfjs/2.10.377/pdf.worker.min.js")'; }
+    var loginOrgId = '@OrganizationUid';
+    var viewName = "RefferedDocuments";
+    var bulksignPermisson = '@bulksign';
+    var suid = '@Suid';
+
+    $(document).ready(function () { $('#networkOverlay').hide(); updateTimestamps(); });
+
+    (function () {
+        var pageSize = 5, currentlyShown = pageSize;
+        function getCards() { return document.querySelectorAll('#refferedFormsCardsContainer .document-card'); }
+        function updateVisibility() {
+            var showMoreBtn = document.getElementById('showMoreBtnRefferedForms');
+            var allLoadedMsg = document.getElementById('allDocsLoadedMsgRefferedForms');
+            var noResultsDiv = document.getElementById('noSearchResultsRefferedForms');
+            var searchInput = document.getElementById('df-global-search');
+            const card = document.getElementById("refferedFormsCardsContainer");
+            var hasSearchQuery = searchInput && searchInput.value.trim() !== '';
+            var visibleCards = Array.from(getCards()).filter(function (card) { return !card.classList.contains('search-hidden'); });
+            var totalVisible = visibleCards.length;
+            if (totalVisible === 0) {
+        if (showMoreBtn) showMoreBtn.style.display = "none";
+        if (allLoadedMsg) allLoadedMsg.style.display = "none";
+
+        if (noResultsDiv && hasSearchQuery) {
+            noResultsDiv.classList.add("visible");
+            card.style.display = "none";
+        }
+
+        return;
+    } else {
+        if (noResultsDiv) {
+            noResultsDiv.classList.remove("visible");
+            card.style.display = "flex";
+        }
+    }
+
+            visibleCards.forEach(function (card, index) { if (index < currentlyShown) { card.classList.remove('hidden'); } else { card.classList.add('hidden'); } });
+            if (showMoreBtn && allLoadedMsg) {
+                   if (totalVisible < 5) {
+                        showMoreBtn.style.display = 'none';
+                        allLoadedMsg.style.display = 'none';
+                        return;
+                    }
+                if (currentlyShown >= totalVisible) { showMoreBtn.style.display = 'none'; allLoadedMsg.style.display = 'flex'; allLoadedMsg.innerHTML = 'All ' + totalVisible + ' forms loaded'; } else { showMoreBtn.style.display = 'inline-flex'; allLoadedMsg.style.display = 'none'; } }
+        }
+        function handleShowMore(e) { e.preventDefault(); currentlyShown += pageSize; updateVisibility(); }
+        function handleSearch() {
+            var query = (document.getElementById('df-global-search') && document.getElementById('df-global-search').value || '').toLowerCase().trim();
+            getCards().forEach(function (card) {
+                var formName = card.getAttribute('data-form-name') || '';
+                if (query === '' || formName.indexOf(query) !== -1) { card.classList.remove('search-hidden'); } else { card.classList.add('search-hidden'); card.classList.add('hidden'); }
+            });
+            currentlyShown = pageSize;
+            updateVisibility();
+        }
+        function init() {
+            var showMoreBtn = document.getElementById('showMoreBtnRefferedForms');
+            if (showMoreBtn) showMoreBtn.addEventListener('click', handleShowMore);
+            handleSearch();
+            updateVisibility();
+        }
+        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); } else { init(); }
+        window.handleRefferedFormsSearch = handleSearch;
+    })();
+
+    // Overlay function for showing loader
+    function showOverlay(matchedEsealData, matchedSignData) {
+        if (matchedEsealData == null && matchedSignData !== null) {
+            $('#overlay8').css('display', 'flex');
+        } else if (matchedEsealData !== null && matchedSignData === null) {
+            $('#overlay6').css('display', 'flex');
+        } else if (matchedEsealData !== null && matchedSignData !== null) {
+            $('#overlay7').css('display', 'flex');
+        } else {
+            $('#overlay8').css('display', 'flex');
+        }
+    }
+
+    // Overlay function for hiding loader
+    function hideOverlay(matchedEsealData, matchedSignData) {
+        if (matchedEsealData == null && matchedSignData !== null) {
+            $('#overlay8').hide();
+        } else if (matchedEsealData !== null && matchedSignData === null) {
+            $('#overlay6').hide();
+        } else if (matchedEsealData !== null && matchedSignData !== null) {
+            $('#overlay7').hide();
+        } else {
+            $('#overlay8').hide();
+        }
+    }
+
+    var formbase64 = "";
+
+    function renderPDF(pdf) {
+        const pdfContainer = document.getElementById('pdf-container');
+        pdfContainer.innerHTML = '';
+        const numPages = pdf.numPages;
+        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+            pdf.getPage(pageNum).then(page => {
+                const scale = 1.5;
+                const viewport = page.getViewport({ scale });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                canvas.style.width = '100%';
+                const pageContainer = document.createElement('div');
+                pageContainer.className = 'pdf-page';
+                pageContainer.style.position = 'relative';
+                pageContainer.appendChild(canvas);
+                pdfContainer.appendChild(pageContainer);
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                page.render(renderContext)
+            });
+        }
+    }
+
+    function fillFormData(tempId, edmsId, documentName, flag, docuid, status) {
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("ValidateEseal", "FormRequests")',
+            data: {
+                docuid: docuid,
+            },
+            beforeSend: function () {
+                $('#overlay').show();
+            },
+            complete: function () {
+                $('#overlay').hide();
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#overlay').hide();
+                    document.getElementById('navigationNetworkOverlay').style.display = 'block'
+                    window.location.href = '@Url.Action("FillFormData", "FormRequests")' + `?tempId=${tempId}&edmsId=${edmsId}&documentName=${encodeURIComponent(documentName)}&flag=${flag}&docuid=${docuid}&Status=${status}`;
+                } else {
+                    swal({
+                        icon: "error",
+                        title: "Info",
+                        text: response.message,
+                    });
+                }
+            },
+            error: ajaxErrorHandler
+        });
+    }
+
+    function base64ToArrayBuffer(base64) {
+        const binaryString = window.atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+
+    function modalForm(EdmsId, SignerName, status1) {
+        const ele = document.getElementById('downloadbutton');
+        const ele1 = document.getElementById('showclose');
+        if (status1 === "In Progress") {
+            if (ele) {
+                ele.style.display = 'none'
+            }
+            if (ele1) {
+                ele1.style.marginLeft = "auto";
+            }
+        }
+        else {
+            if (ele) {
+                ele.style.display = 'block'
+            }
+            if (ele1) {
+                ele1.style.marginLeft = "3%"
+            }
+        }
+        $("#digitalShowModal").modal('show');
+        FileName = SignerName + "_signed";
+
+        $.ajax({
+            url: '@Url.Action("GetPreviewConfig", "DigitalForms")',
+            type: 'GET',
+            data: {
+                edmsId: EdmsId
+            },
+            beforeSend: function () {
+                $('#overlay').show();
+            },
+            complete: function () {
+                $('#overlay').hide();
+            },
+            success: function (resp) {
+                if (resp.success) {
+                    formbase64 = resp.result;
+                    const pdfArrayBuffer = base64ToArrayBuffer(resp.result);
+                    pdfjsLib.getDocument({ data: pdfArrayBuffer }).promise.then(pdf => {
+                        renderPDF(pdf);
+                    }).catch(error => {
+                        console.error('Error loading PDF:', error);
+                    });
+                } else {
+                    swal({
+                        title: 'Error',
+                        text: resp.message,
+                        type: 'error',
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            document.getElementById("navigationNetworkOverlay").style.display = "block";
+                            window.location.href = '@Url.Action("Index", "DigitalForms")';
+                        }
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                swal({
+                    title: 'Error',
+                    text: 'Something went wrong!',
+                    type: 'error',
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        document.getElementById("navigationNetworkOverlay").style.display = "block";
+                        window.location.href = '@Url.Action("Index", "DigitalForms")';
+                    }
+                });
+            }
+        });
+    }
+
+    function DownloadForm() {
+        var byteCharacters = atob(formbase64);
+        var byteNumbers = new Array(byteCharacters.length);
+
+        for (var i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        var byteArray = new Uint8Array(byteNumbers);
+        var blob = new Blob([byteArray], { type: 'application/pdf' });
+
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'SignedForm.pdf';
+        link.click();
+    };
+</script>

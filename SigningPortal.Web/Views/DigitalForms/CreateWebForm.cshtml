@@ -1,0 +1,2265 @@
+﻿@model SigningPortal.Web.ViewModels.DigitalForms.DocumentTypeViewModel
+@{
+    var signData = "data:image/png;base64," + Model.Templates.FirstOrDefault(x => x.Id == 1).SamplePreview;
+    var esealData = "data:image/png;base64," + Model.Templates.FirstOrDefault(x => x.Id == 5).SamplePreview;
+    var login_esealprepatoryrole = User.IsInRole("eSealPrepatory");
+}
+
+<link rel="stylesheet" href="/local-cdns/Shared/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="/local-cdns/Shared/fontawesome/6.0.0-beta3/css/all.min.css">
+
+<link rel="stylesheet" href="/css/DigitalForms/CreateWebForm.css" asp-append-version="true" />
+
+<style>
+    /* ========================================
+               MODERN UI DESIGN SYSTEM - CreateWebForm
+               Aligned with CreatePdfForm.cshtml theme
+               ======================================== */
+    :root {
+        --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        --primary-green: #10b981;
+        --primary-green-dark: #059669;
+        --primary-green-light: #d1fae5;
+        --accent-blue: #3b82f6;
+        --accent-purple: #8b5cf6;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --bg-page: #f8fafc;
+        --bg-card: #ffffff;
+        --bg-section: #f7f8fa;
+        --border-color: #e2e8f0;
+        --border-light: #f1f5f9;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 20px;
+        --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ========================================
+               PDF/WEB CONTAINER LAYOUT
+               ======================================== */
+    .pdfViewContainer {
+        background: linear-gradient(145deg, #e2e8f0, #f1f5f9);
+        overflow: hidden;
+        border-radius: 0.25rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .well.form-box {
+        background: #ebedef !important;
+        border-bottom: 1px solid var(--border-light);
+        border-radius: 0 !important;
+        padding: 0.75rem 1.5rem !important;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+        .well.form-box h4 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+    #page-container {
+        padding: 1rem;
+        background: var(--bg-page);
+    }
+
+    /* ========================================
+               CONFIG PANEL
+               ======================================== */
+    .configurationContainer {
+        min-width: 300px;
+        max-width: 375px;
+    }
+
+        .configurationContainer > .d-flex {
+            background: var(--bg-card);
+            overflow: hidden;
+            border: 1px solid #ccc;
+            border-radius: 0.25rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+    /* ========================================
+               STEPPER
+               ======================================== */
+    .stepper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.66rem 1rem;
+    }
+
+        .stepper .step {
+            display: flex;
+            align-items: center;
+        }
+
+        .stepper .circle {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-muted);
+            background: linear-gradient(145deg, #e2e8f0, #f1f5f9);
+            border-radius: 50%;
+            transition: all var(--transition-smooth);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+            .stepper .circle[style*="#acc43d"],
+            .stepper .circle.active {
+                background: var(--primary-green-dark) !important;
+                color: white !important;
+                border-color: var(--primary-green);
+            }
+
+    .step-line {
+        flex: 1;
+        height: 4px;
+        background: #e2e8f0;
+        transition: background var(--transition-smooth);
+    }
+
+        .step-line.active {
+            background: linear-gradient(90deg, var(--primary-green), var(--primary-green-dark));
+        }
+
+    /* ========================================
+               STEP PANELS
+               ======================================== */
+    .card#docConfig,
+    .card#roles,
+    .card#rolesconfiguraton {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent;
+        padding: 0.5rem !important;
+    }
+
+        .card#docConfig h4,
+        .card#roles h4,
+        .card#rolesconfiguraton h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0F172A;
+            text-align: center;
+            padding: 0.75rem 0 1rem;
+            border-bottom: 1px solid #E5E7EB;
+            margin-bottom: 1.25rem;
+        }
+
+    /* ========================================
+               FORM CONTROLS
+               ======================================== */
+    .form-group.row {
+        margin-bottom: 1rem;
+    }
+
+    .col-form-label {
+        font-size: 0.875rem !important;
+        font-weight: 600 !important;
+        color: var(--text-primary);
+    }
+
+    .form-control {
+        padding: 0.75rem 1rem;
+        font-size: 0.9375rem;
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        transition: all var(--transition-base);
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #e2e8f0;
+            box-shadow: none;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+    /* ========================================
+               TOGGLE SWITCH
+               ======================================== */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 28px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #cbd5e1;
+        transition: var(--transition-smooth);
+        border-radius: 28px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: var(--transition-smooth);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+    input:checked + .slider {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+    input:focus + .slider {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+
+    /* ========================================
+               ROLE CARDS
+               ======================================== */
+    .role-card {
+        background: var(--bg-card) !important;
+        border: 1.5px solid var(--border-color) !important;
+        border-radius: var(--radius-md) !important;
+        margin-bottom: 0.75rem;
+        box-shadow: var(--shadow-sm) !important;
+        transition: all var(--transition-base);
+    }
+
+
+
+        .role-card .card-body {
+            padding: 0.75rem !important;
+        }
+
+        .role-card textarea {
+            resize: none;
+            min-height: 60px;
+        }
+
+    /* ========================================
+               BUTTONS
+               ======================================== */
+    .btn-primary {
+        background: var(--primary-green-dark);
+        border: none !important;
+        color: white !important;
+        padding: 0.5rem 1rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        border-radius: 0.5rem !important;
+        transition: all var(--transition-smooth);
+        gap: 0.5rem;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            background-color: var(--primary-green-dark);
+        }
+
+    .btn-secondary {
+        background: var(--bg-card) !important;
+        border: 1.5px solid var(--border-color) !important;
+        color: var(--text-primary) !important;
+        padding: 0.625rem 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: var(--radius-md) !important;
+        transition: all var(--transition-base);
+    }
+
+        .btn-secondary:hover {
+            background: var(--bg-section) !important;
+            border-color: var(--primary-green) !important;
+        }
+
+    #addRoleBtn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.75rem auto;
+    }
+
+    /* ========================================
+               TOOLBAR BUTTONS
+               ======================================== */
+    #toolbar {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 0.625rem;
+        padding: 0.75rem;
+        width: 100%;
+    }
+
+        #toolbar button {
+            align-items: center;
+            padding: 0.75rem 1rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            background: #FFFFFF;
+            border: 1.5px solid #D5D5D5 !important;
+            border-radius: var(--radius-md);
+            color: #626262;
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+            white-space: nowrap;
+            text-align: left;
+        }
+
+            #toolbar button:hover {
+                background: #686a6b59;
+                transform: translateY(-2px);
+            }
+
+            #toolbar button i {
+                font-size: 0.875rem;
+            }
+
+    /* ========================================
+               RECOMMENDED FIELDS
+               ======================================== */
+    #recommendedfields {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        width: 100%;
+    }
+
+        #recommendedfields button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            background: #FFFFFF;
+            border: 1px solid #D5D5D5;
+            border-radius: 999px;
+            color: #626262;
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+            #recommendedfields button:hover {
+                background: #686a6b59;
+            }
+
+    /* ========================================
+               SELECT DROPDOWN
+               ======================================== */
+    #ClientSelect {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all var(--transition-base);
+    }
+
+        #ClientSelect:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+    /* ========================================
+               DRAGGABLE ELEMENTS
+               ======================================== */
+    .draggable {
+        position: absolute;
+        padding: 0.48%;
+        cursor: move;
+        background: transparent;
+        border: 2px dashed transparent;
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-fast);
+    }
+
+    .input-field {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-sizing: border-box;
+        background-color: #d8d7d78a;
+        border: 2px solid black;
+        padding: 8px 12px;
+        min-height: 40px;
+        font-size: 0.875rem;
+        color: #636161;
+    }
+
+        .input-field.has-value {
+            align-items: unset;
+            justify-content: unset;
+            background-color: transparent;
+            color: var(--text-primary);
+            outline: none;
+            text-align: left;
+        }
+
+    .resize-handle {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        background-color: transparent;
+        z-index: 1000;
+        border-radius: 2px;
+    }
+
+        .resize-handle:hover {
+            background-color: black;
+        }
+
+    .bottom-right {
+        cursor: nwse-resize;
+        bottom: -7px;
+        right: -7px;
+    }
+
+    .edit-icon {
+        position: absolute;
+        top: -12px;
+        right: -12px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--bg-card);
+        box-shadow: var(--shadow-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-secondary);
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+    }
+
+        .edit-icon:hover {
+            color: var(--primary-green);
+        }
+
+    .draggable:hover .edit-icon {
+        opacity: 1;
+    }
+
+    .image-container {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: var(--text-muted);
+        border: 2px dashed var(--primary-green);
+        border-radius: var(--radius-md);
+        position: relative;
+        width: 150px;
+        height: 170px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    /* ========================================
+               MODALS
+               ======================================== */
+    .modal-content {
+        border: none;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: #ebedef;
+        border-bottom: 1px solid var(--border-light);
+        padding: 1.25rem 1.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        background: var(--bg-section);
+        border-top: 1px solid var(--border-light);
+        padding: 1rem 1.5rem;
+        gap: 12px;
+    }
+
+        .modal-footer .btn {
+            border-radius: var(--radius-md);
+            padding: 10px 20px;
+            font-weight: 500;
+        }
+
+        .modal-footer .btn-primary {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+            border: none;
+        }
+
+        .modal-footer .btn-secondary {
+            background: var(--bg-card);
+            border: 1.5px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+    /* ========================================
+               RESPONSIVE
+               ======================================== */
+    @@media (max-width: 992px) {
+        .configurationContainer {
+            min-width: 100%;
+            max-width: 100%;
+            margin-top: 1rem;
+        }
+
+        #toolbar {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .stepper .circle {
+            width: 38px;
+            height: 38px;
+            font-size: 0.875rem;
+        }
+
+        .step-line {
+            width: 28px;
+        }
+
+        .well.form-box h4 {
+            font-size: 1rem;
+        }
+
+        #toolbar {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .btn-primary {
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+        }
+    }
+
+    .form-control[readonly] {
+        background-color: #e9ecef;
+    }
+
+    .editable-text {
+        min-height: 10px;
+        width: 100px;
+        cursor: text;
+    }
+
+    /* Enhanced responsive styles */
+    @@media (max-width: 768px) {
+        .pdfViewContainer {
+            flex: 1 !important;
+            min-height: 50vh;
+        }
+
+        .configurationContainer {
+            order: -1;
+            max-height: 40vh;
+            overflow-y: auto;
+        }
+
+        .well.form-box {
+            padding: 0.75rem 1rem !important;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: stretch !important;
+        }
+
+            .well.form-box h4 {
+                text-align: center;
+                margin-left: 0 !important;
+            }
+
+            .well.form-box button {
+                width: 100%;
+                margin-right: 0 !important;
+            }
+
+        .stepper {
+            padding: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #toolbar {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.375rem;
+            padding: 0.5rem;
+        }
+
+            #toolbar button {
+                padding: 0.5rem;
+                font-size: 0.75rem;
+            }
+
+        .role-card .card-body {
+            padding: 0.5rem !important;
+        }
+
+        .card#docConfig,
+        .card#roles,
+        .card#rolesconfiguraton {
+            padding: 0.375rem !important;
+        }
+
+            .card#docConfig h4,
+            .card#roles h4,
+            .card#rolesconfiguraton h4 {
+                font-size: 0.875rem;
+                padding: 0.5rem 0 0.75rem;
+            }
+    }
+
+    @@media (max-width: 480px) {
+        .stepper .circle {
+            width: 32px;
+            height: 32px;
+            font-size: 0.75rem;
+        }
+
+        .step-line {
+            width: 20px;
+            height: 3px;
+        }
+
+        #toolbar {
+            grid-template-columns: 1fr;
+        }
+
+        #page-container {
+            padding: 0.5rem;
+        }
+    }
+
+    .tooltip-inner {
+        background-color: #059669;
+        color: #ffffff;
+    }
+
+    /* TOP */
+    .bs-tooltip-top .arrow::before {
+        border-top-color: #059669 !important;
+    }
+
+    /* BOTTOM */
+    .bs-tooltip-bottom .arrow::before {
+        border-bottom-color: #059669 !important;
+    }
+
+    /* LEFT */
+    .bs-tooltip-left .arrow::before {
+        border-left-color: #059669 !important;
+    }
+
+    /* RIGHT */
+    .bs-tooltip-right .arrow::before {
+        border-right-color: #059669 !important;
+    }
+
+
+    .modal-dialog{
+        margin: 0.5rem auto;
+    }
+</style>
+
+<div class="row m-0 p-2">
+    <div class="col-md-12 p-0">
+        <div class="card background-image" style="height:100%;border-radius:0px;border:none">
+
+
+
+            <div class="card-body p-0">
+                <div class="row m-0" style="display: flex;height:97vh;gap:1rem">
+                    <div class="pdfViewContainer  mt-3  mt-lg-0 h-100" style="border: 1px solid #ccc; flex: 2;padding:0;">
+
+                        <div class="well form-box" style='display:flex; flex-flow:wrap;justify-content:space-between;width:100%;background:#ebedef;border-radius:3px;'>
+                            <h4 style="margin-left:2%;margin-top:auto;margin-bottom:auto"><b>New Form</b></h4>
+                            <button id="saveFormBtn" class="btn btn-primary" style="height: 65%; margin-top: auto; margin-bottom: auto; margin-right: 2%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa-regular fa-floppy-disk"></i>Save Form
+                            </button>
+
+
+                        </div>
+
+
+                        <div style="overflow-y:auto;overflow-x:hidden; height:92%" id="page-container">
+                        </div>
+
+
+
+
+
+
+
+                    </div>
+                    <div class="configurationContainer  p-0   h-100 pl-0 pl-lg-3 ">
+                        <div class="d-flex pr-0" style="box-shadow:0px 0px 2px 0 rgb(0 0 0 / 5%);flex-direction:column;height:100%;">
+                            <div class="form-group row mx-auto" style="background:#ebedef;width:100%;justify-content:center;margin-bottom:0px">
+                                <div class="stepper">
+                                    <!-- Step 1 -->
+                                    <div class="step">
+                                        <div class="circle" id="circle1"
+                                             data-bs-toggle="tooltip"
+                                             data-bs-placement="bottom"
+                                             title="Step 1: <br> Start your journey here with Form Configuration."
+                                             data-bs-html="true"
+                                             style="background-color:#acc43d">
+                                            1
+                                        </div>
+                                    </div>
+                                    <div class="step-line" id="stepline1"></div>
+
+                                    <!-- Step 2 -->
+                                    <div class="step">
+                                        <div class="circle" id="circle2"
+                                             data-bs-toggle="tooltip"
+                                             data-bs-placement="bottom"
+                                             title="Step 2: <br> Define and add roles for form  in this step."
+                                             data-bs-html="true">
+                                            2
+                                        </div>
+
+
+                                    </div>
+                                    <div class="step-line" id="stepline2"></div>
+
+                                    <!-- Step 3 -->
+                                    <div class="step">
+                                        <div class="circle" id="circle3"
+                                             data-bs-toggle="tooltip"
+                                             data-bs-placement="bottom"
+                                             title="Step 3: <br> Create role-specific fields on the form in this step."
+                                             data-bs-html="true">
+                                            3
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="card p-0 pb-5" id="docConfig" style="display:block; overflow-y:auto;margin:initial;border-radius:0px;box-shadow:none;height:92%">
+
+                                <div class="form-group row mx-0" style="padding-left:6%">
+                                    <h4 class="col-sm-12 col-form-label mt-0 mb-0 pl-0" style="text-align:center">Step 1 - Form Configuration</h4>
+                                </div>
+
+                                <div class="form-group row mx-0 pl-3 align-items-center">
+                                    <label class="col-form-label p-0" style="font-size:15px;font-weight:100;white-space:nowrap;margin-right:3px">Form &nbsp;Name:<span style="color:red">*</span></label>
+                                    <div class="col" style="padding-left:0">
+                                        <input type="text" class="form-control" placeholder="Enter form name" name="name" id="tempName" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group row mx-0 align-items-center pl-3">
+                                    <label class="col-form-label p-0" style="font-size:15px;font-weight:100;white-space:nowrap">Form Validity:<span style="color:red">*</span></label>
+                                    <div class="col" style="padding-left:0">
+                                        <input type="number" class="form-control" name="daysToComplete" id="daysToComplete" min="1" max="5" placeholder="Enter days(1-5)" />
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group row mx-0 align-items-center pl-3" id="noSignRequiredInput" style="display:none">
+                                    <label class="col-sm-4 col-form-label p-0" style="font-size:15px;font-weight:100;">No. Sign Required:</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" name="NoOfSign" id="NoOfSign" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group row mx-0 pl-3 d-none">
+                                    <label class="col-sm-7 col-form-label pl-0" style="font-size:15px;font-weight:100;">Signature Templates:</label>
+                                    <div class="col-sm-12 pl-0" style="display:flex;">
+                                        <select name="TemplateName" id="templateSelect" class="form-control" style="width: 100%;">
+                                            <option>Choose Template</option>
+                                            @foreach (var item in Model.Templates.Where(x => x.Type.ToLower() == "sign"))
+                                            {
+                                                <option data-preview="@item.SamplePreview" value="@item.Id" id="SignatureSelect">@item.DisplayName</option>
+                                            }
+                                        </select>
+
+                                        <div style="margin-left: auto; display:none;" id="innerModel">
+                                            <img src='@Url.Content("~/assets/images/eyeicon.png")' asp-append-version="true" style="max-width: 25px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row mx-0 pl-3" style="display:none">
+                                    <label class="col-sm-7 col-form-label pl-0" style="font-size:15px;font-weight:100;">Eseal Templates:</label>
+                                    <div class="col-sm-12 pl-0" style="display:flex; align-items: center;">
+                                        <select name="TemplateName" id="EsealtemplateSelect" class="form-control pl-0" style="width: 100%;">
+                                            <option>Choose Template</option>
+                                            @foreach (var item in Model.Templates.Where(x => x.Type.ToLower() == "eseal"))
+                                            {
+                                                <option data-preview="@item.SamplePreview" value="@item.Id" id="EsealSelect">@item.DisplayName</option>
+                                            }
+                                        </select>
+
+                                        <div style="margin-left: auto; display:none;" id="EsealInnerModel">
+                                            <img src='@Url.Content("~/assets/images/eyeicon.png")' asp-append-version="true" style="max-width: 25px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="display:none" class="mt-4 form-check pl-3 pr-0 pt-0 pb-0">
+                                    <label class="form-check-label" style="display: flex; align-items: center;">
+                                        <label class="switch">
+                                            <input type="checkbox" name="allSignRequired" id="allSignRequiredCheckbox" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span style="font-size: 15px; margin-left: 10px;">All Signatures Required</span>
+                                    </label>
+                                </div>
+
+
+                                <div style="display:none" class="mt-4 form-check pl-3 pr-0 pt-0 pb-0">
+                                    <label class="form-check-label" style="display:flex; align-items: center;">
+                                        <label class="switch">
+                                            <input type="checkbox" name="sequentialSign" id="sequentialSign" checked>
+                                            <span class="slider"></span>
+                                        </label>&nbsp;&nbsp;
+                                        <span style="font-size: 15px;">Sequential Signing</span>
+                                    </label>
+                                </div>
+
+
+
+                                <div style="margin-top:20px;margin-bottom:20px;">
+
+                                    <button id="step1Next" class="btn btn-primary" style="height: 65%; margin-top: auto; margin-bottom: auto; margin-right: 2%; display: flex; align-items: center; justify-content: center;float:right;width:26%;max-width:100px;border:none">
+                                        Next<i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+
+
+
+                            <div class="card p-0 pb-5" id="roles" style="display:none;overflow-y:auto;margin:initial;border-top-left-radius:unset;width:100%;box-shadow:none;height:92%">
+
+                                <div class="form-group row mx-0" style="padding-left:6%">
+                                    <h4 class="col-sm-12 col-form-label mt-0 mb-0 pl-0" style="text-align:center">Step 2 - Roles</h4>
+                                </div>
+                                <div style="width:100%;padding:0px;margin:0px" id="rolesdiv">
+                                    <div class="role-card odd card pl-0" style="padding: 0px;width:95%;margin-left:auto;margin-right:auto">
+                                        <div class="card-body" style="padding: 5px;">
+                                            <div class="form-group">
+                                                <div class="d-flex align-items-center mb-0">
+                                                    <label for="input_1" style="font-size:11.5px;padding-right:0.1rem;white-space:nowrap" class="col-form-label  pl-0">Role Name<span class="text-danger">*</span>:</label>
+                                                    <input type="text" value="" id="input_1" class="form-control" />
+                                                    @*    <span style="cursor: pointer;" onclick="removeRoleCard(1)">
+                                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                                    </span> *@
+                                                </div>
+                                            </div>
+
+                                            <div style="display:none" class="form-group mt-0 mb-0">
+                                                <div class="d-flex align-items-center">
+                                                    <label for="inputEmail_0" style="font-size:11.5px" class="col-form-label col-sm-3 pl-0">Email:</label>
+                                                    <input type="text" id="inputEmail_0" class="form-control" />
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group mt-0 mb-0">
+                                                <label for="inputDesc_0" style="font-size:11.5px" class="col-form-label">Description:</label>
+                                                <textarea id="inputDesc_0" class="form-control" style="height: auto;" readonly>This is the only role who can fill the form and Sign</textarea>
+                                            </div>
+                                            <button style="display:none" class="btn btn-danger float-right mt-1" type="button">Delete</button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <button id="addRoleBtn" type="button" class="btn btn-secondary ml-2" style="background-color: white; color: black;">
+                                    <img src='@Url.Content("~/assets/images/useradd.svg")' asp-append-version="true" width="15px" />
+                                    Add Approver Role
+                                </button>
+
+
+                                <div style="margin-top:20px;margin-bottom:20px;">
+                                    <button id="step2Prev" class="btn btn-primary" style="height: 65%; margin-top: auto; margin-bottom: 1%; margin-left: 2%; display: flex; align-items: center; justify-content: center;float:left;border:none">
+                                        <i class="fa-solid fa-arrow-left"></i>Previous
+                                    </button>
+                                    <button id="step2Next" class="btn btn-primary" style="height: 65%; margin-top: auto; margin-bottom: 1%; margin-right: 2%; display: flex; align-items: center; justify-content: center;float:right;min-width:26%;border:none">
+                                        Next<i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+
+
+
+
+                            <div class="card p-0 pb-5" id="rolesconfiguraton" style="display:none;overflow-y:auto;margin:initial;border-top-left-radius:unset;width:100%;box-shadow:none;height:92%">
+
+
+                                <div class="form-group row mx-0" style="padding-left:6%">
+                                    <h4 class="col-sm-12 col-form-label mt-0 mb-0 pl-0" style="text-align:center">Step 3 - Roles Configuration</h4>
+                                </div>
+
+                                <div class="col-sm-12" style="display:flex;align-items:center;">
+                                    <select name="Client" id="ClientSelect" class="btn-primary.dropdown-toggle" style="border-radius: 4px; padding: 6px; max-width: 100%; width:100%;">
+                                        <option style="display:none">Select a role</option>
+
+                                    </select>
+                                </div>
+                                <div id="singlerole" class="m-0 p-0">
+                                    <div class="form-group row mx-0 mb-0">
+                                        <button class="col-sm-10 col-form-label p-0"
+                                                style="white-space:nowrap;color:unset;border: none;text-align: left;margin-left: 5%;outline: none; background: none; margin-top: 5%;font-size: 14px;">
+                                            Standard Fields :
+                                        </button>
+
+                                        <div id="toolbar">
+
+                                            <button id="headerid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/Header.svg")' asp-append-version="true" width="15px" draggable="false" />&nbsp;Header
+                                                </span>
+                                            </button>
+
+                                            <button id="textid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/Header.svg")' asp-append-version="true" width="15px" class="button-icon" draggable="false" />&nbsp;Paragraph
+                                                </span>
+                                            </button>
+                                            <button id="fieldid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/text.svg")' asp-append-version="true" width="15px" draggable="false" />&nbsp;Text Field
+                                                </span>
+                                            </button>
+
+                                            <button id="onlytextid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/inputfield.svg")' asp-append-version="true" width="15px" draggable="false" />&nbsp;Input Field
+                                                </span>
+                                            </button>
+
+                                            <button id="textareaid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/textarea.svg")' asp-append-version="true" width="15px" draggable="false" />&nbsp;TextArea
+                                                </span>
+                                            </button>
+
+                                            <button id="radioid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/radio.svg")' asp-append-version="true" width="15px" draggable="false">&nbsp;Radio
+                                                </span>
+                                            </button>
+
+                                            <button id="checkboxid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/checkbox.svg")' asp-append-version="true" width="15px" draggable="false" />&nbsp;Checkbox
+                                                </span>
+                                            </button>
+                                            <button id="selectid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/select.svg")' asp-append-version="true" width="15px" draggable="false" />&nbsp;Dropdown
+                                                </span>
+                                            </button>
+
+
+
+                                            <button id="signatureid" draggable="true">
+                                                <span class="button-content">
+                                                    <i class="fa-solid fa-signature"></i>&nbsp;Signature
+                                                </span>
+                                            </button>
+
+                                            <button id="esealid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/eseal.svg")' asp-append-version="true" width="15px" draggable="false" />&nbsp;Eseal
+                                                </span>
+                                            </button>
+
+                                            <button id="tableid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/table.svg")' width="15px" asp-append-version="true" draggable="false" />&nbsp;Table
+                                                </span>
+                                            </button>
+
+                                            <button style="display:none" id="buttonid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/button.svg")' asp-append-version="true" width="15px" draggable="false" />&nbsp;Button
+                                                </span>
+                                            </button>
+
+                                            <button id="imageid" draggable="true">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/image.svg")' asp-append-version="true" width="15px" draggable="false" />&nbsp;Image
+                                                </span>
+                                            </button>
+
+                                            <button id="add-page-btn">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/addpage.svg")' asp-append-version="true" width="15px" />&nbsp;Add Page
+                                                </span>
+                                            </button>
+
+                                            <button id="delete-page-btn">
+                                                <span class="button-content">
+                                                    <img src='@Url.Content("~/assets/images/deletepage.svg")' asp-append-version="true" width="15px" />&nbsp;Delete Page
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row mx-0 mb-0">
+                                        <h5 class="col-sm-10 col-form-label" style="white-space:nowrap;color:unset;margin-top:0px">Auto-Populate Fields :</h5>
+                                        <div id="recommendedfields">
+                                            <button id="rfullname" draggable="true">Full Name</button>
+                                            <button id="rgender" draggable="true">Gender</button>
+                                            <button id="remail" draggable="true">Email</button>
+                                            <button id="rphone" draggable="true">Phone Number</button>
+                                            <button id="rdate" draggable="true">Date of Birth</button>
+                                            <button id="rfname" draggable="true">First Name</button>
+                                            <button id="rLastName" draggable="true">Last Name</button>
+                                            <button id="rNation" draggable="true">Nationality</button>
+                                            <button id="rSelfie" draggable="true">Profile Picture</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="secondrole" class="m-0 p-0" style="display:none">
+                                    <div class="form-group row mx-0 mb-0">
+                                        <button class="col-sm-10 col-form-label p-0"
+                                                style="white-space:nowrap;color:unset;border: none;text-align: left;margin-left: 5%;outline: none; background: none; margin-top: 5%;font-size: 14px;">
+                                            Standard Fields :
+                                        </button>
+
+                                        <button style="padding:5px;height:35px;margin-left: 5%;margin-right:1%" id="signatureid1" draggable="true">
+                                            <span class="button-content">
+                                                <img src='@Url.Content("~/assets/images/signature.svg")' asp-append-version="true" width="15px" draggable="false" />&nbsp;Signature
+                                            </span>
+                                        </button>
+
+                                        <button style="padding:5px;height:35px;" id="esealid1" draggable="true">
+                                            <span class="button-content">
+                                                <img src='@Url.Content("~/assets/images/eseal.svg")' asp-append-version="true" width="15px" draggable="false" />&nbsp;Eseal
+                                            </span>
+                                        </button>
+
+                                    </div>
+
+
+
+
+                                </div>
+
+
+
+                                <div style="margin-top:20px; height:13%;margin-bottom:15px;">
+
+                                    <button id="step3Prev" class="btn btn-primary" style="height: 65%; margin-top: auto; margin-bottom: 1%; margin-left: 2%; display: flex; align-items: center; justify-content: center;float:left;border:none">
+                                        <i class="fa-solid fa-arrow-left"></i>Previous
+                                    </button>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+
+
+        </div>
+    </div>
+
+</>
+
+    <div class="modal" tabindex="-1" role="dialog" id="paragraphEditModal">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex;font-weight: bold;">
+                        Edit Paragraph Field
+                    </div>
+                    <div>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="paragraphFontFamily">Font Family:</label>
+                                <select id="paragraphFontFamily" class="form-control">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Courier New">Courier New</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="paragraphFontSize">Font Size:</label>
+                                <input type="text" id="paragraphFontSize" class="form-control" placeholder="e.g., 16px">
+                            </div>
+                            <div class="form-group">
+                                <label for="paragraphTextAlign">Text Alignment:</label>
+                                <select id="paragraphTextAlign" class="form-control">
+                                    <option value="left">Left</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">Right</option>
+
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Font Style:</label>
+                                <div>
+                                    <button type="button" id="paragraphBoldButton" class="btn btn-outline-secondary btn-sm mr-2">
+                                        <b>B</b>
+                                    </button>
+                                    <button type="button" id="paragraphItalicButton" class="btn btn-outline-secondary btn-sm">
+                                        <i>I</i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Preview:</label>
+                            <div id="paragraphPreviewContainer" style="border: 1px solid #ccc; padding: 10px;">
+                                <p id="paragraphPreview">This is how your paragraph will look.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveParagraphButton">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="editHeaderModal" tabindex="-1" role="dialog" aria-labelledby="editHeaderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex;font-weight: bold;">
+                        Edit Header Field
+                    </div>
+                    <div>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="headerTagSelect">Header Tag</label>
+                                <select class="form-control" id="headerTagSelect">
+                                    <option value="h1">H1</option>
+                                    <option value="h2">H2</option>
+                                    <option value="h3">H3</option>
+                                    <option value="h4">H4</option>
+                                    <option value="h5">H5</option>
+                                    <option value="h6">H6</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="headerAlignmentSelect">Alignment</label>
+                                <select class="form-control" id="headerAlignmentSelect">
+                                    <option value="left">Left</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">Right</option>
+                                </select>
+                            </div>
+
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Preview</h5>
+                            <div id="headerPreview" style="border: 1px solid #ddd; padding: 10px;">
+                                <h1 id="previewHeader">Your Header</h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deleteheaderblock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="saveHeaderData">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editTableModal" tabindex="-1" role="dialog" aria-labelledby="editTableModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex;font-weight: bold;">
+                        Edit Table Field
+                    </div>
+                    <div>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                </div>
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="fieldNameInput">Field Name</label>
+                                <input type="text" class="form-control" id="fieldNameInput" />
+                                <span id="labelTableError" class="text-danger d-none">Dublicate Field name</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="tableRowsInput">Number of Rows</label>
+                                <input type="number" class="form-control" id="tableRowsInput" min="1" max="15" />
+                            </div>
+                            <div class="form-group">
+                                <label for="tableColsInput">Number of Columns</label>
+                                <input type="number" class="form-control" id="tableColsInput" min="1" />
+                            </div>
+                            <div class="form-group">
+                                <label for="fontFamilySelect">Font Family</label>
+                                <select class="form-control" id="fontFamilySelect">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Verdana">Verdana</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fontSizeInput">Font Size</label>
+                                <input type="text" class="form-control" id="fontSizeInput" min="1" />
+                            </div>
+                            <div class="form-group">
+                                <label>Font Style:</label>
+                                <button id="tableboldButton"
+                                        class="btn btn-outline-secondary btn-sm mr-2">
+                                    <b>B</b>
+                                </button>
+                                <button id="tableitalicButton"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <i>I</i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <span style="font-size:16px;font-weight:bold">Preview:</span>
+                            <div id="tablePreview"></div>
+                            <span style="font-size: 15px;margin-top:3%;display:inline-block">Mandatory</span>
+                            &nbsp;&nbsp;
+                            <label class="switch">
+                                <input type="checkbox" id="mandatoryCheckboxTable">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deletetableblock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="saveTableData">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <div class="modal" id="editSelectModal" tabindex="-1" aria-labelledby="editSelectModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex;font-weight: bold;">
+                        Edit Dropdown Field
+                    </div>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="selectfieldName">Field Name:</label>
+                                <input type="text" class="form-control" id="selectfieldName"
+                                       placeholder="Enter field Name">
+                                <span id="labelSelectError" class="text-danger d-none">Dublicate field name</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="selectLabelTextInput">Label Text</label>
+                                <input type="text" class="form-control" id="selectLabelTextInput"
+                                       placeholder="Enter label text">
+
+                            </div>
+                            <div class="form-group">
+                                <label for="selectLabelPositionSelect">Label Position</label>
+                                <select class="form-control mb-2" id="selectLabelPositionSelect">
+                                    <option value="left">Left</option>
+                                    <option value="top">Top</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="selectLabelFamilySelect">Font Family</label>
+                                <select class="form-control mb-2" id="selectLabelFamilySelect">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Verdana">Verdana</option>
+                                </select>
+                            </div>
+                            <!-- Add this input field in the modal's HTML structure -->
+                            <div class="form-group">
+                                <label for="selectWidthInput">Select Width (in %):</label>
+                                <input type="number" class="form-control" id="selectWidthInput"
+                                       min="1" max="100">
+                            </div>
+
+                            <div class="mb-2">
+                                <label>Label Font Style:</label>
+                                <button id="selectBoldButton"
+                                        class="btn btn-outline-secondary btn-sm mr-2">
+                                    <b>B</b>
+                                </button>
+                                <button id="selectItalicButton"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <i>I</i>
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label for="selectLabelFontSize">Font Size</label>
+                                <input type="text" class="form-control" id="selectLabelFontSize"
+                                       placeholder="e.g., 16px">
+                            </div>
+                            <div class="form-group">
+                                <label for="selectOptionsContainer">Options</label>
+                                <div id="selectOptionsContainer"></div>
+                                <input type="text" class="form-control" id="selectNewOptionInput"
+                                       placeholder="New Option">
+                                <button type="button" class="btn btn-primary mt-2" id="selectAddOptionButton">
+                                    Add
+                                    Option
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label for="optionFamilySelect">Option Font Family</label>
+                                <select class="form-control mb-2" id="optionFamilySelect">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Verdana">Verdana</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label>Option Font Style:</label>
+                                <button id="optionBoldButton"
+                                        class="btn btn-outline-secondary btn-sm mr-2">
+                                    <b>B</b>
+                                </button>
+                                <button id="optionItalicButton"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <i>I</i>
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label for="optionFontSize">Option Font Size</label>
+                                <input type="text" class="form-control" id="optionFontSize" placeholder="e.g., 14px">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <span style="font-size:16px;font-weight:bold">Preview:</span>
+                            <div id="selectPreviewContainer" style="border: 1px solid #ccc; padding: 10px;">
+                                <!-- Preview will be displayed here -->
+
+                            </div>
+                            <span style="font-size: 15px;margin-top:3%;display:inline-block">Mandatory</span>
+                            &nbsp;&nbsp;
+                            <label class="switch">
+                                <input type="checkbox" id="mandatoryCheckboxSelect">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deleteselectblock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="selectSaveButton">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="modal" tabindex="-1" role="dialog" id="editInputModal">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex;font-weight: bold;">
+                        Edit Text Field
+                    </div>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="labelfieldName">Field Name:</label>
+                                <input type="text" id="labelfieldName" class="form-control"
+                                       placeholder="Enter field Name">
+                                <span id="labelInputError" class="text-danger d-none">Dublicate field name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="labelTextInput">Label Text:</label>
+                                <input type="text" id="labelTextInput" class="form-control"
+                                       placeholder="Enter label text">
+                            </div>
+                            <label>Label Position:</label>
+                            <select id="labelPositionSelect" class="form-control mb-2">
+                                <option value="left">Left</option>
+                                <option value="top">Top</option>
+                            </select>
+                            <label>Label font</label>
+                            <select id="labelfamilyselect" class="form-control mb-2">
+                                <option value="Arial">Arial</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Courier New">Courier New</option>
+                            </select>
+
+                            <div class="mb-2">
+                                <label>Label Font Style:</label>
+                                <button id="inputboldButton"
+                                        class="btn btn-outline-secondary btn-sm mr-2">
+                                    <b>B</b>
+                                </button>
+                                <button id="inputitalicButton"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <i>I</i>
+                                </button>
+                            </div>
+                            <label class="d-none">Label Width:</label>
+                            <input type="text" id="textWidth" class="form-control mb-2 d-none"
+                                   placeholder="e.g., 50%, 200px">
+                            <label>Label Font Size:</label>
+                            <input type="text" id="textFontSize" class="form-control mb-2" placeholder="e.g., 16px">
+                            <label class="d-none">Label Placeholder:</label>
+                            <input type="text" id="textPlaceholder" class="form-control mb-2 d-none"
+                                   placeholder="Enter placeholder">
+                            <label for="inputWidth">Input Width (in %):</label>
+                            <input type="number" id="inputWidth" class="form-control mb-2" min="1" max="100">
+                            <label>Input Font Size:</label>
+                            <input type="text" id="inputFontSize" class="form-control mb-2" placeholder="e.g., 16px">
+                            <label>Input font</label>
+                            <select id="inputfamilyselect" class="form-control mb-2">
+                                <option value="Arial">Arial</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Courier New">Courier New</option>
+                            </select>
+                            <label>Input Placeholder:</label>
+                            <input type="text" id="inputPlaceholder" class="form-control mb-2"
+                                   placeholder="Enter placeholder">
+                        </div>
+                        <div class="col-md-6">
+                            <span style="font-size:16px;font-weight:bold">Preview:</span>
+                            <div id="previewContainer" style="border: 1px solid #ccc; padding: 10px;">
+                                <!-- Preview will be displayed here -->
+                            </div>
+
+                            <span style="font-size: 15px;margin-top:3%;display:inline-block">Mandatory</span>
+                            &nbsp;&nbsp;
+                            <label class="switch">
+                                <input type="checkbox" id="mandatoryCheckbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deleteinputblock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="saveLabelPositionButton">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="editTextAreaModal">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex;font-weight: bold;">
+                        Edit TextArea Field
+                    </div>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="tafieldName">Field Name:</label>
+                                <input type="text" id="tafieldName" class="form-control"
+                                       placeholder="Enter field name">
+                                <span id="labelTaError" class="text-danger d-none">Dublicate field name</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="talabelTextInput">Label Text:</label>
+                                <input type="text" id="talabelTextInput" class="form-control"
+                                       placeholder="Enter label text">
+
+                            </div>
+                            <label class="d-none">Label Position:</label>
+                            <select id="talabelPositionSelect" class="form-control mb-2 d-none">
+                                <option value="left">Left</option>
+                                <option value="top">Top</option>
+                            </select>
+                            <label>Label font</label>
+                            <select id="talabelfamilyselect" class="form-control mb-2">
+                                <option value="Arial">Arial</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Courier New">Courier New</option>
+                            </select>
+
+                            <div class="mb-2">
+                                <label>Label Font Style:</label>
+                                <button id="taboldButton"
+                                        class="btn btn-outline-secondary btn-sm mr-2">
+                                    <b>B</b>
+                                </button>
+                                <button id="taitalicButton"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <i>I</i>
+                                </button>
+                            </div>
+                            <label class="d-none">Label Width:</label>
+                            <input type="text" id="tatextWidth" class="form-control mb-2 d-none"
+                                   placeholder="e.g., 50%, 200px">
+                            <label>Label Font Size:</label>
+                            <input type="text" id="tatextFontSize" class="form-control mb-2" placeholder="e.g., 16px">
+                            <label class="d-none">Label Placeholder:</label>
+                            <input type="text" id="tatextPlaceholder" class="form-control mb-2 d-none"
+                                   placeholder="Enter placeholder">
+                            <label>Input Width (in %):</label>
+                            <input type="number" id="taWidth" class="form-control mb-2" min="1" max="100">
+                            <label>Input Font Size:</label>
+                            <input type="text" id="taFontSize" class="form-control mb-2" placeholder="e.g., 16px">
+                            <label>Input font</label>
+                            <select id="tafamilyselect" class="form-control mb-2">
+                                <option value="Arial">Arial</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Courier New">Courier New</option>
+                            </select>
+                            <label>Input Placeholder:</label>
+                            <input type="text" id="taPlaceholder" class="form-control mb-2"
+                                   placeholder="Enter placeholder">
+                        </div>
+                        <div class="col-md-6">
+                            <span style="font-size:16px;font-weight:bold">Preview:</span>
+                            <div id="tapreviewContainer" style="border: 1px solid #ccc; padding: 10px;">
+                                <!-- Preview will be displayed here -->
+                            </div>
+                            <span style="font-size: 15px;margin-top:3%;display:inline-block">Mandatory</span>
+                            &nbsp;&nbsp;
+                            <label class="switch">
+                                <input type="checkbox" id="mandatoryCheckboxTextarea">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deletetextareablock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="tasaveLabelPositionButton">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Radio Edit Modal -->
+    <div class="modal fade" id="radioModal" tabindex="-1" aria-labelledby="radioModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex;font-weight: bold;">
+                        Edit Radio Field
+                    </div>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="radiofieldName">Field Name:</label>
+                                <input type="text" class="form-control" id="radiofieldName"
+                                       placeholder="Enter field name">
+                                <span id="labelRadioError" class="text-danger d-none">Dublicate field name</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="radioLabelInput">Label</label>
+                                <input type="text" class="form-control" id="radioLabelInput"
+                                       placeholder="Enter label text">
+
+                            </div>
+                            <label>Label Position:</label>
+                            <select id="radioLabelPositionSelect" class="form-control mb-2">
+                                <option value="left">Left</option>
+                                <option value="top">Top</option>
+                            </select>
+                            <label>Option Position:</label>
+                            <select id="radioPositionSelect" class="form-control mb-2">
+                                <option value="horizontal">Horizontal</option>
+                                <option value="vertical">Vertical</option>
+                            </select>
+                            <div class="form-group">
+                                <label for="radiolabelFamilySelect">Label Font Family</label>
+                                <select class="form-control mb-2" id="radiolabelFamilySelect">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Tahoma">Tahoma</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label>Label Font Style:</label>
+                                <button id="radioboldLabelButton"
+                                        class="btn btn-outline-secondary btn-sm mr-2">
+                                    <b>B</b>
+                                </button>
+                                <button id="radioitalicLabelButton"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <i>I</i>
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label for="radiolabelFontSizeInput">Label Font Size</label>
+                                <input type="text" class="form-control" id="radiolabelFontSizeInput"
+                                       placeholder="e.g., 16px">
+                            </div>
+                            <div class="form-group">
+                                <label for="radioOptions">Options</label>
+                                <div id="radioOptions"></div>
+                                <button type="button" class="btn btn-primary mt-2" id="addRadioOption">
+                                    Add
+                                    Option
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label for="radiooptionFamilySelect">Option Font Family</label>
+                                <select class="form-control mb-2" id="radiooptionFamilySelect">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Tahoma">Tahoma</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label>Option Font Style:</label>
+                                <button id="radioboldOptionButton"
+                                        class="btn btn-outline-secondary btn-sm mr-2">
+                                    <b>B</b>
+                                </button>
+                                <button id="radioitalicOptionButton"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <i>I</i>
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label for="radiooptionsFontSizeInput">Options Font Size</label>
+                                <input type="text" class="form-control" id="radiooptionsFontSizeInput"
+                                       placeholder="e.g., 14px">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <span style="font-size:16px;font-weight:bold">Preview:</span>
+                            <div id="radioPreview" style="border: 1px solid #ccc; padding: 10px;">
+                                <!-- Preview will be displayed here -->
+                            </div>
+                            <span style="font-size: 15px;margin-top:3%;display:inline-block">Mandatory</span>
+                            &nbsp;&nbsp;
+                            <label class="switch">
+                                <input type="checkbox" id="mandatoryCheckboxRadio">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deleteradioblock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="saveRadioBlock">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal HTML -->
+    <!-- Modal HTML -->
+    <div class="modal fade" id="checkboxModal" tabindex="-1" aria-labelledby="checkboxModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex;font-weight: bold;">
+                        Edit Checkbox Field
+                    </div>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="checkfieldName">Field Name:</label>
+                                <input type="text" class="form-control" id="checkfieldName"
+                                       placeholder="Enter field name">
+                                <span id="labelCheckError" class="text-danger d-none">Dublicate field name</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="checkboxLabelInput">Label</label>
+                                <input type="text" class="form-control" id="checkboxLabelInput"
+                                       placeholder="Enter label">
+
+                            </div>
+                            <label>Label Position:</label>
+                            <select id="checkLabelPositionSelect" class="form-control mb-2">
+                                <option value="left">Left</option>
+                                <option value="top">Top</option>
+                            </select>
+                            <label>Option Position:</label>
+                            <select id="checkPositionSelect" class="form-control mb-2">
+                                <option value="horizontal">Horizontal</option>
+                                <option value="vertical">Vertical</option>
+                            </select>
+                            <div class="form-group">
+                                <label for="checklabelFamilySelect">Label Font Family</label>
+                                <select class="form-control mb-2" id="checklabelFamilySelect">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Verdana">Verdana</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label>Label Font Style:</label>
+                                <button id="checkboldLabelButton"
+                                        class="btn btn-outline-secondary btn-sm mr-2">
+                                    <b>B</b>
+                                </button>
+                                <button id="checkitalicLabelButton"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <i>I</i>
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label for="checklabelFontSizeInput">Label Font Size</label>
+                                <input type="text" class="form-control" id="checklabelFontSizeInput"
+                                       placeholder="e.g., 16px">
+                            </div>
+                            <div class="form-group">
+                                <label for="checkboxOptions">Options</label>
+                                <div id="checkboxOptions"></div>
+                                <button type="button" class="btn btn-primary mt-2" id="addCheckboxOption">
+                                    Add
+                                    Option
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label for="checkoptionFamilySelect">Option Font Family</label>
+                                <select class="form-control mb-2" id="checkoptionFamilySelect">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Verdana">Verdana</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label>Option Font Style:</label>
+                                <button id="checkboldOptionButton"
+                                        class="btn btn-outline-secondary btn-sm mr-2">
+                                    <b>B</b>
+                                </button>
+                                <button id="checkitalicOptionButton"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <i>I</i>
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label for="checkoptionsFontSizeInput">Options Font Size</label>
+                                <input type="text" class="form-control" id="checkoptionsFontSizeInput"
+                                       placeholder="e.g., 14px">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <span style="font-size:16px;font-weight:bold">Preview:</span>
+                            <div id="checkboxPreview" style="border: 1px solid #ccc; padding: 10px;">
+                                <!-- Preview will be displayed here -->
+                            </div>
+                            <span style="font-size: 15px;margin-top:3%;display:inline-block">Mandatory</span>
+                            &nbsp;&nbsp;
+                            <label class="switch">
+                                <input type="checkbox" id="mandatoryCheckboxCheck">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deletecheckblock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="saveCheckboxBlock">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="editOnlyTextModal">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex;font-weight: bold;">
+                        Edit Input Field
+                    </div>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="inputFieldNameOnlyText">Field Name:</label>
+                                <input type="text" id="inputFieldNameOnlyText" class="form-control mb-2"
+                                       placeholder="Enter field name">
+                                <span id="labelTextError" class="text-danger d-none">Dublicate label name</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputWidthOnlyText">Input Width (in %):</label>
+                                <input type="number" id="inputWidthOnlyText" class="form-control mb-2"
+                                       min="1" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputFontSizeOnlyText">Input Font Size:</label>
+                                <input type="text" id="inputFontSizeOnlyText" class="form-control mb-2"
+                                       placeholder="e.g., 16px">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPlaceholderOnlyText">Input Placeholder:</label>
+                                <input type="text" id="inputPlaceholderOnlyText" class="form-control mb-2"
+                                       placeholder="Enter placeholder">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputFontFamilyOnlyText">Font Family:</label>
+                                <select id="inputFontFamilyOnlyText" class="form-control mb-2">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Courier New">Courier New</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Font Style:</label>
+                                <button id="inputFontStyleBoldOnlyText"
+                                        class="btn btn-outline-secondary btn-sm mr-2">
+                                    <b>B</b>
+                                </button>
+                                <button id="inputFontStyleItalicOnlyText"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <i>I</i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <span style="font-size:16px;font-weight:bold">Preview:</span>
+                            <div id="previewContainerOnlyText" style="border: 1px solid #ccc; padding: 10px;">
+                            </div>
+                            <span style="font-size: 15px;margin-top:3%;display:inline-block">Mandatory</span>
+                            &nbsp;&nbsp;
+                            <label class="switch">
+                                <input type="checkbox" id="mandatoryCheckboxOnlytext">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deleteonlytextblock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="saveButtonOnlyText">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal" tabindex="-1" role="dialog" id="editButtonModal">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex;font-weight: bold;">
+                        Edit Button Field
+                    </div>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="buttonText">Button Text:</label>
+                                <input type="text" id="buttonText" class="form-control" placeholder="Enter button text">
+                            </div>
+                            <div class="form-group">
+                                <label for="buttonWidth">Button Width:</label>
+                                <input type="text" id="buttonWidth" class="form-control" placeholder="e.g., 100px">
+                            </div>
+                            <div class="form-group">
+                                <label for="buttonFontSize">Button Font Size:</label>
+                                <input type="text" id="buttonFontSize" class="form-control" placeholder="e.g., 16px">
+                            </div>
+                            <div class="form-group">
+                                <label for="buttonFontFamily">Button Font Family:</label>
+                                <select id="buttonFontFamily" class="form-control">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Courier New">Courier New</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="buttonAction">Button Action:</label>
+                                <select id="buttonAction" class="form-control">
+                                    <option value="submit">Submit</option>
+                                    <option value="reset">Reset</option>
+
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="buttonBackgroundColor">Button Background Color:</label>
+                                <input type="color" id="buttonBackgroundColor" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="buttonBorderColor">Button Border Color:</label>
+                                <input type="color" id="buttonBorderColor" class="form-control">
+                            </div>
+                            <div class="mb-2">
+                                <label>Button Font Style:</label>
+                                <button id="buttonboldButton"
+                                        class="btn btn-outline-secondary btn-sm mr-2">
+                                    <b>B</b>
+                                </button>
+                                <button id="buttonitalicButton"
+                                        class="btn btn-outline-secondary btn-sm">
+                                    <i>I</i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <span style="font-size:16px;font-weight:bold">Preview:</span>
+                            <div id="buttonpreviewContainer" style="border: 1px solid #ccc; padding: 10px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deletebuttonblock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="saveButtonSettings">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editImageModal" tabindex="-1" role="dialog" aria-labelledby="editImageModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex;font-weight: bold;">
+                        Edit Image Field
+                    </div>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="imageFieldNameInput">Field Name</label>
+                                <input type="text" class="form-control" id="imageFieldNameInput" />
+                                <span id="labelImageError" class="text-danger d-none">Dublicate Field name</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="imageHeightInput">Height (in %):</label>
+
+                                <input type="number" class="form-control" id="imageHeightInput" min="15" max="100" />
+                                <span id="labelImageHeight" class="text-danger d-none">Height must be between 15 and 100.</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="imageWidthInput">Width (in %):</label>
+                                <input type="number" class="form-control" id="imageWidthInput" min="1" max="100" />
+                            </div>
+                            <div class="form-group">
+                                <label for="imagePlaceholderInput">Placeholder Text</label>
+                                <input type="text" class="form-control" id="imagePlaceholderInput" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="imageAlignmentSelect">Alignment</label>
+                                <select class="form-control" id="imageAlignmentSelect">
+                                    <option value="left">Left</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">Right</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <span style="font-size:16px;font-weight:bold">Preview:</span>
+                            <div id="imagePreview" style="border: 1px solid #ddd; padding: 10px;">
+                                <img id="previewImage" asp-append-version="true" style="max-width: 100%;display: none;" />
+                                <div id="previewPlaceholder" style="display: flex; align-items: center; justify-content: center; background-color: #e0e0e0; color: #999; font-size: medium; font-style: italic;text-align:center;word-break:break-word">
+                                    Upload Image
+                                </div>
+                            </div>
+                            <span style="font-size: 15px;margin-top:3%;display:inline-block">Mandatory</span>
+                            &nbsp;&nbsp;
+                            <label class="switch">
+                                <input type="checkbox" id="mandatoryCheckboxImage">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deleteimageblock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="saveImageData">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="editSignatureModal" tabindex="-1" role="dialog" aria-labelledby="editInputModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex; font-weight: bold;">
+                        Edit Signature Field
+                    </div>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="inputAlignmentSig">Alignment</label>
+                                <select class="form-control" id="inputAlignmentSig">
+                                    <option value="left">Left</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">Right</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <span style="font-size:16px;font-weight:bold">Preview:</span>
+                            <div id="inputPreviewborder" style="border: 1px solid #ddd; padding: 10px;">
+                                <div id="inputPreviewSig" style="text-align:left;" class="m-0 p-0">
+                                    <div style="border: 1px solid #44aad1; background-color: #d8d7d78a; color: #44aad1; font-size: 100%; display: inline-block;">
+                                        Signature
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deletesignatureblock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="saveInputData">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editEsealModal" tabindex="-1" role="dialog" aria-labelledby="editInputModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="align-items:end">
+                    <div class="model-title" style="display: flex; font-weight: bold;">
+                        Edit Eseal Field
+                    </div>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="height: 70vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="inputAlignmentEseal">Alignment</label>
+                                <select class="form-control" id="inputAlignmentEseal">
+                                    <option value="left">Left</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">Right</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <span style="font-size:16px;font-weight:bold">Preview:</span>
+                            <div id="inputPreviewborder" style="border: 1px solid #ddd; padding: 10px;">
+                                <div id="inputPreviewEseal" style="text-align:left;" class="m-0 p-0">
+                                    <div id="esealpreview" style="border: 1px solid #44aad1; background-color: #d8d7d78a; color: #44aad1; font-size: 100%; display: inline-flex;justify-content:center;align-items:center">
+                                        Eseal
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="deleteesealblock" data-bs-dismiss="modal">Delete</button>
+                    <button type="button" class="btn btn-primary" id="saveEsealData">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="digitalFormModal1" tabindex="-1" role="dialog" aria-labelledby="digitalFormModalLabel" aria-hidden="false" data-backdrop="true" style="display:none;opacity: 1;background-color: rgba(0, 0, 0, 0.2);">
+        <div class="modal-dialog modal-dialog-centered " role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <img id="signatureTemplatePreviewImage" src="@signData" asp-append-version="true" style="inline-size: -webkit-fill-available;" />
+                </div>
+                <div class="modal-footer">
+                    <button id="btnCloseSignaturePreview" class="btn btn-secondary">close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="digitalFormModal2" tabindex="-1" role="dialog" aria-labelledby="digitalFormModalLabel" aria-hidden="false" data-backdrop="true" style="display:none;opacity: 1;background-color: rgba(0, 0, 0, 0.2);">
+        <div class="modal-dialog modal-dialog-centered " role="document">
+            <div class="modal-content">
+                <div class="modal-body" style="text-align:center">
+                    <img id="esealSignatureTemplatePreviewImage" src="@esealData" asp-append-version="true" style="width:50%" />
+
+                </div>
+                <div class="modal-footer">
+                    <button id="btnCloseEsealPreview" class="btn btn-secondary">close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+@Html.Raw("<script src='/local-cdns/Shared/editorjs/latest/editorjs.umd.min.js'></script>")
+@Html.Raw("<script src='/local-cdns/Shared/editorjs-header/latest/header.umd.min.js'></script>")
+@Html.Raw("<script src='/local-cdns/Shared/editorjs-list/latest/list.umd.min.js'></script>")
+@Html.Raw("<script src='/local-cdns/Shared/editorjs-image/latest/image.umd.min.js'></script>")
+@Html.Raw("<script src='/local-cdns/Shared/editorjs-paragraph/latest/paragraph.umd.min.js'></script>")
+
+    <script src="/local-cdns/Shared/html2pdf/latest/html2pdf.bundle.min.js"></script>
+    <script src="/local-cdns/Shared/popper/1.14.7/popper.min.js"></script>
+    <script src="/local-cdns/Shared/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="/local-cdns/Shared/editorjs-drag-drop/latest/bundle.js"></script>
+
+
+    <script>
+        var saveFormUrl='@Url.Action("saveForm", "DigitalForms")';
+        var DigitalFormsIndexUrl='@Url.Action("Index", "DigitalForms")';
+
+    </script>
+
+    @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+        <script src="~/js/DigitalForms/CreateWebForm.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+else
+{
+        <script src="~/dist/DigitalForms/CreateWebForm.min.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+
+
+

@@ -1,0 +1,1017 @@
+﻿@model SigningPortal.Web.ViewModels.DigitalForms.DocumentTypeViewModel
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+
+<style>
+    /* ============================================================
+               GLOBAL FORMS DASHBOARD - Matching DigitalForms Index Design
+               ============================================================ */
+
+    .global-forms-dashboard {
+        border-radius: 28px;
+        padding: 2.5rem 2.25rem;
+        box-shadow: 0 25px 60px rgba(16, 24, 40, 0.08);
+        min-height: 100%;
+    }
+
+    .gf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+    }
+
+    .gf-heading {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .gf-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 20px;
+        background: #0E7C5A;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+    }
+
+    .gf-heading h3 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .gf-heading p {
+        margin: 0;
+        color: #475467;
+        font-size: 1rem;
+    }
+
+    /* Panel Styles */
+    .gf-panels {
+        margin-top: 1.75rem;
+    }
+
+    .gf-panel {
+        animation: gfFade 0.35s ease;
+    }
+
+    .gf-empty-state {
+        margin-top: 1.2rem;
+        padding: 2.5rem 1.75rem;
+        border: 1px dashed #e2e8f0;
+        border-radius: 18px;
+        text-align: center;
+        color: #475467;
+        font-weight: 500;
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+        .gf-empty-state i {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .gf-empty-state .empty-title {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin: 0;
+        }
+
+        .gf-empty-state .empty-subtitle {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+
+    /* Table Styles matching Index.cshtml */
+    .gf-panel table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+
+        .gf-panel table thead th {
+            background: #f8fafc;
+            border: none;
+            padding: 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #0f172a;
+            text-transform: uppercase;
+        }
+
+        .gf-panel table tbody tr {
+            background: linear-gradient(140deg, rgba(255, 255, 255, 0.96), rgba(244, 246, 255, 0.96));
+            box-shadow: 0 18px 35px rgba(15, 23, 42, 0.1);
+            border-radius: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+
+            .gf-panel table tbody tr:hover {
+                box-shadow: 0 22px 45px rgba(15, 23, 42, 0.14);
+            }
+
+        .gf-panel table tbody td {
+            border: none;
+            padding: 15px 18px;
+            vertical-align: middle;
+            font-size: 0.95rem;
+            color: #0f172a;
+        }
+
+            .gf-panel table tbody td:first-child {
+                border-top-left-radius: 20px;
+                border-bottom-left-radius: 20px;
+            }
+
+            .gf-panel table tbody td:last-child {
+                border-top-right-radius: 20px;
+                border-bottom-right-radius: 20px;
+            }
+
+    /* DataTables Styling */
+    .gf-panel .dataTables_wrapper .dataTables_filter input,
+    .gf-panel .dataTables_wrapper .dataTables_length select {
+        border-radius: 0.5rem;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        padding: 0.55rem 1.15rem;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+
+        .gf-panel .dataTables_wrapper .dataTables_filter input:focus,
+        .gf-panel .dataTables_wrapper .dataTables_length select:focus {
+            outline: none;
+            border-color: rgba(16, 185, 129, 0.5);
+            box-shadow: 0 18px 35px rgba(16, 185, 129, 0.18);
+            background: #ffffff;
+        }
+
+    .gf-panel .dataTables_wrapper .dataTables_info,
+    .gf-panel .dataTables_wrapper .dataTables_paginate {
+        padding: 1rem 0 !important;
+        color: #64748b !important;
+        font-size: 0.9rem !important;
+    }
+
+        .gf-panel .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 8px !important;
+            padding: 0.5rem 0.75rem !important;
+            margin: 0 0.25rem !important;
+        }
+
+            .gf-panel .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+                background: linear-gradient(120deg, #10b981, #059669) !important;
+                color: #ffffff !important;
+                border: none !important;
+            }
+
+    /* Button Styles */
+    .gf-panel .btn-primary,
+    .gf-panel .submit-button {
+        border-radius: 12px !important;
+        padding: 0.6rem 1.2rem !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .gf-panel .btn-primary {
+        background: linear-gradient(120deg, #10b981, #059669) !important;
+        border: none !important;
+    }
+
+        .gf-panel .btn-primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35) !important;
+        }
+
+    /* Status badges styling */
+    .gf-panel .badge,
+    .gf-panel .status-badge {
+        border-radius: 0.75rem !important;
+        padding: 0.35rem 0.8rem !important;
+        font-size: 0.77rem !important;
+        font-weight: 600 !important;
+    }
+
+    /* Card styling for any card-based layouts in partials */
+    .gf-panel .card {
+        border-radius: 20px !important;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08) !important;
+        border: none !important;
+        margin-bottom: 1rem !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+        .gf-panel .card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 16px 35px rgba(15, 23, 42, 0.12) !important;
+        }
+
+    /* Shimmer / skeleton loading styles */
+    .shimmer-wrapper {
+        display: grid;
+        gap: 0.9rem;
+        width: 100%;
+    }
+
+    .shimmer-card {
+        display: grid;
+        grid-template-columns: 56px 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 1rem 1rem;
+        border-radius: 12px;
+        background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(249,250,253,0.96));
+        border: 1px solid rgba(219, 227, 240, 0.6);
+        box-shadow: 0 14px 30px rgba(15,23,42,0.06);
+        min-height: 72px;
+        overflow: hidden;
+    }
+
+    .shimmer-rect {
+        background: linear-gradient( 90deg, rgba(226,232,240,0.6) 0%, rgba(245,246,255,0.9) 20%, rgba(226,232,240,0.6) 40% );
+        background-size: 200% 100%;
+        animation: shimmer 1.4s linear infinite;
+        border-radius: 6px;
+    }
+
+    .shimmer-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+    }
+
+    .shimmer-title {
+        height: 14px;
+        width: 40%;
+        border-radius: 6px;
+    }
+
+    .shimmer-meta {
+        height: 12px;
+        width: 30%;
+        border-radius: 6px;
+    }
+
+    .shimmer-status {
+        height: 18px;
+        width: 80px;
+        border-radius: 999px;
+    }
+
+    .shimmer-action {
+        height: 32px;
+        width: 90px;
+        border-radius: 8px;
+    }
+
+    @@keyframes shimmer {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    @@keyframes gfFade {
+        0% {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Toast styling */
+    .toast {
+        margin-right: 50%;
+    }
+
+    /* PDF page styling */
+    .pdf-page {
+        width: 98%;
+        position: relative;
+        display: inline-block;
+        margin: 1%;
+        border: 1px solid #ccc;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Popup styling */
+    .popup {
+        display: none;
+        position: absolute;
+        min-width: 280px;
+        padding: 15px;
+        background: #2563eb;
+        color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        font-size: 0.875rem;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s, visibility 0.3s;
+        bottom: 100%;
+        right: 0;
+        transform: translateX(0) translateY(-10px);
+    }
+
+    .status-container:hover .popup {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .popup::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        right: 20px;
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid #334155;
+    }
+
+    .popup .header {
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        font-size: 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        padding-bottom: 0.5rem;
+    }
+
+    .popup .headersp {
+        padding-bottom: 5px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .popup .row {
+        display: contents;
+    }
+
+    .popup p {
+        line-height: 1.4;
+        margin-bottom: 0;
+        padding-bottom: 5px;
+        color: #fff;
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .popup ul {
+        padding-left: 0;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        list-style: none;
+        gap: 6px;
+    }
+
+        .popup ul li {
+            font-size: 14px;
+            font-weight: 600;
+            position: relative;
+            margin-bottom: 0;
+        }
+
+            .popup ul li.first-email::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 14px;
+                height: 14px;
+                background-color: transparent;
+                border: 2px solid #fff;
+                border-radius: 50%;
+            }
+
+            .popup ul li.first-email::after {
+                content: "";
+                width: 6px;
+                height: 6px;
+                background-color: #fff;
+                border-radius: 50%;
+                position: absolute;
+                top: 50%;
+                left: 7px;
+                transform: translate(-50%, -50%);
+            }
+
+            .popup ul li.no-bullet,
+            .popup ul li.delegator-section {
+                padding-left: 0;
+                list-style-type: none;
+                margin-left: 0;
+            }
+
+    /* ============================================================
+               MODERN MODAL STYLING
+               ============================================================ */
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 25px 60px rgba(16, 24, 40, 0.2);
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    .modal-header {
+        background: #ebedef;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1.25rem 1.5rem;
+    }
+
+        .modal-header p,
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+    .modal-body {
+        padding: 1.5rem;
+        background: #ffffff;
+    }
+
+    .modal-footer {
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        padding: 1rem 1.5rem;
+        gap: 0.75rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+        .modal-footer .btn {
+            border-radius: 12px;
+            padding: 0.625rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            transition: all 0.25s ease;
+            border: none;
+        }
+
+    #digitalShowModal .modal-content {
+        border-radius: 16px;
+    }
+
+    #digitalShowModal .modal-header {
+        background: #ebedef;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    #digitalShowModal .btn-primary {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: none;
+        border-radius: 10px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        transition: all 0.25s ease;
+    }
+
+        #digitalShowModal .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+    /* ============================================================
+               RESPONSIVE STYLES
+               ============================================================ */
+    @@media (max-width: 900px) {
+        .shimmer-card {
+            grid-template-columns: 48px 1fr auto;
+            padding: 0.8rem;
+        }
+
+        .shimmer-title {
+            width: 55%;
+        }
+
+        .shimmer-meta {
+            width: 40%;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .global-forms-dashboard {
+            padding: 1.25rem 1rem;
+            border-radius: 16px;
+        }
+
+        .gf-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .gf-heading {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.75rem;
+        }
+
+        .gf-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.25rem;
+            margin: 0 auto;
+        }
+
+        .gf-heading h3 {
+            font-size: 1.375rem;
+        }
+
+        .gf-heading p {
+            font-size: 0.875rem;
+        }
+
+        .gf-panels {
+            margin-top: 1.25rem;
+        }
+
+        .gf-panel table thead {
+            display: none;
+        }
+
+        .gf-panel table tbody tr {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            gap: 0.5rem;
+        }
+
+        .gf-panel table tbody td {
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 !important;
+        }
+
+            .gf-panel table tbody td:first-child,
+            .gf-panel table tbody td:last-child {
+                border-radius: 0 !important;
+            }
+
+        .toast {
+            margin-right: 0;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .popup {
+            min-width: 240px;
+            padding: 12px;
+            font-size: 75%;
+        }
+
+        .pdf-page {
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+
+        .modal-dialog {
+            margin: 0;
+            max-width: 100%;
+        }
+
+        .modal-content {
+            border-radius: 16px 16px 0 0;
+            min-height: auto;
+        }
+
+        .modal-header,
+        .modal-body,
+        .modal-footer {
+            padding: 1rem;
+        }
+
+        .modal-footer {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+            .modal-footer .btn {
+                width: 100%;
+            }
+    }
+
+    @@media (max-width: 480px) {
+        .global-forms-dashboard {
+            padding: 1rem 0.75rem;
+        }
+
+        .gf-heading h3 {
+            font-size: 1.25rem;
+        }
+
+        .popup {
+            min-width: 200px;
+            padding: 10px;
+        }
+
+            .popup .header {
+                font-size: 12px;
+            }
+
+            .popup p {
+                font-size: 11px;
+            }
+    }
+
+    @@media (max-width: 992px) {
+        .popup {
+            display: none !important;
+        }
+    }
+
+    /* === Tabs - shared with DigitalForms Index (df-*) for UI parity === */
+    .df-tabs {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        margin-top: 1.75rem;
+    }
+
+    .df-tabbar {
+        width: 50%;
+        display: flex;
+        padding: 0;
+        border-radius: 0.5rem;
+        justify-content: space-between;
+        background: #FFFFFF;
+        color: #475569;
+        border: 1px solid #E2E8F0;
+    }
+
+    .df-tab {
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        padding: 0.55rem 1.1rem;
+        color: #4c5a71;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        cursor: pointer;
+        min-width: 120px;
+        justify-content: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.03);
+        flex-grow: 1;
+    }
+
+        .df-tab .df-tab-inner {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .df-tab .df-tab-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .df-tab:not(.active) {
+            background: rgba(255, 255, 255, 0.35);
+            color: #5b6478;
+        }
+
+        .df-tab.active {
+            background: #F2F4F7;
+            border: 1px solid #E4E7EC;
+            box-shadow: 0 1px 7px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);
+        }
+
+        .df-tab i {
+            font-size: 1rem;
+            color: inherit;
+        }
+
+    .df-tab-count {
+        border-radius: 999px;
+        padding: 0.08rem 0.55rem;
+        background: rgba(15,23,42,0.05);
+        color: #485568;
+        font-size: 0.78rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 26px;
+        text-align: center;
+        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+        display: none;
+    }
+
+    .df-tab.active .df-tab-count {
+        background: rgba(82, 109, 255, 0.12);
+        color: #1e1b4b;
+        box-shadow: none;
+    }
+
+    .df-tab:focus {
+        outline: 2px solid rgba(37,99,235,0.12);
+        outline-offset: 2px;
+    }
+
+    .df-tab:hover:not(.active) {
+        background: #F6F8FA;
+        color: #1f2937;
+        border-color: rgba(148, 163, 184, 0.35);
+        box-shadow: 0 10px 16px rgba(15, 23, 42, 0.03);
+    }
+
+    @@media (max-width: 900px) {
+        .df-tabbar {
+            padding: 0.35rem;
+            gap: 0.35rem;
+        }
+
+        .df-tab {
+            min-width: 88px;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .df-tab-label {
+            font-size: 0.9rem;
+        }
+
+        .df-tab i {
+            font-size: 0.9rem;
+        }
+
+        .df-tab-count {
+            min-width: 22px;
+            font-size: 0.72rem;
+            padding: 0.06rem 0.4rem;
+        }
+    }
+
+    .df-panels {
+        margin-top: 1.75rem;
+    }
+
+    .df-panel {
+        display: none;
+        animation: dfFade 0.35s ease;
+    }
+
+        .df-panel.active {
+            display: block;
+        }
+
+    .df-empty-state {
+        margin-top: 1.2rem;
+        padding: 1.75rem;
+        border: 1px dashed #e2e8f0;
+        border-radius: 18px;
+        text-align: center;
+        color: #475467;
+        font-weight: 500;
+        display: none;
+    }
+
+    @@keyframes dfFade {
+        0% {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .main-content-wrapper {
+        background: #F6F7FB;
+    }
+</style>
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+
+<div class="row m-0" style="height:100vh">
+    <div class="col-md-12 p-0" style="height:100%">
+        <div class="card background-image border-0" style="height:100%;background:transparent">
+
+            <div class="card-body global-forms-dashboard">
+
+                <div class="gf-header">
+                    <div class="gf-heading">
+                        <div class="gf-icon">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                        </div>
+                        <div>
+                            <h3>Service Forms</h3>
+                            <p>Access and fill forms</p>
+                        </div>
+                    </div>
+
+                    <!-- Tabs (matching DigitalForms Index UI) -->
+                    <div class="df-tabs" role="tablist">
+                        <div class="df-tabbar">
+                            <button type="button" class="df-tab active" data-tab="global" aria-controls="panel-global" aria-selected="true" role="tab" onclick="loadGlobalForms()">
+                                <span class="df-tab-inner">
+                                    <i class="fa-solid fa-globe" aria-hidden="true"></i>
+                                    <span class="df-tab-label">Global Forms</span>
+                                    <span class="df-tab-count" id="badge-global">0</span>
+                                </span>
+                            </button>
+
+                            <button type="button" class="df-tab" data-tab="received" aria-controls="panel-received" aria-selected="false" role="tab" onclick="loadReceived()">
+                                <span class="df-tab-inner">
+                                    <i class="fa-solid fa-inbox" aria-hidden="true"></i>
+                                    <span class="df-tab-label">Received Forms</span>
+                                    <span class="df-tab-count" id="badge-received">0</span>
+                                </span>
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="df-panels">
+                    <section id="panel-global" class="df-panel active" role="tabpanel">
+                        <div id="globalforms" style="display:none;"></div>
+                        <div id="globalFormsEmptyState" class="df-empty-state" style="display:none;">
+                            <i class="fa-solid fa-globe"></i>
+                            <p class="empty-title">No global forms available</p>
+                            <p class="empty-subtitle">Global forms will appear here when published</p>
+                        </div>
+                        <!-- Shimmer loading state -->
+                        <div id="globalFormsShimmer" class="shimmer-wrapper" style="display:none;">
+                            <div class="shimmer-card">
+                                <div class="shimmer-rect shimmer-icon"></div>
+                                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                                    <div class="shimmer-rect shimmer-title"></div>
+                                    <div class="shimmer-rect shimmer-meta"></div>
+                                </div>
+                                <div class="shimmer-rect shimmer-action"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="panel-received" class="df-panel" role="tabpanel">
+                        <div id="receiveDoc" style="display:none;"></div>
+                        <div id="receivedEmptyState" class="df-empty-state" style="display:none;">
+                            <i class="fa-solid fa-inbox" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                            <p style="font-size: 1.1rem; color: #64748b; margin: 0;">No received forms</p>
+                            <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.5rem;">Forms sent to you will appear here</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal fade" id="digitalShowModal" tabindex="-1" role="dialog" aria-labelledby="digitalFormModalLabel" aria-hidden="false" data-backdrop="true" style="display:none; opacity: 1; padding-top: 1%; background-color: rgba(0, 0, 0, 0.4);">
+    <div class="modal-dialog modal-lg" role="document" style="width:100%; margin-top:0">
+        <div class="modal-content" style="height:90vh">
+            <div class="modal-header">
+                <button id="DownloadPDF" type="button" class="btn btn-primary" onclick="DownloadForm()">Download PDF</button>
+                <img id="closedigitalShowModalBtn" data-toggle="tooltip" data-placement="left" title="Close" style="text-align:left; width:16px; height:20px; margin-left:3%; cursor:pointer; opacity:0.7; transition: opacity 0.2s ease;" src='@Url.Content("~/assets/images/cross.svg")' asp-append-version="true" onclick="closemodal()" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" />
+            </div>
+            <div class="modal-body" style="overflow-y:auto">
+                <div id="pdf-container" style="overflow-y:auto; width:100%; height:100%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts {
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            $('#networkOverlay').hide();
+            viewName = '@ViewBag.ViewName';
+            // Respect incoming viewName (from other pages) so state persists on navigation/back
+            if (viewName && viewName.toLowerCase().includes('rec')) {
+                loadReceived();
+            } else {
+                loadGlobalForms();
+            }
+        });
+
+        function globalforms() {
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("globalforms", "DigitalForms")',
+                beforeSend: function () {
+                    $('#overlay').show();
+                    $('#globalFormsShimmer').show();
+                    $('#globalFormsEmptyState').hide();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                    $('#globalFormsShimmer').hide();
+                },
+                success: function (data) {
+                    if (data != null && data.trim() !== '') {
+                        $('#globalforms').css('display', 'block');
+                        $('#globalforms').html(data);
+                        $('#globalFormsEmptyState').hide();
+                    } else {
+                        $('#globalforms').hide();
+                        $('#globalFormsEmptyState').show();
+                    }
+                },
+                error: ajaxErrorHandler
+            });
+        }
+
+        function loadGlobalForms() {
+            const currentUrl = window.location.href.split('?')[0];
+            const newUrl = `${currentUrl}?viewName=GlobalForms`;
+            window.history.pushState(null, '', newUrl);
+
+            // activate tab UI and panels
+            activateDfTab('panel-global');
+
+            // load the same partial as before
+            globalforms();
+        }
+
+        function loadReceived() {
+            const currentUrl = window.location.href.split('?')[0];
+            const newUrl = `${currentUrl}?viewName=RecievedDocuments`;
+            window.history.pushState(null, '', newUrl);
+
+            activateDfTab('panel-received');
+
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("recived", "FormRequests")',
+                beforeSend: function () {
+                    $('#overlay').show();
+                    $('#receiveDoc').hide();
+                    $('#receivedEmptyState').hide();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                },
+                success: function (data) {
+                    if (data != null && data.trim() !== '') {
+                        $('#globalforms').css('display', 'none');
+                        $('#receiveDoc').css('display', 'block');
+                        $('#receiveDoc').html(data);
+                        $('#receivedEmptyState').hide();
+                    } else {
+                        $('#receiveDoc').hide();
+                        $('#receivedEmptyState').show();
+                    }
+                },
+                error: ajaxErrorHandler
+            });
+        }
+
+        function activateDfTab(panelId) {
+            // remove state on tabs and panels
+            $('.df-tab').removeClass('active').attr('aria-selected', 'false');
+            $('.df-panel').removeClass('active');
+
+            // add active to tab corresponding to panelId
+            var $tab = $(`[aria-controls=${panelId}]`);
+            $tab.addClass('active').attr('aria-selected', 'true');
+
+            // show the correct panel
+            $(`#${panelId}`).addClass('active');
+        }
+
+        function closemodal() {
+            $("#digitalShowModal").modal('hide');
+        }
+    </script>
+}
+

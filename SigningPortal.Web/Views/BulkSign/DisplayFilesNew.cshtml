@@ -1,0 +1,566 @@
+﻿@model SigningPortal.Web.ViewModels.BulkSign.FilesListViewModel
+@{
+    var list = @Model.FileNamesList;
+    var sourcepath = @Model.sourcePath;
+}
+
+<style>
+    .document-list-card {
+        background: #fff;
+        padding: 20px;
+    }
+
+    .doc-item {
+        background: #F1F8F5;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 18px;
+        margin-bottom: 14px;
+        border: 1px solid #E2EFE8;
+    }
+
+    .doc-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .doc-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: #C9E8D5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: #3F8F5C;
+    }
+
+    .doc-name {
+        font-weight: 600;
+        font-size: 15px;
+        color: #1a1a1a;
+    }
+
+    .view-btn2 {
+        background-color: transparent;
+        font-size: 13px;
+        border: 1px solid #3F8F5C;
+        color: #3F8F5C;
+        padding: 4px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .view-btn2:hover {
+            background-color: #3F8F5C;
+            color: white;
+        }
+
+    .viewer-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border-bottom: 1px solid #e5e5e5;
+        background: #fff;
+    }
+
+    /* Center heading always stays centered */
+    .viewer-header {
+        flex-grow: 1;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    /* Page selector */
+    .page-select {
+        padding: 2px 7px;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        font-weight: 400;
+        font-size: 14px;
+    }
+
+    /* Zoom controls */
+    .zoom-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid #ccc;
+        padding: 4px 14px;
+        border-radius: 20px;
+    }
+
+        .zoom-controls i {
+            font-size: 14px;
+            cursor: pointer;
+            color: #444;
+        }
+
+    /* Viewer Right Side */
+    .viewer-card {
+        background: #fff;
+        padding: 20px;
+    }
+
+
+    /* PDF Frame */
+    #pdf-container {
+        width: 100%;
+        height: 82vh;
+        background: #fff;
+        border: 1px solid var(--border-color);
+        box-sizing: border-box;
+        border-radius: 10px;
+        overflow: auto; /* Allows scrolling if PDF is wide */
+        display: block; /* Changed from flex to block */
+        text-align: center; /* Centers the pages */
+        padding: 20px 0;
+    }
+
+    /* Controls (Page, Zoom) */
+    .viewer-controls {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 10px 0;
+        margin-bottom: 8px;
+    }
+    /* Pagination Wrapper */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 30px;
+        margin-top: 20px;
+    }
+
+    /* Buttons */
+    .pagination-btn {
+        background: #ffffff;
+        border: 1px solid #3F8F5C;
+        color: #3F8F5C;
+        padding: 4px 12px;
+        border-radius: 25px;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+
+        /* Hover effect */
+        .pagination-btn:hover:not(:disabled) {
+            background: #3F8F5C;
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(63, 143, 92, 0.2);
+        }
+
+        /* Disabled state */
+        .pagination-btn:disabled {
+            background: #f3f3f3;
+            border-color: #ccc;
+            color: #aaa;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+    /* Page info */
+    .pagination-info {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a1a1a;
+        min-width: 110px;
+        text-align: center;
+    }
+
+</style>
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+    @Html.AntiForgeryToken()
+    <div class="card">
+        <div class="row">
+
+            <!-- LEFT : DOCUMENT LIST -->
+            <div class="col-lg-5">
+                <div class="document-list-card">
+                    <h5 class="fw-bold mb-3">Total Documents: <span id="totalDocs">0</span></h5>
+                    <div id="docsBody"></div>
+
+                    <!-- Pagination Controls -->
+                    <div class="pagination-wrapper">
+                        <button id="prevBtn" class="pagination-btn">
+                            <i class="fa-solid fa-chevron-left"></i> Previous
+                        </button>
+
+                        <span id="pageInfo" class="pagination-info"></span>
+
+                        <button id="nextBtn" class="pagination-btn">
+                            Next <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <!-- RIGHT : PDF VIEWER -->
+            <div class="col-lg-7">
+                <div class="viewer-card">
+
+                    <div class="viewer-topbar">
+
+                        @*  <!-- Page number dropdown -->
+                        <select id="pageSelect" class="page-select">
+                        <option>1 of 1</option>
+                        </select> *@
+
+                        <!-- FILE NAME (center) -->
+                        <div class="viewer-header">
+                            <span id="documentname">Select a document</span>
+                        </div>
+
+                        @*   <!-- Zoom controls (right) -->
+                        <div class="zoom-controls">
+                        <i class="fa-solid fa-magnifying-glass-minus" id="zoomOut"></i>
+                        <i class="fa-solid fa-magnifying-glass-plus" id="zoomIn"></i>
+                        </div> *@
+
+                    </div>
+
+
+                    <!-- PDF Viewer -->
+                    <div id="pdf-container"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<input type="hidden" id="filebase64" name="filebase64" />
+
+
+<script>
+    let currentPage = 1;
+    const pageSize = 5;
+    let totalPages = 1;
+
+    var currentlist = @Html.Raw(Json.Serialize(Model.FileNamesList));
+    var orgiginallist = @Html.Raw(Json.Serialize(Model.FileNamesList));
+    const pdfContainer = document.getElementById('pdf-container');
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (!pdfjsLib) {
+        console.error('PDF.js library is not loaded.');
+    } else {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '@Url.Content("~/local-cdns/Shared/pdfjs/2.10.377/pdf.worker.min.js")';
+    }
+    $(document).ready(function () {
+        document.querySelectorAll(".fileNameCell").forEach(function (cell) {
+            const fullName = cell.getAttribute("data-fullname");
+            if (fullName.length > 30) {
+                cell.textContent = cropFileNames(fullName);
+                cell.title = fullName;
+                cell.style.cursor = "pointer";
+            }
+        });
+        var firstFileName =
+    @Html.Raw(Json.Serialize(Model.FileNamesList.FirstOrDefault()));
+
+        if (firstFileName.length > 30) {
+            documentname.textContent = cropFileNames(firstFileName);
+            documentname.title = firstFileName;
+            documentname.style.cursor = "pointer";
+        } else {
+            documentname.textContent = firstFileName;
+        }
+
+        if (firstFileName) {
+            getDocumentdata(firstFileName);
+        }
+        var fileCountDisplay = document.getElementById('totalDocs');
+        fileCountDisplay.textContent =
+            'Total Documents Uploaded : ' + orgiginallist.length;
+        renderDocuments(orgiginallist);
+    });
+    function updatePaginationUI(totalItems) {
+        totalPages = Math.ceil(totalItems / pageSize);
+
+        $("#pageInfo").text(`Page ${currentPage} of ${totalPages || 1}`);
+
+        $("#prevBtn").prop("disabled", currentPage === 1);
+        $("#nextBtn").prop("disabled", currentPage === totalPages);
+    }
+
+    $("#prevBtn").click(function () {
+        if (currentPage > 1) {
+            currentPage--;
+            renderDocuments(orgiginallist);
+        }
+    });
+
+    $("#nextBtn").click(function () {
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderDocuments(orgiginallist);
+        }
+    });
+
+    function renderDocuments(files) {
+
+        totalPages = Math.ceil(files.length / pageSize);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        const paginatedFiles = files.slice(start, end);
+
+        $("#totalDocs").text(files.length);
+
+        let html = "";
+
+        paginatedFiles.forEach((file) => {
+
+            const croppedName = cropFileNames(file);
+
+            html += `
+                <div class="doc-item">
+                    <div class="doc-left">
+                        <div class="doc-icon">
+                            <i class="fa-regular fa-file-lines"></i>
+                        </div>
+
+                        <div class="doc-name"
+                             title="${file}"
+                             style="cursor:pointer">
+                            ${croppedName}
+                        </div>
+                    </div>
+
+                    <button class="view-btn2" onclick="viewFile('${file}')">
+                        <i class="fa-regular fa-eye"></i> View
+                    </button>
+                </div>
+            `;
+        });
+
+        $("#docsBody").html(html);
+
+        updatePaginationUI(files.length);
+    }
+
+    function viewFile(fileName) {
+        console.log("Clicked", fileName);  // check if works
+        document.getElementById("documentname").textContent = fileName;
+        getDocumentdata(fileName);
+    }
+
+    function cropFileNames(full) {
+        let start = 15, end = 15;
+        if (full && full.length > start + end) {
+            return full.slice(0, start) + '...' + full.slice(-end);
+        } else {
+            return full;
+        }
+    }
+
+    function Get(filename) {
+        var FileName = filename;
+        var source = '@sourcepath';
+        var documentname = document.getElementById('documentname');
+        if (FileName.length > 30) {
+            documentname.textContent = cropFileNames(FileName);
+            documentname.title = FileName;
+            documentname.style.cursor = "pointer";
+
+        } else {
+            documentname.textContent = FileName;
+        }
+    }
+
+    function base64ToBlob(base64) {
+        const binaryString = window.atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; ++i) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return new Blob([bytes], { type: 'application/pdf' });
+    }
+
+    function handleSearch(event) {
+        var searchvalue = event.target.value;
+        var list = fileList.filter(item =>
+            item.toLowerCase().startsWith(searchvalue.toLowerCase())
+        );
+        currentlist = list;
+    }
+    function getDocumentdata(filename) {
+        $('#overlay').show();
+
+        var url = '@Url.Action("GetFileBlob", "BulkSign")';
+        var FileName = filename;
+        var source = '@sourcepath';
+
+        var documentname = document.getElementById('documentname');
+        if (FileName.length > 30) {
+            documentname.textContent = cropFileNames(FileName);
+            documentname.title = FileName;
+            documentname.style.cursor = "pointer";
+        } else {
+            documentname.textContent = FileName;
+        }
+
+        var datavalue = {
+            "fileName": FileName,
+            "destinationPath": source
+        };
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            headers: {
+
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+            },
+            contentType: 'application/json',
+            data: JSON.stringify(datavalue),
+
+            success: function (resp) {
+                if (resp.success) {
+
+
+
+                    Documentbase64 = resp.result;
+                    var blobdata = base64ToBlob(Documentbase64);
+                    globalblobdata = blobdata;
+                    var reader = new FileReader();
+                    reader.readAsDataURL(blobdata);
+                    reader.onloadend = function () {
+                        document.getElementById('filebase64').value = reader.result.split(',')[1]; // Extract only the Base64 part
+                    };
+                    const pdfBase64 = Documentbase64;
+                    const pdfArrayBuffer = base64ToArrayBuffer(pdfBase64);
+                    pdfjsLib.getDocument({ data: pdfArrayBuffer }).promise.then(pdf => {
+                        renderPDF(pdf);
+                    }).catch(error => {
+                        console.error('Error loading PDF:', error);
+                    });
+
+                } else {
+                    $('#overlay').hide();
+                    swal({
+                        title: 'Error',
+                        text: resp.message,
+                        type: 'error',
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.href =
+                                '@Url.Action("Index", "Template")';
+                        }
+                    });
+                }
+            },
+
+            error: ajaxErrorHandler
+        });
+    }
+
+    function base64ToArrayBuffer(base64) {
+        const binaryString = window.atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+    function refreshPageIndicator(currentPage, totalPages) {
+        if (typeof totalPages === 'number' && totalPages >= 0) {
+            totalPdfPages = totalPages;
+        }
+        if (typeof currentPage === 'number' && currentPage > 0) {
+            currentVisiblePage = currentPage;
+        }
+
+
+    }
+
+    async function renderPDF(pdf) {
+        $('#overlay').hide();
+        pdfContainer.innerHTML = '';
+        const numPages = pdf.numPages;
+        refreshPageIndicator(1, numPages);
+
+        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+            await renderPDFForSelfQuicksignBatch(pdf, pageNum);
+
+            const percentage = Math.floor((pageNum / numPages) * 100);
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        if (watermarktext !== "") {
+            setWatermark();
+        }
+    }
+
+    async function renderPDFForSelfQuicksignBatch(pdf, pageNum) {
+        const page = await pdf.getPage(pageNum);
+
+        // 1. Calculate the scale based on the device's pixel ratio (Retina displays, etc.)
+        const outputScale = window.devicePixelRatio || 1;
+        const baseScale = 1.2;
+
+        // 2. Get viewport with the combined scale
+        const viewport = page.getViewport({ scale: baseScale * outputScale });
+
+        const pageContainer = document.createElement('div');
+        pageContainer.className = 'pdf-page';
+        pageContainer.style.position = 'relative';
+        pageContainer.style.marginBottom = '15px';
+        pageContainer.style.display = 'block';
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        // 3. Set the internal canvas dimensions (high res)
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
+
+        // 4. Set the CSS display size (normal res)
+        canvas.style.width = Math.floor(viewport.width / outputScale) + "px";
+        canvas.style.height = Math.floor(viewport.height / outputScale) + "px";
+
+        pageContainer.appendChild(canvas);
+        pdfContainer.appendChild(pageContainer);
+
+        // 5. Render without manual setTransform (viewport already handles it)
+        const renderContext = {
+            canvasContext: context,
+            viewport: viewport
+        };
+
+        await page.render(renderContext).promise;
+
+        const annotationLayer = document.createElement('div');
+        annotationLayer.className = 'annotation-layer';
+        annotationLayer.style.position = 'absolute';
+        annotationLayer.style.top = '0';
+        annotationLayer.style.left = '0';
+        annotationLayer.style.width = '100%';
+        annotationLayer.style.height = '100%';
+        annotationLayer.style.pointerEvents = 'none';
+
+        pageContainer.appendChild(annotationLayer);
+    }
+</script>

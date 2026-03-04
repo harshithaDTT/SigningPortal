@@ -1,0 +1,681 @@
+﻿@model SigningPortal.Web.ViewModels.FormRequests.AllFormRequestsListViewModel
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+@{
+	ViewData["Title"] = "View";
+}
+@{
+	var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+	var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+	var bulksign = User.IsInRole("bulkSign");
+	var AccountType = User.FindFirst("AccountType").Value;
+	var OrganizationName = "";
+	var OrganizationUid = "";
+	var login_esealsignatoryrole = User.IsInRole("eSealSignatory");
+	var selfemails = "";
+	if (AccountType != "Self")
+	{
+		selfemails = User.FindFirst("SelfEmails").Value;
+		OrganizationName = User.FindFirst("OrganizationName").Value;
+		OrganizationUid = User.FindFirst("OrganizationUid").Value;
+	}
+}
+
+<style>
+	:root {
+		--df-text-primary: #0f172a;
+		--df-text-secondary: #51627a;
+		--df-text-muted: #97a1b5;
+		--df-bg-page: #f4f6fb;
+		--df-bg-card: #fdfefd;
+		--df-border-color: #dbe3f0;
+		--df-border-light: #eef2fb;
+		--df-shadow-sm: 0 8px 18px rgba(15, 23, 42, 0.07);
+		--df-shadow-md: 0 18px 30px rgba(15, 23, 42, 0.12);
+		--df-radius-md: 12px;
+		--df-radius-lg: 18px;
+	}
+
+	.df-tabled-wrap {
+		background: linear-gradient(135deg, rgba(243, 246, 255, 0.9), rgba(250, 251, 255, 0.9));
+		border-radius: 0.5rem;
+		padding: 1.75rem;
+		border: 1px solid var(--df-border-light);
+		box-shadow: var(--df-shadow-sm);
+	}
+
+	#sentList {
+		border-collapse: separate;
+		border-spacing: 0 12px;
+	}
+
+		#sentList thead th {
+			border: none;
+			text-transform: uppercase;
+			font-size: 0.6875rem;
+			letter-spacing: 0.05em;
+			font-weight: 600;
+			color: var(--df-text-muted);
+			background: transparent;
+			padding: 0.75rem 1rem;
+		}
+
+		#sentList tbody tr {
+			background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(245, 247, 255, 0.92));
+			border: 1px solid rgba(219, 227, 240, 0.65);
+			border-radius: var(--df-radius-md);
+			box-shadow: 0 20px 30px rgba(15, 23, 42, 0.08);
+			transition: all 0.25s ease;
+		}
+
+			#sentList tbody tr:hover {
+				border-color: rgba(99, 102, 241, 0.35);
+				box-shadow: var(--df-shadow-md);
+			}
+
+		#sentList tbody td {
+			border: none;
+			padding: 1.25rem 1rem;
+			vertical-align: middle;
+		}
+
+			#sentList tbody td:first-child {
+				border-top-left-radius: var(--df-radius-md);
+				border-bottom-left-radius: var(--df-radius-md);
+			}
+
+			#sentList tbody td:last-child {
+				border-top-right-radius: var(--df-radius-md);
+				border-bottom-right-radius: var(--df-radius-md);
+			}
+
+	.df-doc-shell {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.df-doc-icon {
+		width: 48px;
+		height: 48px;
+		border-radius: 12px;
+		background: linear-gradient(135deg, #eef4ff, #f4fbff);
+		border: 1px solid rgba(99, 102, 241, 0.15);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #4c6ef5;
+		font-size: 1.25rem;
+		flex-shrink: 0;
+		box-shadow: inset 0 0 12px rgba(76, 110, 245, 0.08);
+	}
+
+	.df-doc-meta {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.df-doc-title {
+		font-size: 0.9625rem;
+		font-weight: 600;
+		color: var(--df-text-primary);
+		line-height: 1.4;
+	}
+
+	.df-cell-stack {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		text-align: left;
+	}
+
+	.df-cell-label {
+		font-size: 0.6875rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		font-weight: 600;
+		color: var(--df-text-muted);
+	}
+
+	.df-cell-value {
+		font-size: 0.9rem;
+		font-weight: 500;
+		color: var(--df-text-secondary);
+	}
+
+	.df-metric-chip {
+		display: inline-flex;
+		align-items: center;
+		width:50%;
+		gap: 0.375rem;
+		padding: 0.4rem 0.95rem;
+		border-radius: 0.5rem;
+		background: rgba(37, 99, 235, 0.08);
+		border: 1px solid rgba(37, 99, 235, 0.2);
+		color: #1d4ed8;
+		font-weight: 600;
+		font-size: 0.875rem;
+		transition: all 0.2s ease;
+	}
+
+	.newform {
+		background: rgba(16, 185, 129, 0.12);
+		border: 1px solid rgba(5, 150, 105, 0.3);
+		color: #047857;
+		padding: 0.375rem 0.875rem;
+		border-radius: 0.75rem;
+		font-size: 0.8125rem;
+		font-weight: 600;
+	}
+
+	.formcompletebtn {
+		background: rgba(59, 130, 246, 0.12);
+		border: 1px solid rgba(37, 99, 235, 0.28);
+		color: #1d4ed8;
+		padding: 0.375rem 0.875rem;
+		border-radius: 6px;
+		font-size: 0.8125rem;
+		font-weight: 600;
+	}
+
+	.inprogressbtn {
+		background: rgba(249, 181, 51, 0.14);
+		border: 1px solid rgba(217, 119, 6, 0.28);
+		color: #b45309;
+		padding: 0.375rem 0.875rem;
+		border-radius: 6px;
+		font-size: 0.8125rem;
+		font-weight: 600;
+	}
+
+	.otherbtn {
+		background: rgba(148, 163, 184, 0.12);
+		border: 1px solid rgba(148, 163, 184, 0.3);
+		color: #64748b;
+		padding: 0.375rem 0.875rem;
+		border-radius: 6px;
+		font-size: 0.8125rem;
+		font-weight: 600;
+	}
+
+	.df-status-block {
+		display: flex;
+		flex-direction: column;
+		gap: 0.375rem;
+		align-items: flex-start;
+	}
+
+	.df-actions .btn {
+		border-radius: 999px !important;
+		padding: 0.55rem 1.25rem !important;
+		font-size: 0.875rem !important;
+		font-weight: 600 !important;
+		text-transform: none !important;
+		background: linear-gradient(120deg, #4f80ff, #3556f2) !important;
+		border: none;
+		color: #ffffff !important;
+		box-shadow: 0 5px 25px rgba(53, 86, 242, 0.3);
+		transition: all 0.2s ease;
+	}
+
+		.df-actions .btn:hover {
+			background: linear-gradient(120deg, #3b68ff, #2743d5) !important;
+			box-shadow: 0 18px 30px rgba(37, 73, 210, 0.35);
+			transform: translateY(-2px);
+		}
+
+	.custom-dropdown {
+		position: relative;
+		display: inline-block;
+	}
+
+	.custom-dropdown-content {
+		display: none;
+		position: absolute;
+		background-color: #ffffff;
+		min-width: 200px;
+		box-shadow: 0 22px 45px rgba(15, 23, 42, 0.15);
+		border: 1px solid rgba(148, 163, 184, 0.25);
+		border-radius: 14px;
+		padding: 0.65rem;
+		right: 0;
+		z-index: 10;
+	}
+
+	.custom-dropdown:hover .custom-dropdown-content {
+		display: block;
+	}
+
+	.custom-dropdown-content a {
+		color: var(--df-text-primary);
+		padding: 0.625rem 0.85rem;
+		text-decoration: none;
+		display: block;
+		font-size: 0.875rem;
+		font-weight: 500;
+		border-radius: 8px;
+		transition: all 0.15s ease;
+	}
+
+		.custom-dropdown-content a:hover {
+			background: rgba(59, 130, 246, 0.08);
+			color: #1d4ed8 !important;
+		}
+
+	.custom-dropdown-content li {
+		list-style: none;
+	}
+
+	.btn {
+		text-transform: capitalize !important;
+	}
+
+	/* Status popup */
+	.status-container {
+		position: relative;
+		display: inline-block;
+	}
+
+	.popup {
+		display: none;
+		position: absolute;
+		min-width: 280px;
+		padding: 15px;
+		background: #2563eb;
+		color: #ffffff;
+		border-radius: 12px;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+		font-size: 0.875rem;
+		z-index: 10000;
+		bottom: 100%;
+		right: 0;
+	}
+
+	.status-container:hover .popup {
+		display: block;
+	}
+
+	/* DataTables styling */
+	table.dataTable > tbody > tr > td.control::before,
+	table.dataTable > tbody > tr.parent > td.control::before {
+		background: #dbeafe;
+		color: #1e40af !important;
+		border-radius: 6px;
+		width: 20px;
+		height: 20px;
+		line-height: 20px;
+		font-weight: 600;
+		border: 1px solid #bfdbfe;
+	}
+
+	.dataTables_wrapper .dataTables_filter input {
+		border-radius: 0.5rem;
+		border: 1px solid rgba(148, 163, 184, 0.45);
+		padding: 0.55rem 1.15rem;
+		background: rgba(255, 255, 255, 0.9);
+		font-size: 0.9rem;
+		box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+		transition: all 0.2s ease;
+	}
+
+		.dataTables_wrapper .dataTables_filter input:focus {
+			outline: none;
+			border-color: rgba(59, 130, 246, 0.65);
+			box-shadow: 0 15px 30px rgba(59, 130, 246, 0.2);
+			background: #ffffff;
+		}
+
+	.dataTables_wrapper .dataTables_paginate .paginate_button {
+		border-radius: 8px !important;
+		margin: 0 0.25rem !important;
+		padding: 0.4rem 0.85rem !important;
+		border: 1px solid rgba(148, 163, 184, 0.4) !important;
+		background: rgba(248, 250, 255, 0.9) !important;
+		color: var(--df-text-secondary) !important;
+		font-weight: 500 !important;
+		transition: all 0.15s ease;
+	}
+
+		.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+			background: var(--df-bg-page) !important;
+			border-color: var(--df-border-color) !important;
+			color: var(--df-text-primary) !important;
+		}
+
+		.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+			background: linear-gradient(120deg, #5469ff, #3d5afe) !important;
+			border-color: transparent !important;
+			color: #ffffff !important;
+			box-shadow: 0 10px 22px rgba(61, 90, 254, 0.35);
+		}
+
+	.dataTables_wrapper .dataTables_info {
+		color: var(--df-text-muted);
+		font-weight: 500;
+		font-size: 0.875rem;
+		padding-top: 1rem;
+	}
+
+	.df-empty-card {
+		border-radius: var(--df-radius-lg);
+		background: rgba(255, 255, 255, 0.95);
+		border: 1px dashed rgba(148, 163, 184, 0.4);
+		padding: 2rem;
+		box-shadow: var(--df-shadow-sm);
+		color: var(--df-text-secondary);
+		font-weight: 500;
+		text-align: center;
+	}
+
+	/* Hide DataTables responsive control */
+	table.dataTable td.control,
+	table.dataTable th.control {
+		display: none !important;
+		width: 0 !important;
+		padding: 0 !important;
+	}
+
+	@@media (max-width:992px) {
+		.popup {
+			display: none !important;
+		}
+	}
+
+	/* ===== ENHANCED RESPONSIVE STYLES ===== */
+	@@media (max-width: 768px) {
+		.df-tabled-wrap {
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.dataTables_wrapper .dataTables_length,
+		.dataTables_wrapper .dataTables_filter {
+			float: none !important;
+			text-align: center !important;
+			margin-bottom: 0.5rem;
+		}
+
+		.dataTables_wrapper .dataTables_filter input {
+			width: 100% !important;
+			max-width: 280px;
+			margin: 0.5rem auto !important;
+		}
+
+		.dataTables_wrapper .dataTables_info,
+		.dataTables_wrapper .dataTables_paginate {
+			float: none !important;
+			text-align: center !important;
+		}
+
+		.dataTables_wrapper .dataTables_paginate .paginate_button {
+			padding: 0.4rem 0.6rem !important;
+		}
+
+		table.dataTable thead th,
+		table.dataTable tbody td {
+			font-size: 0.8rem !important;
+			padding: 0.5rem 0.25rem !important;
+		}
+
+		.df-doc-shell {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.5rem;
+		}
+
+		.df-meta-row {
+			flex-wrap: wrap;
+			gap: 4px;
+		}
+	}
+
+	@@media (max-width: 480px) {
+		.dataTables_wrapper .dataTables_paginate .paginate_button {
+			padding: 0.3rem 0.4rem !important;
+			font-size: 0.7rem !important;
+		}
+
+		table.dataTable thead th,
+		table.dataTable tbody td {
+			font-size: 0.7rem !important;
+			padding: 0.35rem 0.2rem !important;
+		}
+
+		.df-empty-card {
+			padding: 1.5rem 1rem;
+		}
+	}
+
+	.df-meta-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 13px;
+		color: #6b7280; /* soft gray */
+		margin-top: 4px;
+		line-height: 1.4;
+	}
+
+	.df-meta-item {
+		white-space: nowrap;
+	}
+
+		.df-meta-item span {
+			font-weight: 500;
+			color: #374151; /* slightly darker for date */
+		}
+
+	.df-meta-separator {
+		color: #9ca3af;
+		font-size: 14px;
+		line-height: 1;
+	}
+
+
+</style>
+
+@if (Model.sentRequests.Count == 0)
+{
+	<div class="df-empty-card text-center">
+		<i class="fa-regular fa-folder-open" style="font-size: 2rem; color: var(--df-text-muted); margin-bottom: 1rem;"></i>
+		<div>No Records Are Found</div>
+	</div>
+}
+else
+{
+	<div class="df-tabled-wrap">
+		<table id="sentList" class="table table-bordered table-checkable order-column full-width" style="width:100%;">
+			<thead style="text-align:center;display:none">
+				<tr>
+					<th style="text-align:justify">Form name</th>
+					<th>Count</th>
+					<th>Status</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody style="text-align:center">
+				@foreach (var item in Model.sentRequests)
+				{
+					@* var className = "";
+					if (item.MyCommonDoc.Status == "Completed")
+					{
+						className = "formcompletebtn";
+					}
+					else if (item.MyCommonDoc.Status == "In Progress")
+					{
+						className = "inprogressbtn";
+					}
+					else if (item.MyCommonDoc.Status == "New")
+					{
+						className = "newform";
+					}
+					else
+					{
+						className = "otherbtn";
+					} *@
+
+					<tr class="odd gradeX">
+						<td style="text-align: left !important;">
+							<div class="df-doc-shell">
+								<div class="df-doc-icon">
+									<i class="fa-regular fa-file-lines"></i>
+								</div>
+								<div class="df-doc-meta">
+									<span class="df-doc-title">@item.MyCommonDoc.DocumentName</span>
+									<div class="df-meta-row">
+										<span class="df-meta-item">
+											Created: <span class="convert-time"
+												  data-timestamp="@item.MyCommonDoc.CreatedAt.ToString("o")">
+												@item.MyCommonDoc.CreatedAt.ToString("dd/MM/yyyy")
+											</span>
+										</span>
+
+										<span class="df-meta-separator">•</span>
+
+										<span class="df-meta-item">
+											Expires: <span class="convert-time"
+												  data-timestamp="@item.MyCommonDoc.ExpieryDate.ToString("o")">
+												@item.MyCommonDoc.ExpieryDate.ToString("dd/MM/yyyy")
+											</span>
+										</span>
+									</div>
+
+								</div>
+							</div>
+						</td>
+
+						<td>
+							<div class="df-cell-stack">
+								<span class="df-cell-label">Count</span>
+								<a asp-action="BulksignSentFormList"
+								   asp-controller="FormRequests"
+								   asp-route-groupId="@item.MyCommonDoc.RequestGroupId"
+								   class="df-metric-chip" style="text-decoration: none;" onclick="document.getElementById('navigationNetworkOverlay').style.display='block'">
+									@item.CompleteStatusCount / @item.SentDocCount
+								</a>
+							</div>
+						</td>
+
+						<td>
+							<div class="df-status-block">
+								<span class="df-cell-label">Status</span>
+								<div class="status-container">
+
+									@if (item.CompleteStatusCount == 0)
+									{
+										<span class="newform" style="cursor:pointer;">New</span>
+									}
+									else if (item.CompleteStatusCount == item.SentDocCount)
+									{
+										<span class="formcompletebtn" style="cursor:pointer;">Completed</span>
+									}
+									else
+									{
+										<span class="inprogressbtn" style="cursor:pointer;">In Progress</span>
+									}
+								</div>
+							</div>
+						</td>
+						@* <td class="valigntop">
+							<div class="custom-dropdown btn-group">
+								<button class="btn btn-success deepGreen-bgcolor no-margin" type="button" data-toggle="dropdown" aria-expanded="false">
+									Actions
+									<i class="fa fa-caret-down"></i>
+								</button>
+								<div class="custom-dropdown-content" style="height: max-content !important;">
+
+							
+								<a asp-action="FillFormData" asp-route-tempId="@item.MyCommonDoc.FormId" asp-route-edmsId="@item.MyCommonDoc.EdmsId" asp-route-documentName="@item.MyCommonDoc.DocumentName" asp-route-flag="previewsend" asp-route-docuid="@item.MyCommonDoc._id" asp-route-Status="@item.MyCommonDoc.Status">
+									<i class="icon-pencil"></i>Preview
+								</a>
+									
+								</div> 
+							</div>
+						</td> *@
+						<td class="valigntop" style="text-align:center">
+							<div class="btn-group">
+								<a asp-action="BulksignSentFormList"
+								   asp-controller="FormRequests"
+								   asp-route-groupId="@item.MyCommonDoc.RequestGroupId"
+								   style="text-decoration: none; color: inherit;" onclick="document.getElementById('navigationNetworkOverlay').style.display='block'">
+									<img src='@Url.Content("~/assets/images/eyeicon.png")' asp-append-version="true" alt="View" />
+								</a>
+							</div>
+						</td>
+					</tr>
+
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+<script>
+	var loginOrgId = '@OrganizationUid';
+	var viewName = "SentDocuments";
+	var bulksignPermisson = '@bulksign';
+	$(document).ready(function () {
+		$('#networkOverlay').hide();
+
+
+		$('#sentList').DataTable({
+	    paging: true,
+		lengthChange: false,
+		pageLength: 5,
+		orderClasses: false,
+		stripeClasses: [],
+		info: true,
+		"ordering": false
+
+		});
+
+		updateTimestamps();
+
+
+		setTimeout(function () {
+			$('.dataTable').DataTable().columns.adjust().draw();
+		}, 100);
+
+
+	});
+
+
+
+
+	// Overlay function for showing loader
+	function showOverlay(matchedEsealData, matchedSignData) {
+		if (matchedEsealData == null && matchedSignData !== null) {
+			$('#overlay8').css('display', 'flex');
+		} else if (matchedEsealData !== null && matchedSignData === null) {
+			$('#overlay6').css('display', 'flex');
+
+		} else if (matchedEsealData !== null && matchedSignData !== null) {
+			$('#overlay7').css('display', 'flex');
+
+		} else {
+			$('#overlay8').css('display', 'flex');
+
+		}
+	}
+
+	// Overlay function for hiding loader
+	function hideOverlay(matchedEsealData, matchedSignData) {
+		if (matchedEsealData == null && matchedSignData !== null) {
+			$('#overlay8').hide();
+		} else if (matchedEsealData !== null && matchedSignData === null) {
+			$('#overlay6').hide();
+
+		} else if (matchedEsealData !== null && matchedSignData !== null) {
+			$('#overlay7').hide();
+		} else {
+			$('#overlay8').hide();
+
+		}
+
+	}
+
+
+
+
+</script>

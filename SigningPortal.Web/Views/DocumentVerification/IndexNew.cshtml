@@ -1,0 +1,1111 @@
+﻿@model SigningPortal.Web.ViewModels.DocumentVerificationViewModel.DocumentVerificationViewModel;
+@inject IConfiguration Configuration
+
+@{
+    ViewData["Title"] = "View";
+}
+
+@{
+    var noSignatureFound = TempData["NoSignatureFound"] as bool?;
+    var message = TempData["Message"] as string;
+    var currentStaging = Configuration["CurrentStaging"];
+}
+
+<style>
+    :root {
+        --font-primary: Inter, Roboto, system-ui, -apple-system, BlinkMacSystemFont;
+        --text-primary: #0f172a;
+        --text-secondary: #64748b;
+        --heading-weight: 600;
+        --body-weight: 500;
+        --dv-text-primary: #0f172a;
+        --dv-text-secondary: #64748b;
+        --dv-text-muted: #94a3b8;
+        --dv-bg-page: #f5f7fa;
+        --dv-bg-card: #ffffff;
+        --dv-bg-soft: #f8fafc;
+        --dv-bg-green-soft: #f0fdf4;
+        --dv-border: #e2e8f0;
+        --dv-border-soft: #edf0f4;
+        --dv-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+        --dv-radius-sm: 8px;
+        --dv-radius-md: 12px;
+    }
+
+    .dv-page {
+        font-family: var(--font-primary);
+        font-size: 14px;
+        line-height: 1.45;
+        color: var(--text-primary);
+        background: var(--dv-bg-page);
+        min-height: 100vh;
+        padding: 20px 20px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .dv-card {
+        background: var(--dv-bg-card);
+        border: 1px solid var(--dv-border-soft);
+        border-radius: var(--dv-radius-md);
+        box-shadow: var(--dv-shadow-sm);
+    }
+
+    .dv-header {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 0;
+    }
+
+    .dv-page-title {
+        margin: 0;
+        font-size: 21px;
+        line-height: 1.3;
+        font-weight: var(--heading-weight);
+        color: var(--text-primary);
+    }
+
+    .dv-page-subtitle {
+        margin: 0;
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .dv-info-strip {
+        background: #f1f5ff;
+        border: 1px solid #dbe7ff;
+        border-radius: var(--dv-radius-sm);
+        padding: 8px 12px;
+        font-size: 0.82rem;
+        color: #1e3a8a;
+        line-height: 1.35;
+    }
+
+    .dv-section {
+        padding: 12px;
+    }
+
+    .dv-section-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+        .dv-section-head i,
+        .dv-section-head svg {
+            color: #10b981;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+    .dv-section-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--dv-text-primary);
+    }
+
+    .dv-checks-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .dv-check-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 2px 0;
+        min-width: 0;
+    }
+
+    .dv-check-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+        .dv-check-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+
+    .dv-check-pill.signature .dv-check-icon {
+        background: #eafaf1;
+        color: #059669;
+    }
+
+    .dv-check-pill.document .dv-check-icon {
+        background: #eef5ff;
+        color: #2563eb;
+    }
+
+    .dv-check-pill.certificate .dv-check-icon {
+        background: #f3f0ff;
+        color: #7c3aed;
+    }
+
+    .dv-check-title {
+        margin: 0;
+        font-size: 0.82rem;
+        line-height: 1.2;
+        font-weight: 600;
+        color: var(--dv-text-primary);
+    }
+
+    .dv-check-description {
+        display: none;
+    }
+
+    #uploadheaderpart {
+        display: none !important;
+    }
+
+    .dv-upload-head {
+        padding: 8px 12px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #dbefe4;
+    }
+
+        .dv-upload-head i,
+        .dv-upload-head svg {
+            color: #10b981;
+        }
+
+    .uploadheader-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--dv-text-primary);
+    }
+
+    .upload-container {
+        margin-top: 0;
+        border-radius: 20px;
+        border: 1px solid #dfe6ef;
+        background: #ffffff;
+        padding: 22px;
+        box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+        max-width: 860px;
+    }
+
+    .content-box {
+        border: 2px dashed #d5dde8;
+        border-radius: 18px;
+        background: #f9fbfe;
+        text-align: center;
+        padding: 28px 18px;
+        min-height: 320px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .icon-shield-wrapper {
+        width: 58px;
+        height: 58px;
+        margin: 0 auto;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 0 0 1px #d2efe1;
+    }
+
+        .icon-shield-wrapper svg {
+            width: 30px;
+            height: 30px;
+            color: #10b981;
+            fill: currentColor;
+        }
+
+    .main-title {
+        margin: 0;
+        font-size: 1.65rem;
+        line-height: 1.2;
+        font-weight: 700;
+        color: var(--dv-text-primary);
+    }
+
+    .subtitle-text {
+        margin: 0;
+        font-size: 0.92rem;
+        color: var(--dv-text-secondary);
+        line-height: 1.4;
+        max-width: 520px;
+    }
+
+    .action-row {
+        margin-top: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .select-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        border-radius: 11px;
+        padding: 11px 24px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #fff;
+        background: #0E7C5A;
+        transition: 0.2s ease;
+        cursor: pointer;
+    }
+
+        .select-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(5, 150, 105, 0.26);
+        }
+
+    .button-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .drag-drop-text {
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--dv-text-secondary);
+    }
+
+    .formats-text {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: var(--dv-text-muted);
+    }
+
+    .formats-divider {
+        width: 1px;
+        height: 16px;
+        background: #d7dee8;
+    }
+
+    .verifying-box {
+        text-align: center;
+        background: #f8fffb;
+        border: 2px dashed #b9dcc9;
+        border-radius: 18px;
+        padding: 28px 18px;
+        min-height: 320px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loader-circle {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 8px;
+        background: #0E7C5A;
+        border-radius: 50%;
+        border: 4px solid #d1fae5;
+        animation: pulse 1.3s infinite ease-in-out;
+    }
+
+    @@keyframes pulse {
+        0% {
+            transform: scale(0.9);
+            opacity: 0.75;
+        }
+
+        50% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(0.9);
+            opacity: 0.75;
+        }
+    }
+
+    .verifying-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #065f46;
+    }
+
+    .verifying-subtext {
+        margin: 3px 0 0;
+        font-size: 0.82rem;
+        color: #0f766e;
+    }
+
+    .verify-success-card {
+        display: none;
+        padding: 16px;
+        background: transparent;
+        border-left: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .verify-success-row {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .verify-detail-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+
+        .verify-detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+    .verify-detail-label {
+        font-weight: 600;
+        font-size: 15px;
+        color: #212529;
+        min-width: 150px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .verify-detail-label i {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+    .verify-detail-colon {
+        margin: 0 8px;
+        color: var(--text-secondary);
+    }
+
+    .verify-detail-value {
+        font-size: 15px;
+        font-weight: var(--body-weight);
+        color: var(--text-primary);
+        flex: 1;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.2;
+        background: #0E7C5A;
+        color: #fff;
+        text-transform: uppercase;
+    }
+
+        .status-badge.invalid {
+            background: #9ca3af;
+            color: #fff;
+        }
+
+    .verify-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--dv-border);
+        background: #fff;
+        border-radius: 10px;
+        padding: 7px 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #1e293b;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+        .btn-outline:hover {
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+    .verify-wrapper {
+        display: none;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .verify-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+
+        .verify-card.signatories-card {
+            box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05);
+        }
+
+    .verify-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 16px;
+    }
+
+    .verify-header-left {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .info-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #10b981;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .verify-title-header {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+
+    .doc-row {
+        padding: 0 16px 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    #signatoriescontainer {
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: #ffffff;
+    }
+
+    .signer-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 23px 20px;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .signer-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2%;
+        flex-wrap: nowrap;
+    }
+
+    .signer-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+        .signer-left > div {
+            min-width: 0;
+        }
+
+    .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #198754;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.78rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .signer-role {
+        margin: 0;
+        font-size: 13px;
+        color: #4B5563;
+        letter-spacing: .04em;
+        font-weight: 700;
+    }
+
+    .signer-name {
+        margin: 0;
+        font-size: 15px;
+        font-weight: var(--heading-weight);
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .signer-middle {
+        display: inline-flex;
+        white-space: nowrap;
+        flex-shrink: 0;
+        flex-direction: column;
+    }
+
+    .verified-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #0E7C5A;
+        color: white;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+
+        .verified-badge.invalid {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+
+    .signer-bottom {
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding-top: 6px;
+        border-top: 1px dashed var(--dv-border);
+    }
+
+    .meta-label {
+        font-weight: 600;
+        font-size: 14px;
+        color: #6b7280;
+        letter-spacing: .03em;
+    }
+
+    .meta-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    @@media (max-width: 1024px) {
+        .verify-title-header,
+        .verify-card.signatories-card .verify-title-header {
+            font-size: 1.2rem;
+        }
+
+        .doc-label {
+            font-size: 0.68rem;
+        }
+
+        .doc-file {
+            font-size: 0.95rem;
+        }
+    }
+
+    @@media (max-width: 992px) {
+        .dv-checks-row {
+            gap: 8px 12px;
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .dv-page {
+            padding: 10px;
+            gap: 8px;
+        }
+
+        .dv-page-title {
+            font-size: 1.35rem;
+        }
+
+        .dv-checks-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .verify-success-row {
+            align-items: flex-start;
+        }
+
+        .verify-detail-row {
+            flex-wrap: wrap;
+        }
+
+        .verify-detail-label {
+            min-width: 120px;
+            font-size: 0.8rem;
+        }
+
+        .verify-detail-colon {
+            margin: 0 4px;
+        }
+
+        .verify-detail-value {
+            font-size: 0.8rem;
+        }
+
+        .verify-buttons {
+            margin-left: 0;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            font-size: 0.72rem;
+        }
+
+        .signer-role {
+            font-size: 11px;
+        }
+
+        .signer-name {
+            font-size: 13px;
+            max-width: 130px;
+        }
+
+        .meta-label,
+        .meta-value {
+            font-size: 10px;
+        }
+
+        .verified-badge {
+            font-size: 10px;
+            padding: 3px 8px;
+        }
+
+        .verify-buttons .btn-outline {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="dv-page">
+    @Html.AntiForgeryToken()
+    <div class="dv-header">
+        <h1 class="dv-page-title">Document Verification</h1>
+        <p class="dv-page-subtitle">Verify the authenticity and integrity of signed documents</p>
+    </div>
+
+    <div class="dv-info-strip d-none">
+        <strong>Adobe Reader Compatibility:</strong>
+        Open signed files directly in Adobe Reader for cross-verification.
+    </div>
+
+    <section class="dv-card dv-section d-none">
+        <div class="dv-section-head">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <h2 class="dv-section-title">Verification Checks</h2>
+        </div>
+
+        <div class="dv-checks-row">
+            <div class="dv-check-pill signature">
+                <div class="dv-check-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="dv-check-title">Signature Validity</p>
+                    <p class="dv-check-description">Verify all digital signatures</p>
+                </div>
+            </div>
+
+            <div class="dv-check-pill document">
+                <div class="dv-check-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="dv-check-title">Document Integrity</p>
+                    <p class="dv-check-description">Check for modifications</p>
+                </div>
+            </div>
+
+            <div class="dv-check-pill certificate">
+                <div class="dv-check-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="dv-check-title">Certificate Status</p>
+                    <p class="dv-check-description">Validate certificates</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="uploadheaderpart" class="d-none">
+        <div class="dv-upload-head">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m-6 4h12a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <h2 class="uploadheader-title">Upload Document to Verify</h2>
+        </div>
+    </section>
+
+    <section class="upload-container" id="uploadcontainer">
+        <div class="content-box" id="uploadBox">
+            <div class="icon-shield-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M8 0c-.69 0-1.227.208-1.79.507-.533.283-1.08.645-1.739.89A5.07 5.07 0 0 1 2.375 1.75h-.002a.75.75 0 0 0-.747.75v4.64c0 3.382 2.147 6.289 5.163 7.325l.684.235a.75.75 0 0 0 .487 0l.684-.235c3.016-1.036 5.163-3.943 5.163-7.325V2.5a.75.75 0 0 0-.747-.75h-.002a5.07 5.07 0 0 1-2.096-.353c-.66-.245-1.206-.607-1.74-.89C9.227.208 8.69 0 8 0z" />
+                </svg>
+            </div>
+
+            <h3 class="main-title">Verify Your Signed Document</h3>
+            <p class="subtitle-text">Securely upload your document to validate digital signatures and check for unauthorized modifications.</p>
+
+            <div class="action-row">
+                <button type="button" class="select-button" id="selectDocumentBtn">
+                    <svg class="button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Browse Document
+                </button>
+                <span class="drag-drop-text">or drag and drop file here</span>
+            </div>
+
+            <p class="formats-text">
+                <span><i class="fa-regular fa-file-lines"></i> PDF, DOCX, XLSX</span>
+                <span class="formats-divider"></span>
+                <span><i class="fa-solid fa-database"></i> MAX 25MB</span>
+            </p>
+        </div>
+
+        <div class="verifying-box" id="verifyingBox" style="display:none;">
+            <div class="loader-circle"></div>
+            <h3 class="verifying-title">Verifying Document...</h3>
+            <p class="verifying-subtext">Validating signatures and integrity</p>
+        </div>
+
+        <input type="file" id="hiddenFileInput" accept=".pdf,.docx,.xlsx" style="display:none;" />
+    </section>
+
+    <section id="verifiedSummary" class="verify-wrapper">
+        <div class="card shadow-sm p-2">
+            <div class="verify-header">
+                <div class="verify-header-left">
+                    <span class="verify-title-header">Signed Document Details</span>
+                </div>
+            </div>
+
+            <div id="verifysuccesscard" class="verify-success-card">
+                <div class="verify-success-row">
+                    <!-- Name -->
+                    <div class="verify-detail-row">
+                        <div class="verify-detail-label">
+                            <i class="bi bi-file-earmark-text-fill"></i> Name
+                        </div>
+                        <div class="verify-detail-colon">:</div>
+                        <div class="verify-detail-value" id="verifiedDocName"></div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="verify-detail-row">
+                        <div class="verify-detail-label">
+                            <i class="bi bi-info-circle-fill"></i> Status
+                        </div>
+                        <div class="verify-detail-colon">:</div>
+                        <div class="verify-detail-value">
+                            <span class="status-badge">Valid</span>
+                        </div>
+                    </div>
+
+                    <!-- Verified On -->
+                    <div class="verify-detail-row">
+                        <div class="verify-detail-label">
+                            <i class="bi bi-clock-fill"></i> Verified on
+                        </div>
+                        <div class="verify-detail-colon">:</div>
+                        <div class="verify-detail-value verified-time"></div>
+                    </div>
+
+                    <!-- Total Signatures -->
+                    <div class="verify-detail-row">
+                        <div class="verify-detail-label">
+                            <i class="fa-solid fa-users"></i> Total Signatures
+                        </div>
+                        <div class="verify-detail-colon">:</div>
+                        <div class="verify-detail-value" id="verifiedTotalSignatures"></div>
+                    </div>
+
+                    <div class="verify-buttons">
+                        <button class="btn-outline" id="verifyotherBtn">
+                            <i class="fa fa-undo"></i> Verify Another
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm p-2">
+            <div class="verify-header">
+                <div class="verify-header-left">
+                    <span class="verify-title-header">Signatories</span>
+                </div>
+            </div>
+            <div id="signatoriescontainer"></div>
+        </div>
+    </section>
+</div>
+
+<script>
+    var GetFileConfigurationUrl = '@Url.Action("GetFileConfiguration", "Documents")';
+    var okImageUrl = "@Url.Content($"~/Images_change/{currentStaging}/icons8-ok-241.png")"
+    var cancelImageUrl = "/img/icon/icons8-cancel-24.png";
+    $("#selectDocumentBtn").on("click", function () {
+        $("#hiddenFileInput").click();
+    });
+
+    $("#verifyotherBtn").on("click", function () {
+        verifyotherdocument();
+    });
+    $("#hiddenFileInput").on("change", function () {
+        let file = this.files[0];
+        if (!file) return;
+
+        $("#uploadBox").hide();
+        $("#verifyingBox").show();
+
+        verifyDocument(file);
+
+         this.value = "";
+    });
+
+    getFileConfiguration();
+    let isFileSelected = false;
+    function handleFileSelection(file) {
+        if (file.type === 'application/pdf') {
+            console.log(filesizerestrict * 1024 * 1024);
+            if (file.size <= filesizerestrict * 1024 * 1024) {
+                isFileSelected = true;
+                verifyDocument(file);
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Server Message',
+                    text: `File size should be up to ${filesizerestrict} MB.`,
+                    confirmButtonColor: "#acc33e",
+                    iconColor: "#acc33e"
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Server Message',
+                text: 'Please upload only pdf files',
+                confirmButtonColor: "#acc33e",
+                iconColor: "#acc33e"
+            });
+        }
+    }
+
+    function verifyDocument(file) {
+        let formData = new FormData();
+        formData.append("document", file);
+
+        $.ajax({
+            url: '@Url.Action("UploadFile", "DocumentVerification")',
+            type: "POST",
+            headers: {
+
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+            },
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (res) {
+                if (!res.success) {
+                    swal({
+                        type: 'info',
+                        title: 'Alert',
+                        text: res.message,
+                    });
+                    $("#verifyingBox").hide();
+                    $("#uploadBox").show();
+                    return;
+                }
+
+                showVerifiedUI(res);
+                populateVerifiedSummary(res.result);
+                renderSignatoryCards(res.result);
+                updateTimestamps_statuspage();
+            },
+            error: function () {
+                console.log("Error verifying document");
+                $("#verifyingBox").hide();
+                $("#uploadBox").show();
+            }
+        });
+    }
+
+    function hideVerifyingUI() {
+        $("#verifyingBox").hide();
+        $("#uploadBox").hide();
+        $("#uploadcontainer").hide();
+        $("#uploadheaderpart").hide();
+    }
+
+    function showVerifiedUI(res) {
+        hideVerifyingUI();
+        $(".verify-success-card").show();
+
+        if (res.success) {
+            $(".verify-title").text("Document Verified Successfully");
+            $(".verify-subtitle").text("All signatures are valid and the document has not been modified");
+
+            $(".status-badge")
+                .text("VALID")
+                .removeClass("invalid")
+                .addClass("valid");
+        } else {
+            $(".verify-title").text("Verification Failed");
+            $(".verify-subtitle").text(res.message);
+
+            $(".status-badge")
+                .text("INVALID")
+                .removeClass("valid")
+                .addClass("invalid");
+        }
+
+        let now = new Date();
+        $(".verified-time").text(`Verified on ${now.toLocaleDateString()}, ${now.toLocaleTimeString()}`);
+    }
+
+    function populateVerifiedSummary(data) {
+        // Populate document name in the new structure
+        $("#verifiedDocName").text(data[0].documentName || "-");
+
+        // Populate total signatures count
+        if (data.length > 1) {
+            $("#verifiedTotalSignatures").text(data.length);
+        }
+        else if (data.length === 1) {
+            $("#verifiedTotalSignatures").text(data.length);
+        }
+
+        // Set verified time
+        $(".verified-time").text(new Date().toLocaleString());
+
+        $("#verifiedSummary").css("display", "flex");
+    }
+
+    function getFileConfiguration() {
+        $.ajax({
+            type: 'GET',
+            url: GetFileConfigurationUrl,
+            success: function (data) {
+                filesizerestrict = data.fileSize;
+            },
+            error: function (xhr, status, error) {
+                ajaxErrorHandler(xhr, status, error);
+                resolve({ success: false, message: 'Error while getting fileconfiguration' });
+            },
+        });
+    }
+
+    function renderSignatoryCards(data) {
+        let container = $("#signatoriescontainer");
+        container.empty();
+
+        data.forEach((item) => {
+            let initials = "";
+            if (item.signedBy) {
+                let parts = item.signedBy.split(" ");
+                initials = parts[0][0] + (parts[1] ? parts[1][0] : "");
+            }
+
+            let verifiedText = item.signatureValid ? "VERIFIED" : "NOT VERIFIED";
+            let badgeClass = item.signatureValid ? "verified-badge" : "verified-badge invalid";
+
+            let cardHtml = `
+                <div class="signer-box">
+                    <div class="signer-top">
+                        <div class="signer-left">
+                            <div class="avatar">${initials.toUpperCase()}</div>
+                            <div>
+                                <p class="signer-role">SIGNATORY</p>
+                                <p class="signer-name">${item.signedBy || '-'}</p>
+                            </div>
+                        </div>
+                        <div class="signer-middle">
+                            <span class="meta-label">Signed on</span>
+                            <span class="meta-value convert-time" data-timestamp="${item.signedTime}">${item.signedTime || '-'}</span>
+                        </div>
+                        <div class="${badgeClass}">
+                            <span>&#10003;</span> ${verifiedText}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.append(cardHtml);
+        });
+    }
+
+    function verifyotherdocument() {
+        $("#uploadBox").show();
+        $("#uploadcontainer").show();
+        $("#uploadheaderpart").show();
+        $("#verifiedSummary").hide();
+        $("#verifysuccesscard").hide();
+    }
+</script>

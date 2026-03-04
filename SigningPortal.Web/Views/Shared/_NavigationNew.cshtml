@@ -1,0 +1,252 @@
+﻿@using System.Security.Claims
+
+@functions {
+    public class SidebarRule
+    {
+        public string Key { get; set; }
+
+        // Multiple controllers
+        public List<string> Controllers { get; set; } = new();
+
+        // Multiple actions per controller (or shared)
+        public List<string> Actions { get; set; } = new();
+    }
+}
+
+
+@{
+    var activeController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var activeAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var AccountType = User.FindFirst("AccountType")?.Value;
+
+    var sidebarRules = new List<SidebarRule>
+    {
+        new() { Key = "Dashboard", Controllers = {"Dashboard"}, Actions = { "Index" } },
+
+        new() { Key = "UploadDocument", Controllers = {"Documents" }, Actions = { "CreateDocuments" } },
+        new() { Key = "MyDocuments", Controllers = {"Documents" }, Actions = { "MyDocumentsList" } },
+        new() { Key = "SentDocuments", Controllers = {"Documents" }, Actions = { "SentDocumentsList" } },
+        new() { Key = "ReceivedDocuments", Controllers = {"Documents" }, Actions = { "ReceivedDocumentsList" } },
+        new() { Key = "ReferredDocuments", Controllers = {"Documents" }, Actions = { "ReferredDocumentsList" } },
+        new() { Key = "GroupSigningTranscations", Controllers = {"GroupSigning" }, Actions = { "Index" } },
+        new() { Key = "GroupSigningTranscations", Controllers = {"GroupSigning" }, Actions = { "DocumentsSigningStatus" } },
+
+        new() { Key = "Integration", Controllers = {"Integration"}, Actions = { "Index" } },
+
+        new() { Key = "ServiceFormsOrg", Controllers = {"DigitalForms" }, Actions = { "Orgindex","PublishedDocumentStatus" } },
+        new() { Key = "ServiceFormsGlobal", Controllers = {"DigitalForms" }, Actions = { "Globalindex","PublishedDocumentStatus" } },
+
+        new() { Key = "BulkSign", Controllers = {"BulkSign","Template" }, Actions = { "BulkSignIndexNew","CreateTemplate" } },
+        new() { Key = "BulkSign", Controllers = {"BulkSign","Template" }, Actions = { "UploadFilesNew"} },
+        new() { Key = "Delegation", Controllers = {"SignatureDelegation" }, Actions = { "Index" } },
+        new() { Key = "Forms", Controllers = {"DigitalForms","FormRequests" }, Actions = { "Index","CreateDigitalForm","EditForm","SendForm","FormResponses","FillFormData","BulksignSentFormList","DocumentStatus" } },
+
+        new() { Key = "VerifyDocument", Controllers = {"DocumentVerification" }, Actions = { "IndexNew" } }
+    };
+
+    string IsActive(string key)
+    {
+        return sidebarRules.Any(r =>
+            r.Key == key &&
+            activeController != null &&
+            activeAction != null &&
+            r.Controllers.Contains(activeController) &&
+            r.Actions.Contains(activeAction)
+        ) ? "active" : "";
+    }
+}
+
+<!-- Sidebar Brand Header with Unified Collapse/Expand Toggle -->
+<div class="sidebar-brand-header">
+    <div class="sidebar-brand-content">
+        <div class="sidebar-icon-wrapper" id="collapsedBrandIcon">
+            <i class="fa-solid fa-file-lines sidebar-icon"></i>
+        </div>
+        <div class="sidebar-title-group">
+            <h5 class="sidebar-title">Signing Portal</h5>
+            <small class="sidebar-subtitle">Digital Signing</small>
+        </div>
+    </div>
+    <button type="button"
+            class="sidebar-toggle-collapse hide-tablet hide-mobile"
+            id="sidebarToggleCollapse"
+            aria-label="Toggle sidebar"
+            title="Toggle sidebar">
+        <i class="fa-solid fa-chevron-left" id="toggleCollapseIcon"></i>
+    </button>
+</div>
+
+<!-- ===================== SIGNING SERVICES ===================== -->
+<div class="sidebar-nav p-3">
+    <div data-sidebar="group" class="relative flex w-full min-w-0 flex-col" style="padding-bottom:1rem">
+
+        <div class="sidebar-section-header px-3 py-2 text-xs uppercase tracking-wider" style="color:#64748B;font-weight:600">
+            SIGNING SERVICES
+        </div>
+
+        <ul class="d-flex flex-column" style="gap:0.25rem">
+
+            <li>
+                <a href="/dashboard" class="nav-link text-sm @(IsActive("Dashboard"))" data-tooltip="Dashboard">
+                    <i class="fa-solid fa-table-cells"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Documents" asp-action="CreateDocuments"
+                   class="nav-link text-sm @(IsActive("UploadDocument"))" data-tooltip="Upload Document">
+                    <i class="fa-solid fa-upload"></i>
+                    <span class="nav-text">Upload Document</span>
+                </a>
+            </li>
+            <li>
+                <a asp-controller="Documents" asp-action="Index"
+                   class="nav-link text-sm @(IsActive("AllDocument"))" data-tooltip="All Document">
+                    <i class="fa-regular fa-file-lines"></i>
+                    <span class="nav-text">Documents</span>
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Documents" asp-action="MyDocumentsList"
+                   class="nav-link text-sm @(IsActive("MyDocuments"))" data-tooltip="My Documents">
+                    <i class="fa-regular fa-file-lines"></i>
+                    <span class="nav-text">My Documents</span>
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Documents" asp-action="SentDocumentsList"
+                   class="nav-link text-sm @(IsActive("SentDocuments"))" data-tooltip="Sent Documents">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span class="nav-text">Sent Documents</span>
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Documents" asp-action="ReceivedDocumentsList"
+                   class="nav-link text-sm @(IsActive("ReceivedDocuments"))" data-tooltip="Received Documents">
+                    <i class="fa-solid fa-inbox"></i>
+                    <span class="nav-text">Received Documents</span>
+                </a>
+            </li>
+
+            <li>
+                <a asp-controller="Documents" asp-action="ReferredDocumentsList"
+                   class="nav-link text-sm @(IsActive("ReferredDocuments"))" data-tooltip="Referred Documents">
+                    <i class="fa-solid fa-user-check"></i>
+                    <span class="nav-text">Referred Documents</span>
+                </a>
+            </li>
+            @if (AccountType != "Self")
+            {
+                <li>
+                    <a asp-controller="GroupSigning" asp-action="Index"
+                       class="nav-link text-sm @(IsActive("GroupSigningTranscations"))" data-tooltip="Group Signing Transcations">
+                        <i class="fa-solid fa-file-signature"></i>
+                        <span class="nav-text">Group Signing Transactions</span>
+                    </a>
+                </li>
+               
+            }
+            <li>
+                <a asp-controller="Integration" asp-action="Index"
+                   class="nav-link text-sm @(IsActive("Integration"))" data-tooltip="Document Integration">
+                    <i class="fa-solid fa-file"></i>
+                    <span class="nav-text">Drive Integration</span>
+                </a>
+            </li>
+
+            @if (AccountType != "Self")
+            {
+                <li>
+                    <a asp-controller="DigitalForms" asp-action="Orgindex"
+                       class="nav-link text-sm @(IsActive("ServiceFormsOrg"))" data-tooltip="Service Forms">
+                        <i class="fa-regular fa-file"></i>
+                        <span class="nav-text">Service Forms</span>
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li>
+                    <a asp-controller="DigitalForms" asp-action="Globalindex"
+                       class="nav-link text-sm @(IsActive("ServiceFormsGlobal"))" data-tooltip="Service Forms">
+                        <i class="fa-regular fa-file"></i>
+                        <span class="nav-text">Service Forms</span>
+                    </a>
+                </li>
+            }
+
+        </ul>
+    </div>
+
+    <!-- ===================== CORPORATE SIGNING ===================== -->
+    @if (AccountType != "Self")
+    {
+        <div data-sidebar="group" class="relative flex w-full min-w-0 flex-col" style="padding-bottom:1rem">
+
+            <div class="sidebar-section-header px-3 py-2 text-xs uppercase tracking-wider" style="color:#64748B;font-weight:600">
+                CORPORATE SIGNING
+            </div>
+
+            <ul class="d-flex flex-column" style="gap:0.25rem">
+
+                <li>
+                    <a asp-controller="BulkSign" asp-action="BulkSignIndexNew"
+                       class="nav-link text-sm @(IsActive("BulkSign"))" data-tooltip="Bulk Sign">
+                        <i class="fa-solid fa-file-signature"></i>
+                        <span class="nav-text">Bulk Sign</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a asp-controller="SignatureDelegation" asp-action="Index"
+                       class="nav-link text-sm @(IsActive("Delegation"))" data-tooltip="Delegation">
+                        <i class="fa-solid fa-user-group"></i>
+                        <span class="nav-text">Delegation</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a asp-controller="DigitalForms" asp-action="Index"
+                       class="nav-link text-sm @(IsActive("Forms"))" data-tooltip="Forms">
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span class="nav-text">Forms</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    }
+
+    <!-- ===================== UTILITIES ===================== -->
+
+    <div data-sidebar="group" class="relative flex w-full min-w-0 flex-col">
+
+        <div class="sidebar-section-header px-3 py-2 text-xs uppercase tracking-wider" style="color:#64748B;font-weight:600">
+            UTILITIES
+        </div>
+
+        <ul class="d-flex flex-column" style="gap:0.25rem">
+
+            <li>
+                <a asp-controller="DocumentVerification" asp-action="IndexNew"
+                   class="nav-link text-sm @(IsActive("VerifyDocument"))" data-tooltip="Verify Document">
+                    <i class="fa-regular fa-circle-check"></i>
+                    <span class="nav-text">Verify Document</span>
+                </a>
+            </li>
+
+            <li class="d-none">
+                <a href="/preferences"
+                   class="nav-link text-sm" data-tooltip="Preferences">
+                    <i class="fa-solid fa-gear"></i>
+                    <span class="nav-text">Preferences</span>
+                </a>
+            </li>
+
+        </ul>
+    </div>
+</div>

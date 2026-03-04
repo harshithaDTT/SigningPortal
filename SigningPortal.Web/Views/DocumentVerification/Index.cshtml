@@ -1,0 +1,242 @@
+﻿@model SigningPortal.Web.ViewModels.DocumentVerificationViewModel.DocumentVerificationViewModel;
+
+@{
+    ViewData["Title"] = "View";
+}
+
+@{
+    var noSignatureFound = TempData["NoSignatureFound"] as bool?;
+    var message = TempData["Message"] as string;
+}
+
+
+<style>
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        margin: 20px auto;
+        width: 500px;
+        
+    }
+
+    .submit-button {
+        width: max-content !important;
+    }
+
+    .heading {
+        text-align: center;
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+
+    .upload-box-inner {
+        flex: 1 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px;
+        border-radius: 2px;
+        border: 2px dashed #eee;
+        background-color: #fafafa;
+        color: #bdbdbd;
+        outline: none;
+        transition: border .24s ease-in-out;
+    }
+
+    @@-moz-document url-prefix() {
+        .upload-box-inner {
+            padding: 30px; /* Adjusted padding for Firefox */
+        }
+    }
+
+    .upload-box-inner input[type="file"] {
+        font-size: 50px;
+        opacity: 0;
+        position: absolute;
+        left: 0;
+        top: 0;
+        cursor: pointer;
+    }
+
+    .upload-button {
+        background-color: #acc33e;
+        color: white;
+        padding: 8px;
+        border: hidden;
+        border-radius: 2px;
+        cursor: pointer;
+        margin-top: 10px;
+        align-self: flex-start;
+    }
+
+    .document-name {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .document-info {
+        font-size: 14px;
+        color: gray;
+        margin-bottom: 10px;
+    }
+
+    .buttons {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        margin-left: 14px;
+    }
+
+    .submit-button {
+        border: none;
+        color: #fff;
+        padding: 8px 24px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 10px 20px;
+        border-radius: 6px;
+        width: 100px;
+    }
+
+    .uploaded-file {
+        margin-top: 20px;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .uploaded-file .button {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .uploaded-file img {
+        max-width: 100%;
+        height: 138px;
+        width: 138px;
+    }
+
+    .highlight {
+        border: 2px dashed #4CAF50;
+    }
+
+
+
+    .card-content {
+        overflow-y: auto; /* Add overflow-y to enable vertical scrolling if needed */
+    }
+
+</style>
+
+
+<!-- Add SweetAlert2 library -->
+<script src="~/local-cdns/Shared/sweetalert2/11/sweetalert2.min.js"></script>
+<script src="~/local-cdns/Shared/jquery/3.6.0/jquery.min.js"></script>
+<link rel="stylesheet" href="~/local-cdns/Shared/animate-css/4.1.1/animate.min.css" />
+
+<div class="row">
+    <div class="col-md-12" style="height:100%">
+        <div class="card c-main" style="height:100%">
+            <div class="card-content" style="scrollbar-width:none">
+                <div class="card-body background-image w-100" style="padding-left:3%">
+                    <form id="upload-form" enctype="multipart/form-data" method="post" asp-action="Upload">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h3 class="common-heading-color" style="margin: -10px 0px -5px; font-size: 25px;">Document Verification</h3>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-12 col-md-8 col-lg-6">
+                                Upload Document for Verification:<span style="color: red;">*</span>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-12 col-md-8 col-lg-6">
+                                <div role="button" tabindex="0" class="upload-box-inner" id="drop-area" style="cursor:pointer">
+                                    <input asp-for="File" type="file" autocomplete="off" tabindex="-1" id="document-upload" style="display: none;">
+                                    <p style="color:#bdbdbd;font-size: 18px;margin-bottom: -10px;">Drag 'n' drop one file here (PDF), or click to select</p>
+                                    <br />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="uploaded-file" id="uploaded-file-info"></div>
+                        <div class="buttons hidden" id="buttons">
+                            <div style="display: flex; align-items: center; justify-content: flex-start; width: 100%;">
+                                <button class="submit-button" id="remove-button" style="margin-top: -0.5%; margin-left: 0.5%;">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <button type="submit" class="submit-button" id="submit-button">Submit</button>
+                        </div>
+                    </form>
+                    <div id="UploadDiv"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Loader -->
+<div id="loader" class="overlay hidden">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading Details</div>
+</div>
+<!-- webviewer variable -->
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+
+<script>
+    var GetFileConfigurationUrl = '@Url.Action("GetFileConfiguration", "Documents")';
+
+    $(document).ready(function () {
+        $('#DocumentVerificationMenu').addClass('active');
+        $('#networkOverlay').hide();
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+    @if (noSignatureFound.HasValue && noSignatureFound.Value)
+    {
+        <text>
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Server Message',
+                            text: '@message',
+                            confirmButtonColor: "#acc33e",
+                            iconColor: "#acc33e"
+                        });
+        </text>
+
+    }
+    });
+
+</script>
+@if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    <script src="~/js/DocumentVerification/Index.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+else
+{
+    <script src="~/dist/DocumentVerification/Index.min.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+
+
+

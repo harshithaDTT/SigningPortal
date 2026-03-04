@@ -1,0 +1,2439 @@
+﻿@using System.Security.Claims;
+@using Microsoft.Extensions.Configuration;
+@using Newtonsoft.Json;
+@using SigningPortal.Core.DTOs;
+@inject IConfiguration Configuration;
+@{
+    var rawName = User.FindFirst(ClaimTypes.Name)?.Value ?? User.Identity?.Name ?? string.Empty;
+    var firstWord = (rawName ?? string.Empty).Split(' ').FirstOrDefault() ?? string.Empty;
+    var sanitizedFirstWord = firstWord?.Trim() ?? string.Empty;
+    var initials = "--";
+    var initialsSource = !string.IsNullOrWhiteSpace(sanitizedFirstWord)
+        ? sanitizedFirstWord
+        : (rawName?.Trim() ?? string.Empty);
+    if (!string.IsNullOrWhiteSpace(initialsSource))
+    {
+        initials = initialsSource.Substring(0, System.Math.Min(2, initialsSource.Length));
+    }
+
+    var email = User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
+    var accountType = User.FindFirst("AccountType")?.Value ?? "Self";
+    var isSelfAccount = string.Equals(accountType ?? "Self", "Self", System.StringComparison.OrdinalIgnoreCase);
+    var organizationName = isSelfAccount ? string.Empty : (User.FindFirst("OrganizationName")?.Value ?? string.Empty);
+    var organizationLabel = string.IsNullOrWhiteSpace(organizationName) ? "Not set" : organizationName;
+    var suid = User.FindFirst(ClaimTypes.UserData)?.Value ?? string.Empty;
+    var displayName = string.IsNullOrWhiteSpace(rawName) ? email : rawName;
+    var accountTypeLabel = string.IsNullOrWhiteSpace(accountType) ? "Self" : accountType;
+    var selfEmails = User.FindFirst("SelfEmails").Value;
+    var IdpToken = User.FindFirst("ID_Token").Value;
+
+    var userClaim = User.FindFirst("user")?.Value;
+    UserDTO userDto = null;
+    if (!string.IsNullOrEmpty(userClaim))
+    {
+        userDto = JsonConvert.DeserializeObject<UserDTO>(userClaim);
+    }
+    var organizationId = User.FindFirst("OrganizationUid")?.Value ?? "";
+}
+<style>
+    .sidebar-footer {
+        padding: 1rem 0.25rem 1.25rem;
+        border-top: 1px solid #e5e7eb;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        padding-right: 0px;
+    }
+
+    .profile-menu-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .user-box {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+        width: 100%;
+    }
+
+    .user-box-left {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .user-box-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .avatar-wrapper {
+        position: relative;
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+    }
+
+    .avatar-trigger {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        border: none;
+        padding: 0;
+        background: #ecfdf5;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .avatar-trigger:hover {
+            box-shadow: 0 10px 25px rgba(15, 157, 143, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .avatar-trigger:focus-visible {
+            outline: 2px solid #0f9d8f;
+            outline-offset: 2px;
+        }
+
+        .avatar-trigger .avatar-loading,
+        .avatar-trigger .avatar-circle,
+        .avatar-trigger .avatar-photo {
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+        }
+
+    .avatar-loading {
+        background: #d1fae5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .avatar-loading img {
+            width: 20px;
+            height: 20px;
+        }
+
+    .avatar-photo {
+        width: 42px;
+        height: 42px;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+        .avatar-photo.is-visible {
+            opacity: 1;
+        }
+
+    .avatar-circle {
+        background: radial-gradient(circle, #064e3b, #047857);
+        border: 2px solid #10b981;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: opacity 0.2s ease;
+    }
+
+        .avatar-circle.is-hidden {
+            opacity: 0;
+        }
+
+    .user-info {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .user-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #111827;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .user-email {
+        font-size: 11px;
+        color: #64748b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .user-icon {
+        flex-shrink: 0;
+        color: #475569;
+        width: 16px;
+        height: 16px;
+    }
+
+    .user-menu-button {
+        border: none;
+        background: transparent;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+        .user-menu-button:focus-visible {
+            outline: 2px solid #0f9d8f;
+            outline-offset: 2px;
+            border-radius: 8px;
+        }
+
+    .profile-dropdown {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(100% + 12px);
+        background: transparent;
+        border-radius: 12px;
+        padding: 0;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+        opacity: 0;
+        transform: translateY(10px);
+        pointer-events: none;
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        z-index: 1200;
+        max-width: 280px;
+        min-width: 260px;
+        margin-left: auto;
+        margin-right: 0;
+    }
+
+        .profile-dropdown::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            right: 32px;
+            border-width: 10px 10px 0 10px;
+            border-style: solid;
+            border-color: transparent transparent transparent transparent;
+        }
+
+        .profile-dropdown.is-open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+    /* Collapsed sidebar profile dropdown positioning */
+    .sidebar.collapsed .profile-dropdown {
+        left: calc(var(--sidebar-collapsed-width) + 8px);
+        right: auto;
+        bottom: 0;
+        min-width: 260px;
+        max-width: 280px;
+    }
+
+    .profile-identity {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+
+    /* Header style that matches the sample: teal background with white text */
+    .profile-dropdown-card {
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .profile-dropdown-header {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 14px 16px;
+        background: linear-gradient(180deg,#0f9d8f 0%,#0b8f7a 100%);
+        color: #ffffff;
+    }
+
+        .profile-dropdown-header .profile-avatar-chip {
+            width: 48px;
+            height: 48px;
+            border-radius: 999px;
+            background: #ffffff;
+            color: #0f9d8f;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(15,23,42,0.08);
+        }
+
+        .profile-dropdown-header .profile-identity-name,
+        .profile-dropdown-header .profile-identity-email {
+            color: #ffffff;
+        }
+
+    .profile-menu-list {
+        list-style: none;
+        margin: 0;
+        padding: 8px 8px 12px 8px;
+        background: #ffffff;
+    }
+
+    .profile-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        color: #0f172a;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+        .profile-menu-item:hover {
+            background: #f8fafc;
+            text-decoration: none;
+        }
+
+    .menu-icon {
+        width: 20px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .signout-link {
+        color: #ef4444;
+        font-weight: 700;
+    }
+
+    .profile-avatar-chip {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: #ecfdf5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #047857;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease;
+    }
+
+        .profile-avatar-chip.has-image {
+            background-image: var(--avatar-chip-image, none);
+            background-size: cover;
+            background-position: center;
+            color: transparent;
+        }
+
+            .profile-avatar-chip.has-image span {
+                opacity: 0;
+            }
+
+    .profile-identity-name {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+    }
+
+    .profile-identity-email {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-bottom: 0;
+    }
+
+    .profile-divider {
+        width: 100%;
+        height: 1px;
+        background: #e2e8f0;
+        margin: 1rem 0;
+    }
+
+    .profile-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin-bottom: 0.85rem;
+    }
+
+        .profile-field:last-of-type {
+            margin-bottom: 1.1rem;
+        }
+
+    .profile-field-label {
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        font-weight: 600;
+    }
+
+    .profile-field-value {
+        font-size: 0.95rem;
+        color: #0f172a;
+        font-weight: 600;
+    }
+
+    .profile-field-input {
+        border: 1px solid #cbd5f5;
+        border-radius: 10px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.95rem;
+        background-color: #f8fafc;
+        color: #0f172a;
+        outline: none;
+        height: 36px;
+        transition: border-color 0.2s ease;
+        background-repeat: no-repeat;
+        background-position: 0.65rem center;
+        padding-left: 2.25rem;
+    }
+
+        .profile-field-input.is-loading {
+            background-image: url('/img/icon/loaderGif.gif');
+            background-size: 18px;
+        }
+
+    .profile-signout {
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.65rem 0;
+        border-radius: 999px;
+        border: none;
+        background: #0f9d8f;
+        color: #ffffff;
+        font-weight: 600;
+        text-decoration: none;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+        .profile-signout:hover {
+            text-decoration: none;
+            background: #0d8c7e;
+            box-shadow: 0 15px 25px rgba(13, 140, 126, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .profile-signout i {
+            font-size: 0.9rem;
+        }
+
+    .notification-bell-wrapper {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .notification-bell-wrapper:hover {
+            background: #e2e8f0;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+        }
+
+    .notification-bell-icon {
+        width: 18px;
+        height: 18px;
+        color: #0f9d8f;
+        font-size: 18px;
+        transition: color 0.3s ease;
+    }
+
+    .notification-bell-wrapper:hover .notification-bell-icon {
+        color: #047857;
+    }
+
+    .notification-bell-wrapper.has-unread .notification-bell-icon {
+        animation: bellPulse 2s ease-in-out infinite;
+    }
+
+    @@keyframes bellPulse {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.15);
+            opacity: 0.85;
+        }
+    }
+
+    .notification-launcher {
+        display: none;
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        min-width: 10px;
+        height: 11px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: #ef4444;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #ffffff;
+        box-shadow: 0 1px 6px rgba(239, 68, 68, 0.15);
+    }
+
+    .drawer-header {
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        background: #0f9d8f;
+        color: #ffffff;
+        flex-shrink: 0;
+    }
+
+    .drawer-header-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+    }
+
+    .drawer-header-icon {
+        font-size: 1.35rem;
+    }
+
+    .drawer-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+    }
+
+    .drawer-subtitle {
+        display: none;
+    }
+
+    .drawer-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .icon-button {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: transparent;
+        color: #ffffff;
+        font-size: 1.35rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+
+        .icon-button:hover {
+            color: #dcfce7;
+        }
+
+    .text-button {
+        display: none;
+    }
+
+    .drawer-body {
+        padding: 0;
+        overflow-y: auto;
+        flex: 1;
+        background: #f8fbff;
+    }
+
+    .drawer-loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: #475467;
+        padding: 2rem 1.5rem;
+    }
+
+        .drawer-loader[hidden] {
+            display: none;
+        }
+
+    @@keyframes drawer-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .notification-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .notification-card {
+        display: flex;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #dbeafe;
+        background: #eef6ff;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        position: relative;
+    }
+
+        .notification-card:hover {
+            background-color: #e2efff;
+        }
+
+        .notification-card:last-child {
+            border-bottom: none;
+        }
+
+    .card-icon {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+        .card-icon i {
+            font-size: 22px;
+            color: var(--primary-blue);
+        }
+
+        .card-icon.signed {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .card-icon.received {
+            background: #faf5ff;
+            color: #9333ea;
+        }
+
+        .card-icon.pending {
+            background: #fff7ed;
+            color: #f97316;
+        }
+
+    .card-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+
+    .card-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #0f172a;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .card-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: #2563eb;
+        margin-top: 0.2rem;
+    }
+
+    .card-text {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .card-meta {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .drawer-empty-state {
+        text-align: center;
+        color: #94a3b8;
+        padding: 3rem 1.5rem;
+        font-size: 0.9rem;
+        background: #ffffff;
+    }
+
+        .drawer-empty-state[hidden] {
+            display: none;
+        }
+
+
+    .view-all-link {
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.65rem 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #0f9d8f;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        border: 1px solid #0f9d8f;
+        transition: background 0.2s ease;
+    }
+
+        .view-all-link:hover {
+            background: #f0fdfa;
+            text-decoration: none;
+            color: #0f9d8f;
+        }
+
+    .notification-toast {
+        position: fixed;
+        right: 32px;
+        bottom: 32px;
+        width: 340px;
+        border-radius: 12px;
+        background: #0f9d8f;
+        color: #ffffff;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        padding: 1rem 1.25rem;
+        transform: translateY(16px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        z-index: 1150;
+    }
+
+        .notification-toast.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+    .toast-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+    }
+
+    .toast-icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .toast-body {
+        flex: 1;
+    }
+
+    .toast-message {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .toast-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .toast-btn {
+        border: none;
+        border-radius: 6px;
+        padding: 0.4rem 0.9rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+    }
+
+        .toast-btn:hover {
+            opacity: 0.9;
+        }
+
+    .toast-btn-primary {
+        background: #ffffff;
+        color: #0f9d8f;
+    }
+
+    .toast-btn-ghost {
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+    }
+
+    .toast-close {
+        background: transparent;
+        border: none;
+        color: #ffffff;
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    @@media (max-width: 768px) {
+
+        .notification-toast {
+            right: 16px;
+            left: 16px;
+            width: auto;
+            bottom: 16px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .notification-toast {
+            right: 8px;
+            left: 8px;
+            bottom: 8px;
+            padding: 0.875rem 1rem;
+        }
+
+        .toast-message {
+            font-size: 0.85rem;
+        }
+
+        .toast-btn {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.75rem;
+        }
+    }
+
+    .drawer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        z-index: 1099;
+    }
+
+        .drawer-overlay.is-visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+    /* Avatar wrapper for profile image only */
+    .avatar-wrapper {
+        position: relative;
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+    }
+
+    /* Updated notification drawer positioning - relative to user-box */
+    .notification-drawer {
+        position: absolute;
+        right: 0;
+        left: 0;
+        top: auto;
+        bottom: calc(100% + 12px);
+        width: 200%;
+        max-width: 360px;
+        background: #ffffff;
+        box-shadow: 0 -4px 24px rgba(15, 23, 42, 0.15), 0 -2px 8px rgba(15, 23, 42, 0.1);
+        display: flex;
+        flex-direction: column;
+        transform: translateY(16px);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+        z-index: 1100;
+        border-radius: 12px;
+        overflow: hidden;
+        max-height: 500px;
+    }
+
+        .notification-drawer.is-open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+
+
+    /* Adjust for mobile screens */
+    @@media (max-width: 1024px) {
+        .sidebar-footer {
+            padding: 1rem;
+            padding-right: 0.5rem;
+        }
+
+        .user-box {
+            flex-wrap: nowrap;
+        }
+
+        .avatar-wrapper {
+            width: 42px;
+            height: 42px;
+        }
+
+        .avatar-trigger {
+            width: 42px;
+            height: 42px;
+        }
+
+        .user-name {
+            font-size: 12px;
+        }
+
+        .user-email {
+            font-size: 10px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .notification-drawer {
+            max-width: 280px;
+            left: auto;
+            right: 0;
+        }
+
+        .user-box-left {
+            gap: 0.5rem;
+        }
+
+        .user-box-right {
+            gap: 0.35rem;
+        }
+
+        .notification-bell-wrapper {
+            width: 32px;
+            height: 32px;
+        }
+
+        .notification-bell-icon {
+            width: 16px;
+            height: 16px;
+            font-size: 16px;
+        }
+
+        .profile-dropdown {
+            max-width: 280px;
+        }
+
+        .sidebar-footer {
+            padding: 0.875rem;
+        }
+    }
+
+    /* Small screens */
+    @@media (max-width: 480px) {
+        .notification-drawer {
+            left: 0;
+            right: 0;
+            max-width: none;
+            width: calc(100% - 1rem);
+        }
+
+        .profile-dropdown {
+            left: 0;
+            right: 0;
+            max-width: none;
+            width: calc(100% - 1rem);
+        }
+
+        .user-info {
+            max-width: 100px;
+        }
+
+        .user-name {
+            font-size: 11px;
+        }
+
+        .user-email {
+            font-size: 9px;
+        }
+    }
+
+    #profileMenuToggle > * {
+        pointer-events: none;
+    }
+
+    .clear-all {
+        font-size: 12px;
+        border-radius: 8px;
+        border: 1px solid #cbd5f5;
+        padding: 6px 8px;
+        background: transparent;
+        cursor: pointer;
+        background-color: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+        .clear-all:hover {
+            transform: translateY(-1px);
+        }
+
+    /* ===== Organization Hover Popup ===== */
+    .organization-dropdown {
+        position: relative;
+        width: 100%;
+    }
+
+    .org-hover-trigger {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #1e293b;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        outline: none;
+        -webkit-appearance: none;
+    }
+
+        .org-hover-trigger:hover,
+        .org-hover-trigger.is-active {
+            border-color: #0f9d8f;
+            background: #f0fdfa;
+        }
+
+    .org-hover-trigger-text {
+        flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: left;
+    }
+
+    .org-hover-chevron {
+        flex-shrink: 0;
+        width: 14px;
+        height: 14px;
+        color: #94a3b8;
+        transition: color 0.2s ease;
+    }
+
+    .org-hover-trigger:hover .org-hover-chevron,
+    .org-hover-trigger.is-active .org-hover-chevron {
+        color: #0f9d8f;
+    }
+
+    /* ---- Floating popup (portalled to body) ---- */
+    .org-popup {
+        position: fixed;
+        z-index: 99999;
+        min-width: 260px;
+        max-width: 320px;
+        background: #FFFFFF;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.16), 0 6px 16px rgba(15, 23, 42, 0.08);
+        padding: 8px;
+        opacity: 0;
+        transform: translateX(-8px);
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        max-height: 360px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+    }
+
+        .org-popup.is-visible {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+
+        .org-popup::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .org-popup::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+
+        .org-popup::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+    .org-popup-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        position: relative;
+    }
+
+        .org-popup-item:hover {
+            background: #F6F8FA;
+        }
+
+        .org-popup-item.is-active {
+            background: #F3F4F6;
+            color: #111827;
+        }
+
+        .org-popup-item.is-switching {
+            opacity: 0.55;
+            pointer-events: none;
+        }
+
+    .org-popup-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 15px;
+        background: #ececec;
+        color: #6B7280;
+        border-radius: 8px;
+        border: 1px solid #ddddde;
+    }
+
+    .org-popup-item.is-active .org-popup-icon {
+        background: linear-gradient(135deg, #0f9d8f 0%, #047857 100%);
+        color: #ffffff;
+    }
+
+    .org-popup-name {
+        flex: 1;
+        min-width: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e293b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.35;
+    }
+
+    .org-popup-item.is-active .org-popup-name {
+        color: #047857;
+        font-weight: 700;
+    }
+
+    .org-popup-loader {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 18px 12px;
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+        .org-popup-loader.is-visible {
+            display: flex;
+        }
+
+        .org-popup-loader .org-popup-spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #0f9d8f;
+            border-radius: 50%;
+            animation: orgPopupSpin 0.6s linear infinite;
+        }
+
+    @@keyframes orgPopupSpin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* ===== Organization Switch Modal ===== */
+    .org-switch-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 100000;
+    }
+
+        .org-switch-modal-overlay.is-visible {
+            display: flex;
+        }
+
+    .org-switch-modal {
+        width: min(480px, calc(100% - 32px));
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 25px 60px rgba(15, 23, 42, 0.2);
+        padding: 28px 28px 24px;
+        text-align: center;
+    }
+
+    .org-switch-modal-icon {
+        margin: 0 auto 16px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0f9d8f;
+        font-size: 44px;
+    }
+
+    .org-switch-modal-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 8px;
+    }
+
+    .org-switch-modal-message {
+        font-size: 14px;
+        color: #64748b;
+        margin-bottom: 18px;
+        line-height: 1.5;
+        font-weight: 400;
+    }
+
+        .org-switch-modal-message strong {
+            color: #0f9d8f;
+            font-weight: 700;
+        }
+
+    .org-switch-modal-list {
+        list-style: none;
+        padding: 12px 14px;
+        margin: 0 0 22px;
+        background: #edf6fc;
+        border-radius: 14px;
+        text-align: left;
+    }
+
+        .org-switch-modal-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            color: #475569;
+            font-weight: 400;
+            margin: 8px 0;
+        }
+
+        .org-switch-modal-list i {
+            color: #10b981;
+            font-size: 14px;
+        }
+
+    .org-switch-modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: space-evenly;
+    }
+
+        .org-switch-modal-actions .btn-secondary,
+        .org-switch-modal-actions .btn-primary {
+            min-width: 160px;
+            padding: 13px 26px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .org-switch-modal-actions .btn-secondary {
+            background: #ffffff;
+            color: #1e293b;
+            border-color: #e2e8f0;
+        }
+
+        .org-switch-modal-actions .btn-primary {
+            background: #059669;
+            color: #ffffff;
+            border-color: #0f9d8f;
+        }
+
+    .org-switch-modal-loading {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 10px 0;
+        font-size: 13.5px;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .org-switch-modal-overlay.is-loading .org-switch-modal-loading {
+        display: flex;
+    }
+
+    .org-switch-modal-overlay.is-loading .org-switch-modal-actions .btn-secondary,
+    .org-switch-modal-overlay.is-loading .org-switch-modal-actions .btn-primary {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .org-switch-loading-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #e2e8f0;
+        border-top-color: #059669;
+        border-radius: 50%;
+        animation: orgSwitchSpin 0.7s linear infinite;
+    }
+
+    @@keyframes orgSwitchSpin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+</style>
+
+<div class="sidebar-footer">
+    <div class="profile-menu-container">
+        <div class="user-box">
+            <div class="user-box-left">
+                <div class="avatar-wrapper">
+                    <button type="button"
+                            class="avatar-trigger"
+                            id="profileMenuToggle"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            aria-controls="profileDropdownMenu"
+                            title="Open profile menu">
+                        <div class="avatar-loading" id="SidebarAvatarLoader">
+                            <img src='@Url.Content("~/img/icon/PlainProfileImage.png")' asp-append-version="true" alt="Profile avatar loading" />
+                        </div>
+                        <img id="sidebarProfileImage"
+                             class="avatar-photo"
+                             src="@Url.Action("GetProfileImage", "Login", new { userId = suid })"
+                             alt="Profile avatar"
+                             asp-append-version="true" />
+                        <div class="avatar-circle" id="sidebarAvatarFallback">
+                            @initials.ToUpperInvariant()
+                        </div>
+                    </button>
+                </div>
+                <div class="user-info">
+                    <div class="user-name text-truncate">
+                        @displayName
+                    </div>
+                    <div class="user-email text-truncate">
+                        @email
+                    </div>
+                </div>
+            </div>
+            <div class="user-box-right">
+                <div class="notification-bell-wrapper" id="notificationToggle" aria-expanded="false" aria-controls="notificationDrawer" title="Notifications">
+                    <i class="fa-solid fa-bell notification-bell-icon"></i>
+                    <span class="notification-badge" id="notificationBadge" hidden></span>
+                </div>
+                <button type="button" class="user-menu-button" id="profileMenuMetaToggle" aria-label="Toggle profile menu">
+                    <i class="fa-solid fa-ellipsis-vertical menu-icon"></i>
+                </button>
+            </div>
+            <section id="notificationDrawer" class="notification-drawer" aria-hidden="true">
+                <div class="drawer-header">
+                    <div class="drawer-header-content">
+                        <i class="fa-solid fa-bell drawer-header-icon"></i>
+                        <h2 class="drawer-title">Notifications</h2>
+                    </div>
+                    <div class="drawer-actions">
+                        <button type="button" class="clear-all" id="clearButtonDrawer">Clear All</button>
+                        <button type="button" class="icon-button" id="notificationCloseButton" aria-label="Close notification panel">&times;</button>
+                    </div>
+                </div>
+                <div class="drawer-body" id="notificationScrollContainer">
+                    <div class="drawer-loader" id="notificationDrawerLoader" hidden>
+                        <span class="spinner" style="width:18px;height:18px"></span>
+                        <span>Loading notifications...</span>
+                    </div>
+                    <ul class="notification-list" id="notificationCards"></ul>
+                    <div class="drawer-empty-state" id="notificationEmptyState" hidden>
+                        No Notifications present
+                    </div>
+                </div>
+
+            </section>
+        </div>
+
+        <div class="profile-dropdown" id="profileDropdownMenu" role="dialog" aria-modal="false" aria-hidden="true">
+            <div class="profile-dropdown-card" role="presentation">
+                <div class="profile-dropdown-header">
+                    <div class="profile-avatar-chip" id="profileAvatarChip">
+                        <span>@initials.ToUpperInvariant()</span>
+                    </div>
+                    <div style="min-width:0;">
+                        <p class="profile-identity-name text-truncate">@displayName</p>
+                        <p class="profile-identity-email text-truncate">@email</p>
+                    </div>
+                </div>
+
+                <div style="padding:12px; background:#ffffff;">
+
+
+                    @if (isSelfAccount)
+                    {
+                        <div class="profile-field" style="margin-bottom:10px;">
+                            <span class="profile-field-label">Available Credits</span>
+                            <input id="AvailableCredits" type="text" class="profile-field-input is-loading" readonly placeholder="Fetching credits..." aria-live="polite" />
+                        </div>
+                        <div class="profile-field" style="margin-bottom:10px;">
+                            <span class="profile-field-label">Account</span>
+                            <div class="organization-dropdown" id="orgSwitcherRoot">
+                                <div class="org-hover-trigger" id="orgHoverTrigger">
+                                    <span class="org-hover-trigger-text" id="selectedOrgName">Self</span>
+                                    <i class="fa-solid fa-chevron-right org-hover-chevron"></i>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="profile-field" style="margin-bottom:10px;">
+                            <span class="profile-field-label">Account Type</span>
+                            <input type="text" class="profile-field-input" value="@accountTypeLabel" readonly />
+                        </div>
+                        <div class="profile-field" style="margin-bottom:10px;">
+                            <span class="profile-field-label">Organization</span>
+                            <div class="organization-dropdown" id="orgSwitcherRoot">
+                                <div class="org-hover-trigger" id="orgHoverTrigger">
+                                    <span class="org-hover-trigger-text" id="selectedOrgName">@(userDto?.OrganizationDetails?.FirstOrDefault(o => o.OrganizationUid == organizationId)?.OrganizationName ?? organizationLabel)</span>
+                                    <i class="fa-solid fa-chevron-right org-hover-chevron"></i>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div style="padding-top:6px;">
+                        <a href='@Url.Action("Index", "Logout")' class="profile-menu-item signout-link" role="menuitem" style="display:flex;align-items:center;">
+                            <span class="menu-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></span>
+                            <span class="menu-text">Sign Out</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="drawer-overlay" id="drawerOverlay"></div>
+
+<div class="org-switch-modal-overlay" id="orgSwitchModalOverlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="org-switch-modal" aria-labelledby="orgSwitchModalTitle" aria-describedby="orgSwitchModalMessage">
+        <div class="org-switch-modal-icon" style="width:30%">
+            <img src="~/img/Switch_Org.png" style="width:100%;height:100%;object-fit:contain" asp-append-version="true" />
+        </div>
+        <h2 class="org-switch-modal-title" id="orgSwitchModalTitle">Switching Account?</h2>
+        <p class="org-switch-modal-message" id="orgSwitchModalMessage">
+            You are switching from your current Account to <strong id="orgSwitchModalOrgName">Selected Organization</strong>.
+        </p>
+        <ul class="org-switch-modal-list">
+            <li><i class="fa-solid fa-circle-check"></i>You’ll be redirected to the dashboard after switching</li>
+            <li><i class="fa-solid fa-circle-check"></i>Everything will update based on the selected account</li>
+        </ul>
+        <div class="org-switch-modal-actions">
+            <button type="button" class="btn-secondary" id="orgSwitchCancel">Cancel</button>
+            <button type="button" class="btn-primary" id="orgSwitchConfirm">Switch Account</button>
+        </div>
+        <div class="org-switch-modal-loading" id="orgSwitchLoading" aria-live="polite">
+            <span class="org-switch-loading-spinner"></span>
+            <span>Please wait while we switch your account...</span>
+        </div>
+    </div>
+</div>
+
+
+<div id="notificationToast" class="notification-toast" hidden>
+    <div class="toast-content">
+        <i class="fa-solid fa-bell toast-icon"></i>
+        <div class="toast-body">
+            <p id="notificationToastMessage" class="toast-message"></p>
+            <div class="toast-actions">
+                <button type="button" class="toast-btn toast-btn-primary" id="notificationToastViewButton">View</button>
+                <button type="button" class="toast-btn toast-btn-ghost" id="notificationToastCloseButton">Dismiss</button>
+            </div>
+        </div>
+        <button type="button" class="toast-close" id="notificationToastClose" aria-label="Close">&times;</button>
+    </div>
+</div>
+
+<script>
+    (function () {
+        // Profile Dropdown Controller
+        var profileToggle = document.getElementById('profileMenuToggle');
+        var profileDropdown = document.getElementById('profileDropdownMenu');
+        var notificationDrawer = document.getElementById('notificationDrawer');
+        var drawerOverlay = document.getElementById('drawerOverlay');
+
+        if (!profileToggle || !profileDropdown) {
+            return;
+        }
+
+        var profileCaretToggle = document.getElementById('profileMenuMetaToggle');
+        var profileImage = document.getElementById('sidebarProfileImage');
+        var avatarLoader = document.getElementById('SidebarAvatarLoader');
+        var avatarFallback = document.getElementById('sidebarAvatarFallback');
+        var avatarChip = document.getElementById('profileAvatarChip');
+        var creditsInput = document.getElementById('AvailableCredits');
+        var isSelfAccount = @Json.Serialize(isSelfAccount);
+
+        // Flag to prevent duplicate event handling
+        var isProfileToggling = false;
+
+        function setAvatarChipImage() {
+            if (!avatarChip || !profileImage || !profileImage.src) {
+                return;
+            }
+            avatarChip.style.setProperty('--avatar-chip-image', 'url(' + profileImage.src + ')');
+            avatarChip.classList.add('has-image');
+        }
+
+        function hideAvatarLoader() {
+            if (avatarLoader) {
+                avatarLoader.setAttribute('hidden', 'hidden');
+            }
+            if (profileImage) {
+                profileImage.classList.add('is-visible');
+            }
+            if (avatarFallback) {
+                avatarFallback.classList.add('is-hidden');
+            }
+            setAvatarChipImage();
+        }
+
+        function showAvatarFallback() {
+            if (avatarLoader) {
+                avatarLoader.setAttribute('hidden', 'hidden');
+            }
+            if (profileImage) {
+                profileImage.classList.remove('is-visible');
+            }
+            if (avatarFallback) {
+                avatarFallback.classList.remove('is-hidden');
+            }
+            if (avatarChip) {
+                avatarChip.classList.remove('has-image');
+                avatarChip.style.removeProperty('--avatar-chip-image');
+            }
+        }
+
+        if (profileImage) {
+            profileImage.addEventListener('load', hideAvatarLoader);
+            profileImage.addEventListener('error', showAvatarFallback);
+
+            if (profileImage.complete) {
+                if (profileImage.naturalWidth !== 0) {
+                    hideAvatarLoader();
+                }
+                else {
+                    showAvatarFallback();
+                }
+            }
+
+            // Preserve legacy behavior: clicking the avatar triggers credits load for Self accounts
+            profileImage.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (isSelfAccount) {
+                    requestAvailableCredits();
+                }
+            });
+        }
+
+        function closeNotificationDrawer() {
+            if (notificationDrawer && notificationDrawer.classList.contains('is-open')) {
+                notificationDrawer.classList.remove('is-open');
+                notificationDrawer.setAttribute('aria-hidden', 'true');
+                if (drawerOverlay) {
+                    drawerOverlay.classList.remove('is-visible');
+                }
+            }
+        }
+
+        function toggleDropdown(forceState) {
+            if (isProfileToggling) return;
+            isProfileToggling = true;
+
+            var shouldOpen = typeof forceState === 'boolean' ? forceState : !profileDropdown.classList.contains('is-open');
+
+            // Close notification drawer when opening profile dropdown
+            if (shouldOpen) {
+                closeNotificationDrawer();
+            }
+
+            profileDropdown.classList.toggle('is-open', shouldOpen);
+            profileDropdown.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+            profileToggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+            if (drawerOverlay) {
+                drawerOverlay.classList.toggle('is-visible', shouldOpen);
+            }
+
+            if (shouldOpen && isSelfAccount) {
+                requestAvailableCredits();
+            }
+
+            setTimeout(function() {
+                isProfileToggling = false;
+            }, 100);
+        }
+
+        profileToggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            toggleDropdown();
+        });
+
+        if (profileCaretToggle) {
+            profileCaretToggle.addEventListener('click', function () {
+                toggleDropdown();
+            });
+        }
+
+        document.addEventListener('click', function (event) {
+            if (!profileDropdown.classList.contains('is-open')) {
+                return;
+            }
+            var clickedToggle = profileToggle.contains(event.target) || (profileCaretToggle && profileCaretToggle.contains(event.target));
+            if (clickedToggle || profileDropdown.contains(event.target)) {
+                return;
+            }
+            toggleDropdown(false);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                toggleDropdown(false);
+            }
+        });
+
+        if (drawerOverlay) {
+            drawerOverlay.addEventListener('click', () => toggleDropdown(false));
+        }
+
+        function requestAvailableCredits() {
+            if (!creditsInput || typeof window.$ === 'undefined') {
+                return;
+            }
+
+            $(creditsInput)
+                .val('')
+                .addClass('is-loading');
+
+            $.ajax({
+                url: '@Url.Action("GetCredits", "Login")',
+                type: 'GET',
+                success: function (response) {
+                    $(creditsInput)
+                        .val(response.credits)
+                        .removeClass('is-loading');
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                    $(creditsInput).removeClass('is-loading');
+                }
+            });
+        }
+
+        // ===== Organization Hover Popup (portalled to body) =====
+        var orgHoverTrigger = document.getElementById('orgHoverTrigger');
+        var currentOrgId = '@organizationId';
+        var orgPopupEl = null;
+        var orgPopupHideTimer = null;
+        var orgPopupVisible = false;
+        var pendingOrgSwitch = null;
+        var isOrgSwitching = false;
+        var orgSwitchModalOverlay = document.getElementById('orgSwitchModalOverlay');
+        var orgSwitchModalOrgName = document.getElementById('orgSwitchModalOrgName');
+        var orgSwitchCancel = document.getElementById('orgSwitchCancel');
+        var orgSwitchConfirm = document.getElementById('orgSwitchConfirm');
+        var orgSwitchLoading = document.getElementById('orgSwitchLoading');
+        var orgDetailsList = @Json.Serialize(
+                                                                userDto != null && userDto.OrganizationDetails != null
+                                                                                                ? userDto.OrganizationDetails
+                                                                                                : new List<object>() // Use List<object> if OrganizationDetails type is not available
+                                );
+
+        function openOrgSwitchModal(organizationUid, organizationName) {
+            if (!orgSwitchModalOverlay) return;
+            pendingOrgSwitch = {
+                id: organizationUid,
+                name: organizationName
+            };
+            if (orgSwitchModalOrgName) {
+                orgSwitchModalOrgName.textContent = organizationName || 'Self';
+            }
+            setOrgSwitchLoading(false);
+            orgSwitchModalOverlay.classList.add('is-visible');
+            orgSwitchModalOverlay.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeOrgSwitchModal() {
+            if (!orgSwitchModalOverlay) return;
+            if (isOrgSwitching) return;
+            orgSwitchModalOverlay.classList.remove('is-visible');
+            orgSwitchModalOverlay.setAttribute('aria-hidden', 'true');
+            pendingOrgSwitch = null;
+        }
+
+        function setOrgSwitchLoading(isLoading) {
+            isOrgSwitching = isLoading;
+            if (orgSwitchModalOverlay) {
+                orgSwitchModalOverlay.classList.toggle('is-loading', isLoading);
+            }
+            if (orgSwitchConfirm) {
+                orgSwitchConfirm.disabled = isLoading;
+                orgSwitchConfirm.setAttribute('aria-disabled', isLoading ? 'true' : 'false');
+            }
+            if (orgSwitchCancel) {
+                orgSwitchCancel.disabled = isLoading;
+                orgSwitchCancel.setAttribute('aria-disabled', isLoading ? 'true' : 'false');
+            }
+            if (orgSwitchLoading) {
+                orgSwitchLoading.setAttribute('aria-hidden', isLoading ? 'false' : 'true');
+            }
+        }
+
+   function closeProfileDropdown() {
+            if (profileDropdown && profileDropdown.classList.contains('is-open')) {
+                profileDropdown.classList.remove('is-open');
+                profileDropdown.setAttribute('aria-hidden', 'true');
+                if (profileToggle) {
+                    profileToggle.setAttribute('aria-expanded', 'false');
+                }
+            }
+        }
+
+        function createOrgPopup() {
+            if (orgPopupEl) return orgPopupEl;
+
+            orgPopupEl = document.createElement('div');
+            orgPopupEl.className = 'org-popup';
+            orgPopupEl.setAttribute('role', 'listbox');
+            orgPopupEl.setAttribute('aria-label', 'Select organization');
+
+            // Loader
+            var loaderHtml = '<div class="org-popup-loader" id="orgPopupLoader"><span class="org-popup-spinner"></span><span>Switching account\u2026</span></div>';
+
+                var isSelfActive = !currentOrgId || currentOrgId === '';
+                    var itemsHtml = '';
+
+    itemsHtml += `
+    <div class="org-popup-item${isSelfActive ? ' is-active' : ''}"
+         role="option"
+         aria-selected="${isSelfActive}"
+         data-org-uid=""
+         data-org-name="Self">
+        <div class="org-popup-icon">
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <span class="org-popup-name">Self</span>
+    </div>
+    `;
+            // Org items
+
+            if (orgDetailsList && orgDetailsList.length > 0) {
+                orgDetailsList.forEach(function(org) {
+                    var isActive = org.organizationUid === currentOrgId || org.OrganizationUid === currentOrgId;
+                    var uid = org.organizationUid || org.OrganizationUid || '';
+                    var name = org.organizationName || org.OrganizationName || '';
+                    itemsHtml += '<div class="org-popup-item' + (isActive ? ' is-active' : '') + '" role="option" aria-selected="' + isActive + '" data-org-uid="' + uid + '" data-org-name="' + name + '">';
+                    itemsHtml += '<div class="org-popup-icon"><i class="fa-solid fa-building"></i></div>';
+                    itemsHtml += '<span class="org-popup-name">' + name + '</span>';
+                    itemsHtml += '</div>';
+                });
+            }
+
+            orgPopupEl.innerHTML = loaderHtml + itemsHtml;
+            document.body.appendChild(orgPopupEl);
+
+            // Click handlers on items
+            var items = orgPopupEl.querySelectorAll('.org-popup-item');
+            items.forEach(function(item) {
+                item.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var uid = this.getAttribute('data-org-uid');
+                    var name = this.getAttribute('data-org-name') || 'Self';
+                    if (uid === currentOrgId) {
+                        hideOrgPopup();
+                        return;
+                    }
+                    hideOrgPopup();
+                    closeProfileDropdown()
+
+                    openOrgSwitchModal(uid, name);
+                });
+            });
+
+            // Keep popup open when hovering it
+            orgPopupEl.addEventListener('mouseenter', function() {
+                cancelHidePopup();
+            });
+            orgPopupEl.addEventListener('mouseleave', function() {
+                scheduleHidePopup();
+            });
+
+            return orgPopupEl;
+        }
+
+        function positionPopup() {
+            if (!orgHoverTrigger || !orgPopupEl) return;
+            var rect = orgHoverTrigger.getBoundingClientRect();
+            var popupW = 280;
+            var spaceRight = window.innerWidth - rect.right;
+
+            // Prefer right side; fall back to left if no room
+            if (spaceRight >= popupW + 12) {
+                orgPopupEl.style.left = (rect.right + 8) + 'px';
+            } else {
+                orgPopupEl.style.left = (rect.left - popupW - 8) + 'px';
+            }
+
+            // Vertically center-align with the trigger, but clamp to viewport
+            var popupH = orgPopupEl.offsetHeight || 200;
+            var idealTop = rect.top + (rect.height / 2) - popupH;
+            var clampedTop = Math.max(12, Math.min(idealTop, window.innerHeight - popupH - 12));
+            orgPopupEl.style.top = clampedTop + 'px';
+            orgPopupEl.style.width = popupW + 'px';
+        }
+
+        function showOrgPopup() {
+            cancelHidePopup();
+            var popup = createOrgPopup();
+            positionPopup();
+            requestAnimationFrame(function() {
+                popup.classList.add('is-visible');
+            });
+            orgPopupVisible = true;
+            if (orgHoverTrigger) orgHoverTrigger.classList.add('is-active');
+        }
+
+        function hideOrgPopup() {
+            if (orgPopupEl) {
+                orgPopupEl.classList.remove('is-visible');
+            }
+            orgPopupVisible = false;
+            if (orgHoverTrigger) orgHoverTrigger.classList.remove('is-active');
+        }
+
+        function scheduleHidePopup() {
+            orgPopupHideTimer = setTimeout(hideOrgPopup, 180);
+        }
+
+        function cancelHidePopup() {
+            if (orgPopupHideTimer) {
+                clearTimeout(orgPopupHideTimer);
+                orgPopupHideTimer = null;
+            }
+        }
+
+        function sendModelToController(organizationUid) {
+            if (organizationUid === currentOrgId) {
+                hideOrgPopup();
+                return;
+            }
+
+            // Show loading in popup
+            var loader = orgPopupEl ? orgPopupEl.querySelector('.org-popup-loader') : null;
+            if (loader) loader.classList.add('is-visible');
+            var allItems = orgPopupEl ? orgPopupEl.querySelectorAll('.org-popup-item') : [];
+            allItems.forEach(function(el) { el.classList.add('is-switching'); });
+
+            var emails = '@selfEmails'.split(',');
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CreateSession", "Login")',
+                data: JSON.stringify({ OrganizationId: organizationUid, SelfEmails:'@selfEmails'.split(',').map(e => e.trim()),IdpToken:'@IdpToken'}),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success === true) {
+                         window.location.href = '@Url.Action("Index", "Dashboard")';
+                    } else {
+                        if (loader) loader.classList.remove('is-visible');
+                        allItems.forEach(function(el) { el.classList.remove('is-switching'); });
+                        hideOrgPopup();
+                        console.error('Account switch failed:', response.message || 'Unknown error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    if (loader) loader.classList.remove('is-visible');
+                    allItems.forEach(function(el) { el.classList.remove('is-switching'); });
+                    hideOrgPopup();
+                    console.error('Account switch error:', error);
+                }
+            });
+        }
+
+        if (orgSwitchCancel) {
+            orgSwitchCancel.addEventListener('click', function() {
+                if (isOrgSwitching) return;
+                closeOrgSwitchModal();
+            });
+        }
+
+        if (orgSwitchConfirm) {
+            orgSwitchConfirm.addEventListener('click', function() {
+                if (!pendingOrgSwitch || isOrgSwitching) return;
+                var selectedOrgId = pendingOrgSwitch.id;
+                setOrgSwitchLoading(true);
+                sendModelToController(selectedOrgId);
+            });
+        }
+
+        if (orgHoverTrigger) {
+            orgHoverTrigger.addEventListener('mouseenter', function() {
+                showOrgPopup();
+            });
+            orgHoverTrigger.addEventListener('mouseleave', function() {
+                scheduleHidePopup();
+            });
+
+            // Also allow click to toggle for touch devices
+            orgHoverTrigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (orgPopupVisible) {
+                    hideOrgPopup();
+                } else {
+                    showOrgPopup();
+                }
+            });
+
+            // Close on Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && orgPopupVisible) {
+                    hideOrgPopup();
+                }
+            });
+
+            // Reposition on scroll/resize
+            window.addEventListener('resize', function() {
+                if (orgPopupVisible) positionPopup();
+            });
+            window.addEventListener('scroll', function() {
+                if (orgPopupVisible) positionPopup();
+            }, true);
+        }
+    })();
+</script>
+
+<script src="~/local-cdns/Shared/signalr/5.0.8/signalr.min.js"></script>
+<script>
+    (function () {
+        const notificationToggle = document.getElementById('notificationToggle');
+        const notificationDrawer = document.getElementById('notificationDrawer');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const notificationCards = document.getElementById('notificationCards');
+        const drawerBody = document.getElementById('notificationScrollContainer');
+        const loader = document.getElementById('notificationDrawerLoader');
+        const emptyState = document.getElementById('notificationEmptyState');
+        const closeButton = document.getElementById('notificationCloseButton');
+        const viewAllLink = document.getElementById('notificationViewAllLink');
+        const toast = document.getElementById('notificationToast');
+        const toastMessage = document.getElementById('notificationToastMessage');
+        const toastViewButton = document.getElementById('notificationToastViewButton');
+        const toastCloseButton = document.getElementById('notificationToastCloseButton');
+        const toastClose = document.getElementById('notificationToastClose');
+        const profileDropdown = document.getElementById('profileDropdownMenu');
+        const profileToggle = document.getElementById('profileMenuToggle');
+
+        let bellPulseTimeout = null;
+        let isNotificationToggling = false;
+
+        if (!notificationToggle || !notificationDrawer) {
+            return;
+        }
+
+        const notificationApiUrl = '@Url.Action("GetNotificationByEmail", "Notification")';
+        const clearApiUrl = '@Url.Action("ClearAllNotifications", "Notification")';
+        const notificationPath = @Json.Serialize(@Configuration.GetSection("NotificationUrl").Value) || "";
+        const basePath = @Json.Serialize(@Configuration.GetSection("BasePath").Value) || "";
+        const currentUserEmail = @Json.Serialize(email);
+
+        if (notificationPath && viewAllLink) {
+            viewAllLink.href = `${notificationPath}Documents?viewName=MyDocuments`;
+        }
+
+        let toastMeta = { type: '', id: '' };
+        let toastHideHandle = null;
+
+ 
+        function closeProfileDropdown() {
+            if (profileDropdown && profileDropdown.classList.contains('is-open')) {
+                profileDropdown.classList.remove('is-open');
+                profileDropdown.setAttribute('aria-hidden', 'true');
+                if (profileToggle) {
+                    profileToggle.setAttribute('aria-expanded', 'false');
+                }
+            }
+        }
+
+        function toggleDrawer(forceState) {
+            if (isNotificationToggling) return;
+            isNotificationToggling = true;
+
+            const shouldOpen = typeof forceState === 'boolean' ? forceState : !notificationDrawer.classList.contains('is-open');
+
+            // Close profile dropdown when opening notification drawer
+            if (shouldOpen) {
+                closeProfileDropdown();
+            }
+
+            notificationDrawer.classList.toggle('is-open', shouldOpen);
+            drawerOverlay?.classList.toggle('is-visible', shouldOpen);
+            notificationDrawer.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+            notificationToggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+
+            if (shouldOpen) {
+                // Stop bell pulse animation when drawer opens
+                if (bellPulseTimeout) {
+                    clearTimeout(bellPulseTimeout);
+                    bellPulseTimeout = null;
+                }
+                notificationToggle.classList.remove('has-unread');
+
+                // Scroll to top when opening
+                if (drawerBody) {
+                    drawerBody.scrollTop = 0;
+                }
+                updateNotificationsUI();
+            }
+
+            setTimeout(function() {
+                isNotificationToggling = false;
+            }, 100);
+        }
+
+        function outsideClickHandler(event) {
+            if (notificationDrawer.contains(event.target) || notificationToggle.contains(event.target)) {
+                return;
+            }
+            toggleDrawer(false);
+        }
+
+        notificationToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleDrawer();
+        });
+        closeButton?.addEventListener('click', () => toggleDrawer(false));
+        drawerOverlay?.addEventListener('click', () => toggleDrawer(false));
+        document.addEventListener('click', outsideClickHandler);
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                toggleDrawer(false);
+            }
+        });
+        viewAllLink?.addEventListener('click', () => toggleDrawer(false));
+
+        function showToast(message, type, id) {
+            if (!toast) {
+                return;
+            }
+            toastMessage.textContent = message || 'You have a new notification.';
+            toastMeta = { type, id };
+            toast.removeAttribute('hidden');
+            toast.classList.add('is-visible');
+            if (toastHideHandle) {
+                clearTimeout(toastHideHandle);
+            }
+            // toastHideHandle = setTimeout(hideToast, 8000);
+
+            // Start bell pulse animation for 5 seconds when toast shows
+            if (notificationToggle && !notificationDrawer.classList.contains('is-open')) {
+                notificationToggle.classList.add('has-unread');
+                if (bellPulseTimeout) {
+                    clearTimeout(bellPulseTimeout);
+                }
+                bellPulseTimeout = setTimeout(() => {
+                    notificationToggle.classList.remove('has-unread');
+                    bellPulseTimeout = null;
+                }, 5000);
+            }
+        }
+
+        function hideToast() {
+            if (!toast) {
+                return;
+            }
+            toast.classList.remove('is-visible');
+            setTimeout(() => {
+                toast.setAttribute('hidden', 'hidden');
+            }, 250);
+            if (toastHideHandle) {
+                clearTimeout(toastHideHandle);
+                toastHideHandle = null;
+            }
+        }
+
+        toastCloseButton?.addEventListener('click', hideToast);
+        toastClose?.addEventListener('click', hideToast);
+        toastViewButton?.addEventListener('click', function () {
+            hideToast();
+            if (toastMeta.type) {
+                onViewClick(toastMeta.type, toastMeta.id);
+            }
+        });
+
+        function updateBadge(count) {
+            if (!notificationBadge) {
+                return;
+            }
+            if (count > 0) {
+                notificationBadge.removeAttribute('hidden');
+            } else {
+                notificationBadge.setAttribute('hidden', 'hidden');
+            }
+        }
+
+        async function fetchNotifications() {
+            try {
+                const response = await fetch(notificationApiUrl, { cache: 'no-store' });
+                const responseData = await response.json();
+                if (responseData.success) {
+                    return responseData.result?.data || [];
+                }
+                console.error('Failed to fetch notifications:', responseData.message);
+                return [];
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+                return [];
+            }
+        }
+
+        function resolveTimestamp(notification) {
+            return notification.content?.createdDate
+                || notification.content?.createdOn
+                || notification.content?.timestamp
+                || notification.createdDate
+                || notification.createdOn
+                || notification.createdAt
+                || notification.metaData?.createdOn
+                || '';
+        }
+
+        function formatRelativeTime(input) {
+            if (!input) {
+                return 'Just now';
+            }
+            const parsed = new Date(input);
+            if (Number.isNaN(parsed.getTime())) {
+                return input;
+            }
+            const diff = (Date.now() - parsed.getTime()) / 1000;
+            if (diff < 60) {
+                return 'Just now';
+            }
+            if (diff < 3600) {
+                const mins = Math.floor(diff / 60);
+                return `${mins} min${mins === 1 ? '' : 's'} ago`;
+            }
+            if (diff < 86400) {
+                const hours = Math.floor(diff / 3600);
+                return `${hours} hr${hours === 1 ? '' : 's'} ago`;
+            }
+            return parsed.toLocaleDateString();
+        }
+
+        function resolveVisuals(notification) {
+            const descriptor = (notification.metaData?.type || notification.content?.title || notification.content?.text || '').toLowerCase();
+            if (descriptor.includes('upload')) {
+                return { icon: 'fa-cloud-arrow-up', label: 'Upload Complete', color: '#0f9d58' };
+            }
+            if (descriptor.includes('signed')) {
+                return { icon: 'fa-file-signature', label: 'Document Signed', color: '#2563eb' };
+            }
+            if (descriptor.includes('received') || descriptor.includes('sent')) {
+                return { icon: 'fa-envelope-open-text', label: 'New Document Received', color: '#9333ea' };
+            }
+            if (descriptor.includes('pending')) {
+                return { icon: 'fa-clock', label: 'Signature Pending', color: '#f97316' };
+            }
+            return { icon: 'fa-bell', label: 'Notification', color: '#0ea5e9' };
+        }
+
+        function createNotificationCard(notification) {
+            const metaType = notification.metaData?.type || '';
+            const metaId = notification.metaData?.typeId || '';
+            const visuals = resolveVisuals(notification);
+            const timestamp = formatRelativeTime(resolveTimestamp(notification));
+            const title = notification.content?.title || visuals.label;
+            const description = notification.content?.text || 'Update available for your document.';
+
+            const card = document.createElement('li');
+            card.className = 'notification-card';
+
+            let iconClass = 'card-icon';
+            if (visuals.label === 'Document Signed') iconClass += ' signed';
+            else if (visuals.label === 'New Document Received') iconClass += ' received';
+            else if (visuals.label === 'Signature Pending') iconClass += ' pending';
+
+            card.innerHTML = `
+                <div class="${iconClass}">
+                    <i class="fa-solid ${visuals.icon}"></i>
+                </div>
+                <div class="card-content">
+                    <p class="card-text">${description}</p>
+                    <div class="card-meta">${timestamp}</div>
+                </div>`;
+
+            card.addEventListener('click', function () {
+                onViewClick(metaType, metaId);
+            });
+            return card;
+        }
+
+        async function updateNotificationsUI() {
+            loader?.removeAttribute('hidden');
+            emptyState?.setAttribute('hidden', 'hidden');
+            const previousScroll = drawerBody?.scrollTop || 0;
+            const notifications = await fetchNotifications();
+            updateBadge(notifications.length);
+            if (notificationCards) {
+                notificationCards.innerHTML = '';
+            }
+            if (notifications.length === 0) {
+                emptyState?.removeAttribute('hidden');
+            } else {
+                notifications.forEach(notification => {
+                    notificationCards?.appendChild(createNotificationCard(notification));
+                });
+            }
+            // Only restore scroll if drawer is already open and we're not at top
+            if (drawerBody && notificationDrawer.classList.contains('is-open') && previousScroll > 0) {
+                drawerBody.scrollTop = previousScroll;
+            }
+            loader?.setAttribute('hidden', 'hidden');
+        }
+
+        // Clear Notification: call existing ClearAllNotifications API and refresh both drawer and header UIs
+        async function clearAllNotifications() {
+            try {
+                const response = await fetch(clearApiUrl);
+                const responseData = await response.json();
+                if (responseData.success) {
+                    // Refresh the drawer UI
+                    await updateNotificationsUI();
+                    // Also refresh global/header UI if present
+                    if (typeof window.updateNotificationsUI === 'function') {
+                        window.updateNotificationsUI();
+                    }
+                } else {
+                    console.error('Failed to clear notifications:', responseData.message || response.statusText);
+                }
+            } catch (error) {
+                console.error('Error clearing notifications:', error);
+            }
+        }
+
+        const clearButton = document.getElementById('clearButtonDrawer');
+        clearButton?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearAllNotifications();
+        });
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(`${basePath}/pushNotification`)
+            .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        connection.start()
+            .then(() => console.log('SignalR Connected'))
+            .catch(err => console.error(err.toString()));
+
+        connection.on('ReceiveNotification', function (notification) {
+            console.debug('Notification received', notification);
+        });
+
+        connection.on('NewNotification', (data) => {
+            const notification = JSON.parse(data);
+            if (typeof window.SignedDocCheck === 'function' && notification.MetaData?.Type === 'Document') {
+                window.SignedDocCheck(notification.MetaData.TypeId, notification.MetaData.SignStatus);
+            }
+            if (typeof window.UpdateDocumentsList === 'function' && notification.MetaData?.Type === 'Document') {
+                window.UpdateDocumentsList(notification.MetaData.TypeId);
+            }
+
+            showToast(notification.Content?.Text, notification.MetaData?.Type || '', notification.MetaData?.TypeId || '');
+            updateNotificationsUI();
+
+            const notificationBase = notificationPath || '';
+            if (notificationBase) {
+                const url = window.location.href;
+                const reloadTargets = [
+                    'DigitalForms?viewName=MyDocuments',
+                    'DigitalForms?viewName=SentDocuments',
+                    'DigitalForms?viewName=RecievedDocuments',
+                    'DigitalForms?viewName=orgforms',
+                    'DigitalForms?viewName=globalforms',
+                    'FormRequests/BulksignSentFormList',
+                    'DigitalForms/Orgindex',
+                    'DigitalForms/Globalindex',
+                    'DigitalForms?viewName=RefferedDocuments'
+                ];
+                const shouldReload = reloadTargets.some(path => url.startsWith(`${notificationBase}${path}`));
+                if (shouldReload) {
+                    window.location.reload();
+                } else if (url.startsWith(`${notificationBase}Dashboard`) && typeof window.getDocumentStats === 'function') {
+                    window.getDocumentStats();
+                }
+            }
+        });
+
+        connection.on('WelcomeMessage', () => {});
+
+        window.onViewClick = function (type, id) {
+            const currentEmail = currentUserEmail;
+            if (!type) {
+                return;
+            }
+            if (type === 'Document') {
+                $.ajax({
+                    url: '@Url.Action("DocumentDetails", "Documents")',
+                    type: 'GET',
+                    data: { docid: id },
+                    beforeSend: function () {
+                        $('#overlay').show();
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            const doc = data.result;
+                            const viewName = getDocumentViewname(doc, currentEmail);
+                            window.location.href = '@Url.Action("DocumentDetailsById", "Documents")' + '?id=' + id + '&viewName=' + viewName;
+                        } else {
+                            swal({
+                                title: 'Error',
+                                text: data.message || 'Unknown error occurred',
+                                type: 'error'
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = '@Url.Action("Index", "Documents")';
+                                }
+                            });
+                        }
+                    },
+                    error: ajaxErrorHandler
+                });
+            }
+            else if (type === 'TemplateDocument') {
+                $.ajax({
+                    url: '@Url.Action("TemplateDocumentStatus", "FormRequests")',
+                    type: 'GET',
+                    data: { tempDocuId: id },
+                    beforeSend: function () {
+                        $('#overlay').show();
+                    },
+                    success: function (data) {
+                        if (data.requestType === 'Publish') {
+                            window.location.href = '@Url.Action("PublishedDocumentStatus", "DigitalForms")' + '?docuid=' + id;
+                        }
+                        else {
+                            const pendingEmail = data?.pendingSignList?.[0]?.email || '';
+                            const isReferred = data.templateRecepients.some(recipient =>
+                                Array.isArray(recipient.alternateSignatories) &&
+                                recipient.alternateSignatories.some(signatory => signatory.email === currentEmail && signatory.email === pendingEmail)
+                            );
+                            if (isReferred) {
+                                window.location.href = '@Url.Action("Index", "DigitalForms")?viewName=' + 'RefferedDocuments';
+                                return;
+                            }
+                            if (pendingEmail === currentEmail) {
+                                window.location.href = '@Url.Action("Index", "DigitalForms")?viewName=' + 'RecievedDocuments';
+                            }
+                            else {
+                                window.location.href = '@Url.Action("DocumentStatus", "FormRequests")' + '?tempId=' + '' + '&docuid=' + id;
+                            }
+                        }
+                    },
+                    error: ajaxErrorHandler
+                });
+            }
+            else if (type === 'BulkSign') {
+                $('#overlay').show();
+                window.location.href = '@Url.Action("BulkSigningStatus", "BulkSign")' + '?correlationId=' + id;
+            }
+            else if (type === 'GroupSigning') {
+                $('#overlay').show();
+                window.location.href = '@Url.Action("DocumentsSigningStatus", "GroupSigning")' + '?groupId=' + id;
+            }
+            else if (type === 'Delegation') {
+                $('#overlay').show();
+                window.location.href = '@Url.Action("Preview", "SignatureDelegation")' + `?DelegationId=${id}`;
+            }
+        };
+
+        window.getDocumentViewname = function (doc, currentEmail) {
+            if (doc.documentDetails.ownerEmail === currentEmail) {
+                return doc.documentDetails.multiSign ? 'SentDocuments' : 'MyDocuments';
+            }
+            return doc.signatoryDetails?.[0]?.recepientEmail === currentEmail ? 'RecievedDocuments' : 'ReferedDocuments';
+        };
+
+        updateNotificationsUI();
+    })();
+</script>
+
+

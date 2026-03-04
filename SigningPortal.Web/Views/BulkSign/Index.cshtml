@@ -1,0 +1,470 @@
+﻿@model SigningPortal.Web.ViewModels.BulkSign.AllBulkSignTemplatesListViewModel
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+@{
+	ViewData["Title"] = "View";
+}
+@{
+	var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+	var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+	var AccountType = User.FindFirst("AccountType").Value;
+	var OrganizationUid = "";
+	if (AccountType != "Self")
+	{
+
+		OrganizationUid = User.FindFirst("OrganizationUid").Value;
+	}
+}
+@{
+	await Html.RenderPartialAsync("_AlertBox");
+}
+
+<style>
+	/* Custom dropdown menu style */
+	.custom-dropdown {
+		position: relative;
+		display: inline-block;
+	}
+
+	.custom-dropdown-content {
+		display: none;
+		position: absolute;
+		background-color: #fff;
+		min-width: 120px;
+		box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+		z-index: 1;
+		border: 1px solid #ced4da;
+		border-radius: 0.25rem;
+	}
+
+		.custom-dropdown-content a {
+			color: #333;
+			padding: 0.25rem 1rem;
+			text-decoration: none;
+			display: block;
+			font-size: 14px;
+		}
+
+			.custom-dropdown-content a:hover {
+				background-color: #333;
+				color: white;
+			}
+
+	.custom-dropdown:hover .custom-dropdown-content {
+		display: block;
+	}
+
+	.custom-dropdown-content li {
+		list-style: none;
+	}
+
+	.btn {
+		text-transform: capitalize !important;
+		font-size: 12px !important;
+	}
+
+	/* Ensure full width for table */
+	.table-container {
+		width: 100%;
+		overflow-x: auto;
+	}
+
+	.table {
+		width: 100%;
+		max-width: 100%;
+		margin-bottom: 1rem;
+		background-color: transparent;
+	}
+
+	.dataTables_wrapper {
+		position: relative !important;
+		clear: both !important;
+		width: 100% !important;
+	}
+
+	.card-title {
+		margin-bottom: 10px !important;
+	}
+
+	@@media (max-width: 575px) {
+		.nav-tabs .active-tab {
+			background-color: transparent !important;
+			border: none !important;
+			color: black !important;
+			opacity: 1;
+			border-bottom: 3px solid #acc33e !important;
+		}
+	}
+</style>
+
+<div class="row" style="height:100vh">
+	<div class="col-md-12" style="height:100%">
+		<div class="card background-image" style="height: 100%;padding-left:2%;padding-right:2%;">
+
+			<div class="card-body ">
+
+				<h3 class="common-heading-color mb-sm-2" style=" font-size: 25px;">Bulk Sign</h3>
+				
+				<div class="row" >
+					<div class="col-12 col-lg-8 order-1 order-lg-0" style="margin-left: inherit;">
+						<ul class="nav nav-tabs nav-justified d-flex flex-column justify-content-start align-items-start flex-sm-row mt-md-2 mt-lg-3" role="tablist">
+							<div class="slider d-none d-sm-flex"></div>
+							@{
+								var tabZero = string.Empty;
+								var tabOne = string.Empty;
+								var tabTwo = string.Empty;
+								tabZero = "active";
+							}
+							<li class="nav-item">
+								<a class="nav-link @tabZero" id="home-tab" data-toggle="tab" href="#MyList" role="tab" aria-controls="List" aria-selected="false" onclick="myDocument()"> MY LIST</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link @tabOne" id="home1-tab" data-toggle="tab" href="#Send" role="tab" aria-controls="SendTb" aria-selected="false" onclick="sendDocument()"> SEND LIST</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link @tabTwo" id="profile-tab" data-toggle="tab" href="#Recived" role="tab" aria-controls="RecvTb" aria-selected="false" onclick="receivedDoc()"> RECEIVED LIST</a>
+							</li>
+
+						</ul>
+						
+						<!-- Dropdown for Extra Small Devices -->
+						@* <div class="d-flex d-sm-none mb-2" style="padding-left:2%;"> *@
+						@* 	<select class="form-control" onchange="changeTab(this.value)"> *@
+						@* 		<option value="#MyList">MY LIST</option> *@
+						@* 		<option value="#Send">SEND LIST</option> *@
+						@* 		<option value="#Recived">RECEIVED LIST</option> *@
+						@* 	</select> *@
+						@* </div> *@
+
+					</div>
+					<div class="col-12 col-lg-4 mb-3 mt-lg-0 d-flex justify-content-start justify-content-sm-end p-0">
+						
+						<div class="btn-group">
+							@if (User.IsInRole("bulkSign"))
+							{
+								@* <a class="submit-button" asp-action="UploadFiles">
+									<img src="./img/plus button.svg" style="width: 23px; height: 19px; " alt="Ellipsis Icon">
+									Perform new Bulk Sign
+								</a> *@
+								<div class="btn-group">
+									<button class="submit-button" onclick="performBulkSign()" style="border: none; background: none; cursor: pointer; color: white !important;outline:none !important;">
+										<img src='@Url.Content("~/img/plus button.svg")' asp-append-version="true" style="width: 23px; height: 19px;" alt="Plus Icon">
+										Perform new Bulk Sign
+									</button>
+								</div>
+							}
+
+
+						</div>
+
+					</div>
+
+
+				</div>
+				</br>
+				@*----------------------------------------------------------------------------------------v-------*@
+				<div class="row" style="padding-left:2%">
+					<div class="tab-content">
+						@*-------------------------------------------MY DOCUMENTS----------------------------------------------------*@
+						<div id="myDoc" style="display:none;">
+						</div>
+						@*---------------------------------------------SEND DOCUMENTS--------------------------------------------------*@
+						<div id="sendDoc" style="display:none;">
+						</div>
+						@*------------------------------------------------RECEVIED DOCUMENTS-----------------------------------------------*@
+						<div id="receiveDoc" style="display:none;">
+						</div>
+
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="classshide">
+	<div id='viewer'></div>
+</div>
+<script>
+	var loginEmail = '@userEmail';
+	var loginorgUid = '@OrganizationUid';
+	var loginSuid = '@Suid';
+	$(document).ready(function () {
+		$('#BulkSign').addClass('active');
+		$('#networkOverlay').hide();
+		var viewName = '@ViewBag.ViewName';
+			if (viewName == "MyDocuments") {
+				myDocument();
+			} else if (viewName == "SentDocuments") {
+				sendDocument();
+			} else if (viewName == "RecievedDocuments") {
+				receivedDoc();
+			}
+			else{
+				// $("select.form-control").val("#MyList");
+				myDocument();
+			}
+		$(".dropdown-toggle").dropdown();
+
+		
+	});
+
+	var actWidth = $(".nav-tabs").find(".active").parent("li").width();
+	var actPosition = $(".nav-tabs .active").position();
+	$(".slider").css({ "left": 0, /* + actPosition.left, */ "width": 133.663, "margin-left": 9 });
+
+	$(".nav-tabs a").click(function () {
+		var tabName = $(this).attr("aria-controls");
+		activateTab(tabName);
+		deleteList = [];
+	});
+	function performBulkSign() {
+		document.getElementById("navigationNetworkOverlay").style.display = "block";
+		window.location.href = '@Url.Action("UploadFiles", "BulkSign")';
+	}
+
+
+	
+	// function changeTab(value) {
+		
+	// 	$('.nav-tabs a[href="' + value + '"]').tab('show');
+	// 	Call respective function when the dropdown changes
+	// 	if (value === "#MyList") myDocument();
+	// 	else if (value === "#Send") sendDocument();
+	// 	else if (value === "#Recived") receivedDoc();
+	// }
+
+
+
+	
+
+
+
+	function activateTab(tabName) {
+		$(".RowCheckbox").prop('checked', false);
+		$("#del").addClass('classshide');
+
+		var $tab = $(`[aria-controls=${tabName}]`);
+		if ($tab.length === 0) {
+			return;
+		}
+
+		var position = $tab.parent().position();
+		if (!position) {
+			return;
+		}
+
+		var tabWidth = $tab.parent().outerWidth();
+		var textWidth = $tab.outerWidth(); // Get the width of the text inside the tab
+		var sliderWidth = Math.min(textWidth, 180); // Ensure slider is within limits
+
+		var leftOffset = position.left + (tabWidth - sliderWidth) / 2; // Center the slider under text
+
+		$(".slider").css({ "left": leftOffset, "width": sliderWidth });
+
+		// Add 'show active' classes to the active tab content and remove from others
+		$(`#${tabName}`).addClass('show active').siblings().removeClass('show active');
+
+		// Add 'active-tab' class to the active tab and remove from others
+		$(".nav-link").removeClass('active-tab');
+		$tab.addClass('active-tab');
+	}
+
+
+
+
+	function myDocument() {
+
+		$.ajax({
+			type: 'GET',
+			url: '@Url.Action("draft", "BulkSign")',
+			beforeSend: function () {
+				$('#overlay').show();
+			},
+			complete: function () {
+				$('#overlay').hide();
+			},
+			error: ajaxErrorHandler,
+			success: function (data) {
+				if (data != null) {
+					$('#sendDoc').css('display', 'none');
+					$('#receiveDoc').css('display', 'none');
+
+					$('#myDoc').css('display', 'block');
+					$('#myDoc').html(data);
+					activateTab('List');
+				}
+				else {
+					swal({
+						type: 'error',
+						title: 'Error',
+						text: response.message
+					});
+				}
+			}
+
+
+		});
+	}
+
+	function sendDocument() {
+		$.ajax({
+			type: 'GET',
+			url: '@Url.Action("sent", "BulkSign")',
+			beforeSend: function () {
+				$('#overlay').show();
+			},
+			complete: function () {
+				$('#overlay').hide();
+			},
+			error: ajaxErrorHandler,
+			success: function (data) {
+				if (data != null) {
+					$('#myDoc').css('display', 'none');
+					$('#receiveDoc').css('display', 'none');
+
+					$('#sendDoc').css('display', 'block');
+					$('#sendDoc').html(data);
+					activateTab('SendTb');
+				}
+				else {
+					swal({
+						type: 'error',
+						title: 'Error',
+						text: response.message
+					});
+				}
+			}
+
+
+		});
+	}
+
+	function receivedDoc() {
+
+		$.ajax({
+			type: 'GET',
+			url: '@Url.Action("recived", "BulkSign")',
+			beforeSend: function () {
+				$('#overlay').show();
+			},
+			complete: function () {
+				$('#overlay').hide();
+			},
+			error: ajaxErrorHandler,
+			success: function (data) {
+				if (data != null) {
+					$('#myDoc').css('display', 'none');
+					$('#sendDoc').css('display', 'none');
+
+					$('#receiveDoc').css('display', 'block');
+					$('#receiveDoc').html(data);
+					activateTab('RecvTb');
+				}
+				else {
+					swal({
+						type: 'error',
+						title: 'Error',
+						text: response.message
+					});
+				}
+			}
+
+
+		});
+	}
+
+
+	// async function performBulksign() {
+	// 	var delegation_req_data = {
+	// 		id: loginorgUid,
+	// 		suid: loginSuid,
+	// 		email: loginEmail,
+	// 	};
+	// 	var hasDelegationFound = false;
+
+	// 	// Await the response from delegation check
+	// 	var delegation_response = await handle_delegation_orgid_suid_selfloginuser(delegation_req_data);
+
+	// 	if (delegation_response != undefined && delegation_response.listdata.length > 0) {
+	// 		hasDelegationFound = true;
+	// 	}
+
+	// 	if (hasDelegationFound) {
+	// 		console.log("Delegation found. Further processing stopped.");
+	// 		swal({
+	// 			type: 'info',
+	// 			title: 'Info',
+	// 			text: "Signing cannot be performed because there is an active signature delegation",
+	// 		});
+	// 		return false; // Stop further execution
+	// 	} else {
+
+	// 		window.location.href = '@Url.Action("UploadFiles", "BulkSign")';
+	// 	}
+	// }
+
+	// async function handle_delegation_orgid_suid_selfloginuser(delegation_req_data) {
+	// 	return new Promise((resolve, reject) => {
+	// 		$.ajax({
+	// 			type: "GET",
+	// 			url: "/Documents/GetDelegationbyorgidsuid",
+	// 			data: {
+	// 				organizationId: delegation_req_data.id,
+	// 				suid: delegation_req_data.suid
+	// 			},
+	// 			beforeSend: function () {
+	// 				$('#overlay').show();
+	// 			},
+	// 			complete: function () {
+	// 				$('#overlay').hide();
+	// 			},
+	// 			success: function (response) {
+	// 				if (response.success === true) {
+	// 					var result_list = response.result;
+	// 					var swal_list = [];
+	// 					var list_data = [];
+
+	// 					for (var i = 0; i < result_list.length; i++) {
+	// 						var obj_data = {
+	// 							email: result_list[i].delegateeEmail,
+	// 							suid: result_list[i].delegateeSuid,
+	// 						};
+	// 						swal_list.push(result_list[i].delegateeEmail);
+	// 						list_data.push(obj_data);
+	// 					}
+
+	// 					let response_data_obj = {
+	// 						swallist: swal_list,
+	// 						listdata: list_data,
+	// 						delegateeid: response.result[0]?.delegationId || '',
+	// 					};
+
+	// 					resolve(response_data_obj);
+	// 				} else {
+	// 					swal({
+	// 						title: "Error",
+	// 						text: response.message || "Unknown error occurred",
+	// 						type: "error",
+	// 					}, function (isConfirm) {
+	// 						if (isConfirm) {
+	// 							window.location.href = '@Url.Action("Index", "BulkSign")';
+	// 						}
+	// 					});
+	// 					resolve(false);
+	// 				}
+	// 			},
+	// 			error: function (error) {
+	// 				ajaxErrorHandler(error);
+	// 				resolve(false);
+	// 			}
+	// 		});
+	// 	});
+	// }
+
+
+</script>
+
+
+

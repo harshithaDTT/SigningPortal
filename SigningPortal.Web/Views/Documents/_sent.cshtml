@@ -1,0 +1,127 @@
+﻿@using System.Security.Claims;
+@using Newtonsoft.Json;
+
+@{
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var AccountType = User.FindFirst("AccountType").Value;
+    var OrganizationUid = "";
+    if (AccountType != "Self")
+    {
+
+        OrganizationUid = User.FindFirst("OrganizationUid").Value;
+    }
+}
+
+
+
+<div id="noDataMessageSent" style="display:none;">
+    <div class="text-center py-5"
+         style="border-radius: 12px; background:#f9fafb; margin-top:20px;">
+
+        <!-- Icon Circle -->
+        <div style="
+            width:80px;
+            height:80px;
+            margin:0 auto 20px auto;
+            background:#eef1f5;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">
+            <i class="fa-regular fa-file-lines"
+               style="font-size:32px; color:#6b7280;"></i>
+        </div>
+
+        <!-- Main Title -->
+        <h4 style="font-weight:600; color:#1f2937; margin-bottom:8px;">
+            No sent documents
+        </h4>
+
+        <!-- Subtitle -->
+        <p style="color:#6b7280; font-size:15px; margin:0;">
+            Send your first document for signatures
+        </p>
+
+    </div>
+</div>
+
+
+<div id="sendCardsOuterCard" >
+
+    <!-- Scrollable area -->
+    <div id="sendCardsScrollArea"
+         style=" overflow-y: visible; padding-right: 8px;">
+
+        <div id="sentCardsContainer" class="space-y-4" style="margin:9px;"></div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+        <div id="allDocsLoadedMsgSent"
+             class="docs-message text-center"
+             style="display:none; width:70%;">
+
+            <!-- Top Divider with Text -->
+            <div style="display:flex; align-items:center; justify-content:center; gap:15px; margin-bottom:8px;">
+                <div style="flex:1; height:1px; background:#dcdcdc;"></div>
+                <span style="font-size:12px; letter-spacing:1px; color:#6c7a89; font-weight:600;">
+                    SHOWING <span id="showingCount"></span> OF <span id="totalCount"></span>
+                </span>
+                <div style="flex:1; height:1px; background:#dcdcdc;"></div>
+            </div>
+
+            <!-- Bottom Text -->
+            <div style="font-size:13px; color:#8a97a6;">
+                You've reached the end of your documents
+                (<span id="bottomShowingCount"></span>/<span id="bottomTotalCount"></span>)
+            </div>
+
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end w-100">
+
+        <button id="showMoreBtnSent"
+                type="button"
+                class="btn btn-outline-primary rounded-3 me-4"
+                style="display:none;padding:6px 12px;float:right;margin-right:75px;font-size:14px;">
+            Show More <i class="fas fa-chevron-down"></i>
+        </button>
+    </div>
+
+</div>
+
+
+<table id="SentTb" class="display" style="width:100%;border:none;">
+    <thead>
+        <tr style="border:none;"><th style="border:none;"></th></tr>
+    </thead>
+</table>
+
+
+
+<script>
+    var loginEmail = '@userEmail';
+    var loginorgUid = '@OrganizationUid';
+    var loginSuid = '@Suid';
+    var loginAccounttype = '@AccountType';
+    var GetSentDocuments = '@Url.Action("GetSentDocuments", "Documents")';
+    var GetSentdocumentsStatstics = '@Url.Action("GetSentDocumentsStatistics", "Documents")';
+    var IsDocumentBlocked = '@Url.Action("IsDocumentBlocked", "Documents")';
+    var SignActionConfigByDocId = '@Url.Action("SignActionConfigByDocId", "Documents")';
+    var IndexDocuments = '@Url.Action("Index", "Documents")';
+     var GetOrganizationStatusUrl='@Url.Action("GetOrganizationStatus", "Documents")';
+    var DocumentDetailsByIdUrl = '@Url.Action("DocumentDetailsById", "Documents")';
+     var GetDelegationbyorgidsuidUrl = '@Url.Action("GetDelegationbyorgidsuid", "Documents")';
+</script>
+<link rel="stylesheet" asp-append-version="true" href="~/css/Documents/_sent.css" />
+@if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    <script src="~/js/Documents/_sent.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+else
+{
+    <script src="~/dist/Documents/_sent.min.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+

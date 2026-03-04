@@ -1,0 +1,250 @@
+﻿@model SigningPortal.Web.ViewModels.BulkSign.UploadFilesViewModel
+@using Newtonsoft.Json;
+@using System.Security.Claims;
+@{
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var bulksign = User.IsInRole("bulkSign");
+    var AccountType = User.FindFirst("AccountType").Value;
+    var OrganizationName = "";
+    var OrganizationUid = "";
+    var login_esealsignatoryrole = User.IsInRole("eSealSignatory");
+    var selfemails = "";
+    if (AccountType != "Self")
+    {
+        selfemails = User.FindFirst("SelfEmails").Value;
+        OrganizationName = User.FindFirst("OrganizationName").Value;
+        OrganizationUid = User.FindFirst("OrganizationUid").Value;
+    }
+}
+
+
+<style>
+
+    tbody tr td:first-child {
+        text-align: left !important;
+    }
+
+    tbody {
+        text-align: end;
+    }
+
+    .remove-button {
+        background-color: #f44336;
+        color: white;
+        height: 40px;
+        width: 94px;
+        float: right;
+        border: none;
+        border-radius: 5px;
+    }
+
+
+    .sweet-alert button.cancel {
+        background-color: rgb(244, 67, 54) !important;
+    }
+
+
+
+
+    .sweet-alert p {
+        color: #797979;
+        font-size: 1.125em !important;
+        text-align: center;
+        font-family: sans-serif;
+        font-weight: 300;
+        position: relative;
+        text-align: inherit;
+        float: none;
+        margin: 0;
+        padding: 0;
+        line-height: normal;
+    }
+
+
+    .form-control:focus {
+        box-shadow: none !important;
+    }
+
+    @@-moz-document url-prefix() {
+        .dataTables_wrapper {
+            margin-top: 30px;
+        }
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="row d-flex align-items-center flex-wrap mt-2  mb-2">
+            <span class="col-12 col-sm-5 col-md-4 col-lg-3 col-xl-3 col-xxl-2">Template Name<span style="color: red;">*</span> :</span>
+            <div class="col-12 col-sm-6">
+                <div class="form-group" style="max-width: 203px;">
+                    <select class="form-control" id="DocumentTemplate" name="templates">
+                        <option value="">Choose Template</option>
+                        @{
+                            foreach (var item in Model.TemplateList)
+                            {
+                                <option value=@item._id>@item.TemplateName</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="row d-flex align-items-center flex-wrap mb-2">
+            <span class="col-12 col-sm-5 col-md-4 col-lg-3 col-xl-3 col-xxl-2">Transaction Name<span style="color: red;">*</span>:</span>
+            <div class="col-12 col-sm-6">
+                <div class="form-group mb-0" style="max-width: 203px;">
+                    <input class="form-control" type="text" id="inputField1" placeholder="" />
+                </div>
+            </div>
+        </div>
+
+
+
+        <br />
+        <div id="uploadpart" style="display:none">
+            <div class="form-group mb-0">
+                <span class="mr-3" style="font-weight:bold;font-size:20px;"> Upload Type<span style="color: red;">*</span> :</span>
+                <br />
+                <div class="row" style="margin-left:23px">
+                    <div style="margin-left:4px;padding:8px 12px;font-size:18px">
+                        <input type="radio" class="styled-radio" style="font-weight: 600; font-size: 13.5px;" name="selectionType" id="fileRadio" checked>
+                        Files
+                    </div>
+
+                    <div style="margin-left:4px;padding:8px 12px;font-size:18px">
+                        <input type="radio" class="styled-radio" style="font-weight: 600; font-size: 13.5px;" name="selectionType" id="folderRadio">
+                        Folder
+                    </div>
+                </div>
+            </div>
+            <div class="form-group mb-0" id="fileinputdisplay" style=" ">
+                <label for="fileInput" class="d-inline-flex flex-wrap gap-1">
+                    <span>Upload Files <span style="color: gray;">(Only PDF, DOCX, XLSX documents are allowed)<span style="color: red;">*</span><span>:</span></span></span>
+                </label>
+
+                <input class="form-control" type="file" id="fileInput" multiple style="display:none" />
+                &nbsp;&nbsp;
+                <button id="chooseFilesBtn" type="button" style="border-radius: 5px; padding: 3px 16px; border: 1px solid darkgrey;">
+                    Choose Files
+                </button>
+            </div>
+
+
+
+            <div class="form-group mb-0" id="folderinputdisplay" style="display:none;">
+
+                <label for="fileInput">
+                    Upload Folder <span style="color: gray;">(Only PDF,DOCX,XLSX documents are allowed)</span><span style="color: red;">*</span>:
+                </label>
+
+                <input class="form-control" type="file" id="folderInput" multiple webkitdirectory style="display:none" />
+                &nbsp;&nbsp;
+                <button id="chooseFolderBtn" type="button" style="border-radius: 5px; padding: 3px 16px; border: 1px solid darkgrey;">
+
+                    Choose folder
+                </button>
+            </div>
+        </div>
+
+
+
+        <div class="row" style="background-color:white; display:none;margin-top:20px;" id="fileTableContainer">
+            <div class="col-md-12">
+                <div class="card" style="box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 10px;">
+
+                    <div class="row" style="box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 10px;margin-top:-14px;">
+                        <div className="col-sm" id="fileCountDisplay" style=" margin-left: 15px ;margin-bottom: 10px ; margin-top: 20px;font-weight:700 ">
+                            Total Documents Uploaded : 0
+                        </div>
+                    </div>
+                    <br />
+                    <table class="table" id="scopesTable" style=" display:none;border-color:aliceblue;">
+
+                        <thead>
+                            <tr>
+
+                                <th style=" background-color:rgb(235, 237, 239);">File Name</th>
+                                <th style="background-color:rgb(235, 237, 239);" id="deleteid">
+                                    <button id="removeAllBtn" type="button" class="remove-button">Remove all</button>
+
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                </div>
+                <div class="mb-3" style="padding-top: 1px; ">
+                    <div>
+                        <button type="button" variant="outlined" class="submit-button" id="uploadfiles" style="display:none;">Upload</button>
+                    </div>
+                    <div>
+                        <button type="button" variant="outlined" class="submit-button" id="bulksignbutton" style="display:none;">Bulk sign</button>
+                    </div>
+
+                    <div>
+                        <button type="button" variant="outlined" class="submit-button" id="sendrequest" style="display:none;">Send Request</button>
+                    </div>
+                    <div>
+                        <button type="button" variant="outlined" class="submit-button" id="saverequest" style="display:none;">Save Request</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+<div id="file-list"></div>
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+@section scripts {
+    <script>
+        var viewName = "MyDocuments";
+        var loginOrgId = '@OrganizationUid';
+        var bulksignPermisson = '@bulksign';
+        var templateList = [];
+        var totalfilessize = 0;
+        var templatedata = '@Model.TemplateList'
+        var loginEmail = '@userEmail';
+        var loginorgUid = '@OrganizationUid';
+        var loginSuid = '@Suid';
+        if ((Object.keys(templatedata).length != 0)) {
+            templateList = @Html.Raw(JsonConvert.SerializeObject(Model.TemplateList));
+        }
+
+        var BulkSignIndexUrl = '@Url.Action("Index", "BulkSign")';
+        var BulkSigningStatusUrl = '@Url.Action("BulkSigningStatus", "BulkSign")';
+        var GetFileConfigurationUrl = '@Url.Action("GetFileConfiguration", "BulkSign")';
+        var UpdateDocumentDetailsUrl = '@Url.Action("UpdateDocumentDetails", "BulkSign")';
+        var SendRequestUrl = '@Url.Action("SendRequest", "BulkSign")';
+        var GetDelegationbyorgidsuidUrl = '@Url.Action("GetDelegationbyorgidsuid", "Documents")';
+        var SendFilesUrl = '@Url.Action("SendFiles", "BulkSign")';
+        var GetOrganizationStatusUrl = '@Url.Action("GetOrganizationStatus", "Documents")';
+        var BulkSigningUrl = '@Url.Action("BulkSigning", "BulkSign")';
+        var PerformBulkSignUrl = '@Url.Action("PerformBulkSign", "BulkSign")';
+
+    </script>
+
+    @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+    {
+        <script src="~/js/BulkSign/UploadFiles.js" type="text/javascript" asp-append-version="true" defer></script>
+    }
+    else
+    {
+        <script src="~/dist/BulkSign/UploadFiles.min.js" type="text/javascript" asp-append-version="true" defer></script>
+    }
+
+    <!-- Load PDF.js -->
+    <script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+
+    <!-- Load PDF.js worker -->
+    <script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.worker.min.js"></script>
+
+
+}

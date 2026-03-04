@@ -1,0 +1,1738 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyTRUST Sign - Digital Signatures Made Simple, Secure & Seamless</title>
+
+    <link href="~/local-cdns/Shared/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/local-cdns/Shared/fonts/inter-poppins.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/local-cdns/Shared/fontawesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #0b4d3c;
+            --primary-dark: #083d2f;
+            --primary-light: #0d5f4a;
+            --accent: #10b981;
+            --accent-light: #34d399;
+            --mint: #d1fae5;
+            --mint-light: #ecfdf5;
+            --charcoal: #1e293b;
+            --slate: #475569;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --bg-light: #f8fafc;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            --radius-sm: 6px;
+            --radius: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-light);
+            color: var(--charcoal);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+                           TYPOGRAPHY - Fluid & Responsive
+                           ========================================= */
+        h1, h2, h3, h4 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .section-title {
+            font-size: clamp(1.5rem, 3vw + 0.5rem, 2.5rem);
+            color: var(--charcoal);
+            margin-bottom: clamp(0.75rem, 2vw, 1rem);
+        }
+
+        .section-subtitle {
+            font-size: clamp(0.95rem, 1.5vw + 0.25rem, 1.125rem);
+            color: var(--muted);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* =========================================
+                           SCROLL ANIMATIONS - One-time trigger
+                           ========================================= */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+            .animate-on-scroll.animated {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            /* Staggered animation delays for cards */
+            .animate-on-scroll.delay-1 {
+                transition-delay: 0.1s;
+            }
+
+            .animate-on-scroll.delay-2 {
+                transition-delay: 0.2s;
+            }
+
+            .animate-on-scroll.delay-3 {
+                transition-delay: 0.3s;
+            }
+
+            .animate-on-scroll.delay-4 {
+                transition-delay: 0.4s;
+            }
+
+            .animate-on-scroll.delay-5 {
+                transition-delay: 0.5s;
+            }
+
+            .animate-on-scroll.delay-6 {
+                transition-delay: 0.6s;
+            }
+
+            .animate-on-scroll.delay-7 {
+                transition-delay: 0.7s;
+            }
+
+            .animate-on-scroll.delay-8 {
+                transition-delay: 0.8s;
+            }
+
+        /* =========================================
+                           BUTTONS
+                           ========================================= */
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: clamp(0.7rem, 1.5vw, 0.875rem) clamp(1.25rem, 2.5vw, 1.75rem);
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: clamp(0.875rem, 1vw + 0.25rem, 1rem);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(11, 77, 60, 0.35);
+        }
+
+            .btn-primary:hover {
+                background: var(--primary-dark);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px 0 rgba(11, 77, 60, 0.45);
+                color: white;
+            }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+            .btn-outline:hover {
+                background: var(--primary);
+                color: white;
+            }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--charcoal);
+            border: 1px solid var(--border);
+        }
+
+            .btn-ghost:hover {
+                background: var(--bg-light);
+                border-color: var(--slate);
+            }
+
+        .btn-lg {
+            padding: clamp(0.875rem, 2vw, 1.1rem) clamp(1.5rem, 3vw, 2.25rem);
+            font-size: clamp(0.95rem, 1.25vw + 0.25rem, 1.1rem);
+        }
+
+        /* =========================================
+                           HERO SECTION - 100vh Viewport Fit
+                           ========================================= */
+        .hero {
+            min-height: 100vh;
+            min-height: 100dvh; /* Dynamic viewport height for mobile */
+            background: linear-gradient(165deg, #f0fdf9 0%, var(--mint-light) 30%, var(--mint) 70%, #c7f9e5 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(1rem, 3vw, 2rem);
+        }
+
+            .hero::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: radial-gradient(ellipse at 20% 30%, rgba(16, 185, 129, 0.12) 0%, transparent 45%), radial-gradient(ellipse at 80% 70%, rgba(11, 77, 60, 0.1) 0%, transparent 45%);
+                pointer-events: none;
+            }
+
+        /* Floating background icons - subtle */
+        .hero-bg-icons {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .hero-bg-icon {
+            position: absolute;
+            opacity: 0.04;
+            color: var(--primary);
+        }
+
+            .hero-bg-icon:nth-child(1) {
+                top: 8%;
+                left: 4%;
+                font-size: clamp(2rem, 4vw, 4rem);
+                animation: float 8s ease-in-out infinite;
+            }
+
+            .hero-bg-icon:nth-child(2) {
+                top: 15%;
+                right: 6%;
+                font-size: clamp(1.5rem, 3vw, 3rem);
+                animation: float 10s ease-in-out infinite 1s;
+            }
+
+            .hero-bg-icon:nth-child(3) {
+                bottom: 25%;
+                left: 8%;
+                font-size: clamp(1.75rem, 3.5vw, 3.5rem);
+                animation: float 9s ease-in-out infinite 2s;
+            }
+
+            .hero-bg-icon:nth-child(4) {
+                bottom: 12%;
+                right: 12%;
+                font-size: clamp(2rem, 4.5vw, 4.5rem);
+                animation: float 11s ease-in-out infinite 0.5s;
+            }
+
+            .hero-bg-icon:nth-child(5) {
+                top: 45%;
+                left: 2%;
+                font-size: clamp(1.25rem, 2.5vw, 2.5rem);
+                animation: float 7s ease-in-out infinite 1.5s;
+            }
+
+            .hero-bg-icon:nth-child(6) {
+                top: 35%;
+                right: 4%;
+                font-size: clamp(1.5rem, 3vw, 3rem);
+                animation: float 9s ease-in-out infinite 2.5s;
+            }
+
+        @@keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-15px) rotate(3deg);
+            }
+        }
+
+        .hero-container {
+            max-width: 1320px;
+            width: 100%;
+            margin: 0 auto;
+            padding: clamp(1rem, 2vw, 2rem);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(2rem, 5vw, 5rem);
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-content {
+            max-width: 540px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: clamp(0.35rem, 0.75vw, 0.5rem) clamp(0.75rem, 1.5vw, 1.25rem);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50px;
+            font-size: clamp(0.65rem, 0.9vw, 0.8rem);
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+            .hero-badge i {
+                color: var(--accent);
+                font-size: clamp(0.7rem, 1vw, 0.9rem);
+            }
+
+        .hero-title {
+            font-size: clamp(1.6rem, 3vw + 0.5rem, 2.65rem);
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: clamp(0.6rem, 1.25vw, 1rem);
+            line-height: 1.18;
+            letter-spacing: -0.015em;
+        }
+
+            .hero-title .highlight {
+                background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                display: block;
+            }
+
+        .hero-description {
+            font-size: clamp(0.9rem, 1.1vw + 0.2rem, 1.05rem);
+            color: var(--slate);
+            margin-bottom: clamp(1rem, 2vw, 1.5rem);
+            line-height: 1.65;
+            max-width: 480px;
+        }
+
+        .hero-ctas {
+            display: flex;
+            gap: clamp(0.75rem, 1.5vw, 1rem);
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+        }
+
+        .text-link {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: clamp(0.85rem, 1vw, 0.95rem);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+            padding: 0.5rem 0;
+        }
+
+            .text-link:hover {
+                color: var(--accent);
+                gap: 0.6rem;
+            }
+
+            .text-link i {
+                font-size: 0.8rem;
+                transition: transform 0.2s ease;
+            }
+
+            .text-link:hover i {
+                transform: translateX(3px);
+            }
+
+        .hero-stats {
+            display: flex;
+            gap: clamp(1.25rem, 2.5vw, 2rem);
+            padding-top: clamp(0.75rem, 1.5vw, 1.25rem);
+            border-top: 1px solid rgba(11, 77, 60, 0.1);
+        }
+
+        .stat-item {
+            text-align: left;
+        }
+
+        .stat-value {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(1rem, 1.5vw, 1.25rem);
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: clamp(0.6rem, 0.8vw, 0.72rem);
+            color: var(--muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        /* Hero Illustration - Enhanced for visual balance */
+        .hero-illustration {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: clamp(0.5rem, 1.5vw, 1.5rem);
+        }
+
+        .illustration-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: clamp(320px, 45vw, 480px);
+        }
+
+        .device-mockup {
+            position: relative;
+            background: white;
+            border-radius: clamp(18px, 2.5vw, 28px);
+            box-shadow: 0 25px 60px -15px rgba(11, 77, 60, 0.28), 0 12px 30px -8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(11, 77, 60, 0.05);
+            padding: clamp(1.25rem, 2.5vw, 2rem);
+            transform: perspective(1200px) rotateY(-3deg) rotateX(2deg);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+            .device-mockup:hover {
+                transform: perspective(1200px) rotateY(0deg) rotateX(0deg);
+                box-shadow: 0 30px 70px -18px rgba(11, 77, 60, 0.32), 0 15px 35px -10px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(11, 77, 60, 0.08);
+            }
+
+        .doc-preview {
+            background: linear-gradient(180deg, #fafcfb 0%, var(--bg-light) 100%);
+            border-radius: clamp(12px, 1.75vw, 18px);
+            padding: clamp(1.25rem, 2.5vw, 2rem);
+            position: relative;
+            border: 1px solid rgba(11, 77, 60, 0.06);
+        }
+
+        .doc-header {
+            display: flex;
+            align-items: center;
+            gap: clamp(0.6rem, 1.25vw, 1rem);
+            margin-bottom: clamp(1rem, 2vw, 1.5rem);
+            padding-bottom: clamp(0.6rem, 1.25vw, 1rem);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .doc-icon {
+            width: clamp(40px, 5vw, 56px);
+            height: clamp(40px, 5vw, 56px);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: clamp(1rem, 1.5vw, 1.4rem);
+            box-shadow: 0 4px 12px rgba(11, 77, 60, 0.2);
+        }
+
+        .doc-title-wrap h4 {
+            font-size: clamp(0.95rem, 1.35vw, 1.2rem);
+            color: var(--charcoal);
+            margin-bottom: 0.2rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .doc-title-wrap span {
+            font-size: clamp(0.7rem, 0.95vw, 0.85rem);
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .doc-lines {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.5rem, 1vw, 0.75rem);
+            margin-bottom: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .doc-line {
+            height: clamp(6px, 0.9vw, 9px);
+            background: linear-gradient(90deg, var(--border) 0%, #d1d5db 100%);
+            border-radius: 4px;
+        }
+
+            .doc-line:nth-child(1) {
+                width: 55%;
+            }
+
+            .doc-line:nth-child(2) {
+                width: 100%;
+            }
+
+            .doc-line:nth-child(3) {
+                width: 80%;
+            }
+
+            .doc-line:nth-child(4) {
+                width: 65%;
+            }
+
+        .signature-area {
+            background: white;
+            border: 2.5px dashed var(--accent);
+            border-radius: var(--radius);
+            padding: clamp(1rem, 2vw, 1.5rem);
+            text-align: center;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(16, 185, 129, 0.08);
+        }
+
+        .signature-svg {
+            width: clamp(140px, 22vw, 220px);
+            height: clamp(40px, 6vw, 60px);
+        }
+
+        .signature-path {
+            stroke: var(--primary);
+            stroke-width: 3.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-dasharray: 500;
+            stroke-dashoffset: 500;
+            animation: drawSignature 2s ease-out 0.5s forwards;
+        }
+
+        @@keyframes drawSignature {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .floating-badge {
+            position: absolute;
+            background: white;
+            border-radius: var(--radius);
+            padding: clamp(0.5rem, 1vw, 0.75rem) clamp(0.75rem, 1.25vw, 1rem);
+            box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.03);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: clamp(0.72rem, 1vw, 0.88rem);
+            font-weight: 600;
+            animation: floatBadge 3s ease-in-out infinite;
+        }
+
+            .floating-badge i {
+                font-size: clamp(0.8rem, 1.1vw, 1rem);
+            }
+
+            .floating-badge.badge-verified {
+                top: -12px;
+                right: -18px;
+                color: var(--accent);
+                background: linear-gradient(135deg, white 0%, #ecfdf5 100%);
+            }
+
+            .floating-badge.badge-secure {
+                bottom: 50px;
+                left: -28px;
+                color: var(--primary);
+                animation-delay: 1s;
+                background: linear-gradient(135deg, white 0%, #f0fdf9 100%);
+            }
+
+            .floating-badge.badge-cloud {
+                bottom: -10px;
+                right: 18px;
+                color: var(--slate);
+                animation-delay: 2s;
+            }
+
+        @@keyframes floatBadge {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        /* =========================================
+                           FEATURES SECTION
+                           ========================================= */
+        .features {
+            padding: clamp(3rem, 8vw, 7rem) 0;
+            background: var(--white);
+        }
+
+        .features-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 clamp(1rem, 3vw, 2rem);
+        }
+
+        .features-header {
+            text-align: center;
+            margin-bottom: clamp(2rem, 5vw, 4rem);
+        }
+
+            .features-header .section-title {
+                margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
+            }
+
+            .features-header .section-subtitle {
+                color: var(--slate);
+                line-height: 1.7;
+            }
+
+        /* Feature grids with fluid gaps */
+        .features-grid-primary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(1rem, 2vw, 1.75rem);
+            margin-bottom: clamp(1rem, 2vw, 1.75rem);
+        }
+
+        .features-grid-secondary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(1rem, 2vw, 1.75rem);
+            margin-bottom: clamp(1rem, 2vw, 1.75rem);
+        }
+
+        .features-grid-tertiary {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: clamp(1rem, 2vw, 1.75rem);
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--bg-light);
+            border-radius: clamp(12px, 1.5vw, 16px);
+            padding: clamp(1.25rem, 2.5vw, 2rem);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+            .feature-card:hover {
+                background: white;
+                box-shadow: 0 15px 35px -8px rgba(11, 77, 60, 0.12);
+                transform: translateY(-4px);
+                border-color: transparent;
+            }
+
+            .feature-card.featured {
+                background: linear-gradient(135deg, var(--mint-light) 0%, rgba(209, 250, 229, 0.5) 100%);
+                border: 1px solid rgba(16, 185, 129, 0.15);
+            }
+
+                .feature-card.featured:hover {
+                    background: white;
+                    box-shadow: 0 20px 45px -10px rgba(11, 77, 60, 0.18);
+                }
+
+                .feature-card.featured .feature-icon {
+                    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+                    color: white;
+                    width: clamp(48px, 5vw, 60px);
+                    height: clamp(48px, 5vw, 60px);
+                    font-size: clamp(1.25rem, 1.75vw, 1.6rem);
+                }
+
+        .feature-icon {
+            width: clamp(44px, 4.5vw, 52px);
+            height: clamp(44px, 4.5vw, 52px);
+            background: linear-gradient(135deg, var(--mint) 0%, var(--mint-light) 100%);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: clamp(0.875rem, 1.5vw, 1.25rem);
+            color: var(--primary);
+            font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .feature-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(0.95rem, 1.25vw, 1.1rem);
+            font-weight: 600;
+            color: var(--charcoal);
+            margin-bottom: clamp(0.4rem, 0.8vw, 0.6rem);
+            line-height: 1.3;
+        }
+
+        .feature-card.featured .feature-title {
+            font-size: clamp(1rem, 1.35vw, 1.15rem);
+        }
+
+        .feature-description {
+            color: var(--muted);
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            line-height: 1.65;
+        }
+
+        /* =========================================
+                           TRUST & SECURITY SECTION
+                           ========================================= */
+        .trust-section {
+            padding: clamp(3rem, 6vw, 5rem) 0;
+            background: linear-gradient(180deg, var(--bg-light) 0%, var(--mint-light) 100%);
+        }
+
+        .trust-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 clamp(1rem, 3vw, 2rem);
+        }
+
+        .trust-header {
+            text-align: center;
+            margin-bottom: clamp(2rem, 4vw, 3rem);
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(1rem, 2.5vw, 2rem);
+        }
+
+        .trust-card {
+            background: white;
+            border-radius: clamp(12px, 1.5vw, 16px);
+            padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.25rem, 2.5vw, 2rem);
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+            .trust-card:hover {
+                box-shadow: var(--shadow-lg);
+                transform: translateY(-4px);
+            }
+
+        .trust-icon {
+            width: clamp(56px, 6vw, 72px);
+            height: clamp(56px, 6vw, 72px);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto clamp(1rem, 2vw, 1.5rem);
+            color: white;
+            font-size: clamp(1.25rem, 2vw, 1.75rem);
+        }
+
+        .trust-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(1rem, 1.5vw, 1.25rem);
+            font-weight: 600;
+            color: var(--charcoal);
+            margin-bottom: clamp(0.5rem, 1vw, 0.75rem);
+        }
+
+        .trust-description {
+            color: var(--muted);
+            font-size: clamp(0.8rem, 1vw, 0.95rem);
+            line-height: 1.6;
+        }
+
+        /* Trust Badges Row */
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: clamp(1rem, 3vw, 3rem);
+            margin-top: clamp(2rem, 4vw, 3rem);
+            flex-wrap: wrap;
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: clamp(0.5rem, 1vw, 0.75rem);
+            padding: clamp(0.75rem, 1.5vw, 1rem) clamp(1rem, 2vw, 1.5rem);
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+
+            .trust-badge i {
+                font-size: clamp(1rem, 1.5vw, 1.25rem);
+            }
+
+            .trust-badge.security i {
+                color: var(--accent);
+            }
+
+            .trust-badge.verified i {
+                color: #3b82f6;
+            }
+
+            .trust-badge.cloud i {
+                color: #f59e0b;
+            }
+
+            .trust-badge span {
+                font-weight: 600;
+                color: var(--charcoal);
+                font-size: clamp(0.8rem, 1vw, 0.95rem);
+            }
+
+        /* =========================================
+                           CTA SECTION
+                           ========================================= */
+        .cta-section {
+            padding: clamp(3rem, 6vw, 6rem) 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--accent) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .cta-section::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+                pointer-events: none;
+            }
+
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 clamp(1rem, 3vw, 2rem);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .cta-title {
+            font-size: clamp(1.5rem, 3.5vw + 0.5rem, 2.75rem);
+            font-weight: 700;
+            color: white;
+            margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+        }
+
+        .cta-description {
+            font-size: clamp(0.95rem, 1.5vw + 0.25rem, 1.25rem);
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: clamp(1.5rem, 3vw, 2rem);
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: clamp(0.75rem, 1.5vw, 1rem);
+            flex-wrap: wrap;
+        }
+
+        .btn-white {
+            background: white;
+            color: var(--primary);
+        }
+
+            .btn-white:hover {
+                background: var(--bg-light);
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-lg);
+            }
+
+        .btn-white-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+            .btn-white-outline:hover {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: white;
+                color: white;
+            }
+
+        /* =========================================
+                           FOOTER
+                           ========================================= */
+        .footer {
+            background: var(--charcoal);
+            color: rgba(255, 255, 255, 0.7);
+            padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(1rem, 2vw, 2rem);
+        }
+
+        .footer-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 clamp(1rem, 3vw, 2rem);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: clamp(1.5rem, 3vw, 3rem);
+            margin-bottom: clamp(1.5rem, 3vw, 3rem);
+        }
+
+        .footer-brand .logo-text {
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1.25rem, 2vw, 1.5rem);
+            margin-bottom: clamp(0.5rem, 1vw, 1rem);
+            display: block;
+        }
+
+        .footer-brand p {
+            font-size: clamp(0.8rem, 1vw, 0.95rem);
+            line-height: 1.7;
+            margin-bottom: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .footer-social {
+            display: flex;
+            gap: clamp(0.5rem, 1vw, 1rem);
+        }
+
+            .footer-social a {
+                width: clamp(32px, 4vw, 40px);
+                height: clamp(32px, 4vw, 40px);
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: var(--radius-sm);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: rgba(255, 255, 255, 0.7);
+                transition: all 0.2s ease;
+                font-size: clamp(0.85rem, 1vw, 1rem);
+            }
+
+                .footer-social a:hover {
+                    background: var(--accent);
+                    color: white;
+                }
+
+        .footer-links h4 {
+            color: white;
+            font-size: clamp(0.85rem, 1vw, 1rem);
+            font-weight: 600;
+            margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem);
+        }
+
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: clamp(0.4rem, 0.8vw, 0.75rem);
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: clamp(0.8rem, 1vw, 0.95rem);
+            transition: color 0.2s ease;
+        }
+
+            .footer-links a:hover {
+                color: var(--accent);
+            }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: clamp(1rem, 2vw, 2rem);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+            .footer-bottom p {
+                font-size: clamp(0.75rem, 0.9vw, 0.875rem);
+                margin: 0;
+            }
+
+        .footer-bottom-links {
+            display: flex;
+            gap: clamp(1rem, 2vw, 2rem);
+        }
+
+            .footer-bottom-links a {
+                color: rgba(255, 255, 255, 0.7);
+                text-decoration: none;
+                font-size: clamp(0.75rem, 0.9vw, 0.875rem);
+                transition: color 0.2s ease;
+            }
+
+                .footer-bottom-links a:hover {
+                    color: var(--accent);
+                }
+
+        /* =========================================
+                           RESPONSIVE STYLES
+                           ========================================= */
+
+        /* Extra large screens */
+        @@media (min-width: 1440px) {
+            .hero-container {
+                max-width: 1400px;
+                gap: 5rem;
+            }
+
+            .hero-title {
+                font-size: 2.85rem;
+            }
+
+            .illustration-wrapper {
+                max-width: 500px;
+            }
+
+            .features-container,
+            .trust-container {
+                max-width: 1400px;
+            }
+        }
+
+        /* Desktop to laptop transition */
+        @@media (max-width: 1280px) {
+            .hero-container {
+                gap: 3rem;
+            }
+
+            .features-grid-primary,
+            .features-grid-secondary {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Tablet landscape and small laptops */
+        @@media (max-width: 1024px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 1.5rem;
+                max-width: 560px;
+            }
+
+            .hero-content {
+                max-width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .hero-title {
+                font-size: clamp(1.5rem, 4vw, 2.25rem);
+            }
+
+                .hero-title .highlight {
+                    display: inline;
+                }
+
+            .hero-description {
+                max-width: 100%;
+                font-size: 0.95rem;
+            }
+
+            .hero-ctas {
+                justify-content: center;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .hero-illustration {
+                order: -1;
+            }
+
+            .illustration-wrapper {
+                max-width: 320px;
+                margin: 0 auto;
+            }
+
+            .device-mockup {
+                transform: none;
+            }
+
+            .floating-badge.badge-verified {
+                right: -8px;
+                top: -8px;
+            }
+
+            .floating-badge.badge-secure {
+                left: -8px;
+                bottom: 30px;
+            }
+
+            .floating-badge.badge-cloud {
+                right: 10px;
+                bottom: -5px;
+            }
+
+            .features-grid-primary,
+            .features-grid-secondary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .features-grid-tertiary {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 100%;
+            }
+
+            .trust-grid {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Tablet portrait */
+        @@media (max-width: 768px) {
+            .hero {
+                min-height: 100vh;
+                min-height: 100dvh;
+            }
+
+            .hero-container {
+                padding: 0.75rem;
+                gap: 1.25rem;
+                max-width: 100%;
+            }
+
+            .hero-title {
+                font-size: clamp(1.4rem, 5vw, 1.85rem);
+                line-height: 1.2;
+            }
+
+            .hero-description {
+                font-size: 0.9rem;
+                line-height: 1.6;
+            }
+
+            .hero-stats {
+                flex-direction: row;
+                gap: 1.25rem;
+                flex-wrap: wrap;
+                justify-content: center;
+                padding-top: 0.75rem;
+            }
+
+            .stat-item {
+                text-align: center;
+                min-width: 65px;
+            }
+
+            .stat-value {
+                font-size: 1rem;
+            }
+
+            .stat-label {
+                font-size: 0.6rem;
+            }
+
+            .illustration-wrapper {
+                max-width: 260px;
+            }
+
+            .doc-title-wrap h4 {
+                font-size: 0.9rem;
+            }
+
+            .doc-title-wrap span {
+                font-size: 0.7rem;
+            }
+
+            .features-grid-primary,
+            .features-grid-secondary,
+            .features-grid-tertiary {
+                grid-template-columns: 1fr;
+            }
+
+            .trust-badges {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .trust-badge {
+                width: 100%;
+                max-width: 260px;
+                justify-content: center;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .footer-brand {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer-social {
+                justify-content: center;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-bottom-links {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Mobile landscape */
+        @@media (max-width: 640px) {
+            .floating-badge {
+                display: none;
+            }
+
+            .hero-ctas {
+                flex-direction: column;
+                width: 100%;
+            }
+
+                .hero-ctas .btn-lg {
+                    width: 100%;
+                    justify-content: center;
+                }
+
+                .hero-ctas .text-link {
+                    justify-content: center;
+                }
+        }
+
+        /* Mobile portrait */
+        @@media (max-width: 480px) {
+            .hero {
+                padding: 0.5rem;
+            }
+
+            .hero-container {
+                gap: 1rem;
+            }
+
+            .hero-title {
+                font-size: 1.35rem;
+            }
+
+            .hero-description {
+                font-size: 0.85rem;
+            }
+
+            .hero-ctas .btn-lg {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.9rem;
+            }
+
+            .hero-stats {
+                gap: 0.75rem;
+            }
+
+            .stat-value {
+                font-size: 0.95rem;
+            }
+
+            .illustration-wrapper {
+                max-width: 220px;
+            }
+
+            .doc-preview {
+                padding: 0.875rem;
+            }
+
+            .doc-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 0.85rem;
+            }
+
+            .doc-title-wrap h4 {
+                font-size: 0.8rem;
+            }
+
+            .doc-title-wrap span {
+                font-size: 0.65rem;
+            }
+
+            .doc-line {
+                height: 5px;
+            }
+
+            .signature-area {
+                padding: 0.75rem;
+            }
+
+            .signature-svg {
+                width: 100px;
+                height: 30px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+                .cta-buttons .btn {
+                    width: 100%;
+                }
+        }
+
+        /* Very small screens */
+        @@media (max-width: 360px) {
+            .hero-title {
+                font-size: 1.2rem;
+            }
+
+            .hero-description {
+                font-size: 0.8rem;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .stat-item {
+                min-width: auto;
+            }
+
+            .illustration-wrapper {
+                max-width: 190px;
+            }
+
+            .floating-badge {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Hero Section - Full Viewport -->
+    <section class="hero" id="hero">
+        <div class="hero-bg-icons">
+            <i class="fa-solid fa-file-contract hero-bg-icon"></i>
+            <i class="fa-solid fa-shield-halved hero-bg-icon"></i>
+            <i class="fa-solid fa-pen-nib hero-bg-icon"></i>
+            <i class="fa-solid fa-lock hero-bg-icon"></i>
+            <i class="fa-solid fa-certificate hero-bg-icon"></i>
+            <i class="fa-solid fa-cloud-arrow-up hero-bg-icon"></i>
+        </div>
+
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fa-solid fa-shield-check"></i>
+                    Enterprise-Grade Security
+                </div>
+                <h1 class="hero-title">
+                    Digital Signatures Made <span class="highlight">Simple, Secure & Seamless</span>
+                </h1>
+                <p class="hero-description">
+                    Legally binding electronic signatures for individuals and organizations.
+                    Fast, compliant, and trusted by enterprises worldwide.
+                </p>
+                <div class="hero-ctas">
+                    <a class="btn btn-primary btn-lg" href="@Url.Action("GetAuthorizationUrl", "Login")">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login
+                    </a>
+                    <a href="#features" class="text-link">
+                        View Features <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">99.9%</div>
+                        <div class="stat-label">Uptime SLA</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">256-bit</div>
+                        <div class="stat-label">Encryption</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">PKI</div>
+                        <div class="stat-label">Certified</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-illustration">
+                <div class="illustration-wrapper">
+                    <div class="device-mockup">
+                        <div class="doc-preview">
+                            <div class="doc-header">
+                                <div class="doc-icon">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </div>
+                                <div class="doc-title-wrap">
+                                    <h4>Contract Agreement</h4>
+                                    <span>Ready for signature</span>
+                                </div>
+                            </div>
+                            <div class="doc-lines">
+                                <div class="doc-line"></div>
+                                <div class="doc-line"></div>
+                                <div class="doc-line"></div>
+                                <div class="doc-line"></div>
+                            </div>
+                            <div class="signature-area">
+                                <svg class="signature-svg" viewBox="0 0 200 60">
+                                    <path class="signature-path" d="M10 45 Q 25 10, 40 40 T 70 35 T 100 40 T 130 30 T 160 35 Q 175 38, 190 30" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="floating-badge badge-verified">
+                            <i class="fa-solid fa-circle-check"></i>
+                            Verified
+                        </div>
+                        <div class="floating-badge badge-secure">
+                            <i class="fa-solid fa-lock"></i>
+                            Encrypted
+                        </div>
+                        <div class="floating-badge badge-cloud">
+                            <i class="fa-solid fa-cloud"></i>
+                            Cloud Sync
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="features-container">
+            <div class="features-header">
+                <h2 class="section-title">Powerful Features for Every Need</h2>
+                <p class="section-subtitle">
+                    Everything you need to streamline your document signing workflow,
+                    from individual signatures to enterprise-scale deployments.
+                </p>
+            </div>
+
+            <!-- Primary featured row -->
+            <div class="features-grid-primary">
+                <div class="feature-card featured animate-on-scroll delay-1">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <h3 class="feature-title">Individual & Organization Signing</h3>
+                    <p class="feature-description">
+                        Sign as an individual or as a representative of an organization with eSEAL for official business documents.
+                    </p>
+                </div>
+
+                <div class="feature-card featured animate-on-scroll delay-2">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <h3 class="feature-title">Bulk Document Signing</h3>
+                    <p class="feature-description">
+                        Process multiple documents at once with our efficient bulk signing feature. Save time on high-volume workflows.
+                    </p>
+                </div>
+
+                <div class="feature-card featured animate-on-scroll delay-3">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-people-arrows"></i>
+                    </div>
+                    <h3 class="feature-title">Signature Delegation</h3>
+                    <p class="feature-description">
+                        Delegate signing authority with proper digital consent. Maintain full audit trails and compliance.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Secondary row -->
+            <div class="features-grid-secondary">
+                <div class="feature-card animate-on-scroll delay-1">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-file-pen"></i>
+                    </div>
+                    <h3 class="feature-title">Reusable Form Templates</h3>
+                    <p class="feature-description">
+                        Create fillable form templates that can be reused across documents. Streamline repetitive signing workflows.
+                    </p>
+                </div>
+
+                <div class="feature-card animate-on-scroll delay-2">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-fingerprint"></i>
+                    </div>
+                    <h3 class="feature-title">Strong Authentication</h3>
+                    <p class="feature-description">
+                        Advanced liveness detection and multi-factor authentication ensure security and complete traceability.
+                    </p>
+                </div>
+
+                <div class="feature-card animate-on-scroll delay-3">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-certificate"></i>
+                    </div>
+                    <h3 class="feature-title">PKI-Based Certificates</h3>
+                    <p class="feature-description">
+                        Individual or company PKI-based signature certificates for cryptographically secure, legally binding signatures.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tertiary row -->
+            <div class="features-grid-tertiary">
+                <div class="feature-card animate-on-scroll delay-1">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <h3 class="feature-title">REST API Integration</h3>
+                    <p class="feature-description">
+                        Comprehensive REST-based signing API for seamless integration with your existing business applications.
+                    </p>
+                </div>
+
+                <div class="feature-card animate-on-scroll delay-2">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <h3 class="feature-title">Enterprise Deployment</h3>
+                    <p class="feature-description">
+                        Deploy on-premise or in the cloud. Flexible enterprise solutions that fit your infrastructure requirements.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust & Security Section -->
+    <section class="trust-section" id="security">
+        <div class="trust-container">
+            <div class="trust-header">
+                <h2 class="section-title">Trust & Security First</h2>
+                <p class="section-subtitle">
+                    Built with enterprise-grade security and compliance at its core.
+                    Your documents are protected at every step.
+                </p>
+            </div>
+
+            <div class="trust-grid">
+                <div class="trust-card animate-on-scroll delay-1">
+                    <div class="trust-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="trust-title">Secure Authentication</h3>
+                    <p class="trust-description">
+                        Multi-factor authentication with biometric verification and liveness detection for maximum security.
+                    </p>
+                </div>
+
+                <div class="trust-card animate-on-scroll delay-2">
+                    <div class="trust-icon">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                    <h3 class="trust-title">Full Compliance</h3>
+                    <p class="trust-description">
+                        Compliant with eIDAS, ESIGN Act, and international electronic signature regulations.
+                    </p>
+                </div>
+
+                <div class="trust-card animate-on-scroll delay-3">
+                    <div class="trust-icon">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <h3 class="trust-title">Flexible Deployment</h3>
+                    <p class="trust-description">
+                        Choose cloud-hosted or on-premise deployment to meet your organization's security policies.
+                    </p>
+                </div>
+            </div>
+
+            <div class="trust-badges">
+                <div class="trust-badge security">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Security Enabled</span>
+                </div>
+                <div class="trust-badge verified">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Verified & Trusted</span>
+                </div>
+                <div class="trust-badge cloud">
+                    <i class="fa-solid fa-cloud"></i>
+                    <span>Cloud Secure</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2 class="cta-title">Ready to Transform Your Signing Workflow?</h2>
+            <p class="cta-description">
+                Join thousands of organizations using MyTRUST Sign for secure,
+                legally binding digital signatures.
+            </p>
+            <div class="cta-buttons">
+                <a class="btn btn-white btn-lg" href="@Url.Action("GetAuthorizationUrl", "Login")">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login Now
+                </a>
+                <a href="#features" class="btn btn-white-outline btn-lg">
+                    <i class="fa-solid fa-envelope"></i> Contact Sales
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <span class="logo-text">MyTRUST<span style="color: var(--accent);">Sign</span></span>
+                    <p>
+                        Enterprise-grade digital signing platform trusted by organizations worldwide.
+                        Secure, compliant, and seamlessly integrated.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#"><i class="fa-brands fa-github"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">API Documentation</a></li>
+                        <li><a href="#">Integrations</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#security">Security</a></li>
+                        <li><a href="#">Compliance</a></li>
+                        <li><a href="#">Status</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 MyTRUST Sign. All rights reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Cookie Settings</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // One-time scroll animation using IntersectionObserver
+        const animateElements = document.querySelectorAll('.animate-on-scroll');
+
+        const animationObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                    // Unobserve after animation triggers (one-time only)
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.15,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        animateElements.forEach(el => {
+            animationObserver.observe(el);
+        });
+    </script>
+</body>
+</html>

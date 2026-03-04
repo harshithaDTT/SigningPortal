@@ -1,0 +1,2432 @@
+﻿@using System.Security.Claims;
+@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "View";
+}
+@{
+    var DocumntsStatus = ViewBag.DocumntsStatus;
+
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var AccountType = User.FindFirst("AccountType").Value;
+    var OrganizationUid = "";
+    if (AccountType != "Self")
+    {
+
+        OrganizationUid = User.FindFirst("OrganizationUid").Value;
+    }
+}
+<link rel="stylesheet" href="~/local-cdns/Shared/fontawesome/6.4.0/css/all.min.css">
+<style>
+
+    .viewbutton {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        background: #d1f4e0;
+        color: #198754;
+        font-size: 16px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .viewbutton:hover {
+            background: #0ea66b;
+            border-color: #0ea66b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2);
+        }
+
+    /* Tooltip */
+    .tooltip-message {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        background-color: #333;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        top: 35px;
+        left: 100px;
+        transform: translateX(-50%);
+        font-size: 12px;
+        white-space: nowrap;
+        transition: opacity 0.2s;
+        z-index: 1;
+    }
+
+    .custom-checkbox-wrapper.disabled:hover .tooltip-message {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .select-mode {
+        background-color: darkgrey !important;
+    }
+
+    .default-mode {
+        background-color: #4caf50 !important;
+    }
+
+    .inprogressbtn {
+        color: #f57c00;
+        text-align: center;
+    }
+
+    .Declinedbtn {
+        color: red;
+        text-align: center;
+    }
+
+    .completebtn {
+        color: #4caf50 !important;
+        text-align: center;
+    }
+
+    .otherbtn {
+        color: #bdbdbd;
+        text-align: center;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+
+
+    .card-selected {
+        background-color: #f3f3f3 !important; /* Light cyan highlight */
+        box-shadow: 0 0 24px rgba(0, 0, 0, .25);
+    }
+
+    .status-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .popup {
+        display: none;
+        position: absolute;
+        min-width: 280px;
+        padding: 15px;
+        background-image: linear-gradient(90deg, #30b6ac, #81bc73);
+        color: #000;
+        border-radius: 6px;
+        box-shadow: 0 0 24px rgba(0, 0, 0, .25);
+        font-size: 80%;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s, visibility 0.3s;
+        bottom: 100%;
+        /*/ Position above the status / */
+        right: 0;
+        /*/ Align to the right of the status container / */
+        transform: translateX(0) translateY(-10px);
+        /*/ Adjust vertical positioning /*/
+    }
+
+    .status-container:hover .popup {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .popup::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        /*/ Position the arrow / */
+        right: 20px;
+        /*/ Adjust arrow to align with the popup /*/
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        /*/ Transparent left side /*/
+        border-top: 10px solid #81bc73;
+        /*/ Visible top side /*/
+    }
+
+    .popup .header {
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 0;
+        font-size: 14px;
+    }
+
+    .popup .headersp {
+        padding-bottom: 5px;
+        border-bottom: 1px solid;
+    }
+
+    .popup .row {
+        display: contents;
+    }
+
+    .popup p {
+        line-height: 1 !important;
+        margin-bottom: 0;
+        padding-bottom: 5px;
+        color: #fff;
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .popup ul {
+        padding-left: 0;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        /*/ Ensure vertical alignment /*/
+        list-style: none;
+    }
+
+        .popup ul li {
+            font-size: 14px;
+            font-weight: 600;
+            position: relative;
+            margin-bottom: 0;
+        }
+
+            .popup ul li.first-email::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 14px;
+                height: 14px;
+                background-color: transparent;
+                border: 2px solid #fff;
+                border-radius: 50%;
+            }
+
+            .popup ul li.first-email::after {
+                content: "";
+                width: 6px;
+                height: 6px;
+                background-color: #fff;
+                border-radius: 50%;
+                position: absolute;
+                top: 50%;
+                left: 7px;
+                transform: translate(-50%, -50%);
+            }
+
+            .popup ul li.no-bullet,
+            .popup ul li.delegator-section {
+                padding-left: 0;
+                list-style-type: none;
+                margin-left: 0;
+                /*/ Reset margin for left alignment /*/
+            }
+
+    /*/ Ensure alignment of items in the popup /*/
+    .popup ul {
+        padding-left: 0;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        list-style: none;
+    }
+
+
+
+
+    .stats-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Specific styles for Document Status */
+    .docstats-heading {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .docstats-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: #212529;
+    }
+
+    /* Specific styles for Signing Status */
+    .signingstats-heading {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+
+
+    /* Utility class for gaps */
+    .gap-1 {
+        gap: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .shimmer-wrapper .shimmer-item {
+        height: 90px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        background: #f3f3f3;
+        position: relative;
+        overflow: hidden;
+    }
+
+        /* Shimmer band */
+        .shimmer-wrapper .shimmer-item::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient( to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100% );
+            animation: shimmer-horizontal 1.6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+
+
+    @@keyframes shimmer-horizontal {
+        0% {
+            left: -100%;
+        }
+
+        100% {
+            left: 100%;
+        }
+    }
+
+
+    .toggle-link {
+        color: #4A4A4A; /* Neutral dark gray for readability */
+        font-weight: 500;
+        font-size: 1rem;
+        transition: color 0.2s ease-in-out;
+        text-decoration: none;
+    }
+
+        .toggle-link:hover {
+            color: #2C7BE5; /* Modern blue hover (not jarring) */
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+    .docs-message {
+        color: #4A4A4A;
+        font-weight: 500;
+        font-size: 1rem;
+        transition: color 0.2s ease-in-out;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .sent-by {
+        font-size: 14px;
+        color: #555;
+        display: flex;
+        align-items: center;
+    }
+
+    .sender-badge {
+        color: #555555;
+        border-radius: 4px;
+        padding: 2px 6px;
+        margin-left: 5px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    table, tr, th, td, tbody, tfoot, thead {
+        border: none !important;
+        border-collapse: collapse;
+        padding: 0px !important;
+    }
+
+        table thead th {
+            padding: 0px !important;
+        }
+
+
+    .search-bar {
+        display: flex;
+        align-items: center;
+        max-width: 400px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        overflow: hidden;
+        background: #f9f9f9;
+    }
+
+    .search-input {
+        flex: 1;
+        border: none;
+        padding: 4px 8px;
+        outline: none;
+        font-size: 14px;
+        border-radius: 25px 0 0 25px;
+        background-color: transparent;
+    }
+
+    .search-button {
+        background-color: rgb(0 0 0 / 20%);
+        border: none;
+        padding: 0.625rem 0.875rem;
+        cursor: pointer;
+        border-radius: 0 3px 3px 0;
+        color: white;
+        font-size: 16px;
+    }
+
+        .search-button:focus {
+            outline: none;
+        }
+
+    .onhoverclass {
+        cursor: pointer;
+        transition: box-shadow 0.3s ease;
+    }
+
+        .onhoverclass:hover {
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
+            transform: scale(1.0125); /* slight zoom */
+        }
+
+
+    .doc-stats-container {
+        padding-left: 0px;
+    }
+
+    @@media screen and (max-width:1200px) {
+        .doc-stats-container {
+            padding-left: 89px;
+            width: 100%;
+        }
+    }
+
+    @@media screen and (min-width:1200px) {
+        .stats-container {
+            min-width: 130px;
+        }
+    }
+
+    .nd-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+        border: 1px solid #e6f3ee;
+        box-shadow: 0 4px 10px rgba(25, 135, 84, 0.15);
+    }
+
+    .nd-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    /* ---------------- LEFT ---------------- */
+
+    .nd-left {
+        display: flex;
+        gap: 14px;
+        flex: 1;
+        align-items: flex-start;
+    }
+
+    .nd-icon {
+        width: 42px;
+        height: 42px;
+        background: #0b5c4d;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .nd-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .nd-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    /* TO + DATES */
+
+    .nd-sub {
+        margin-top: 4px;
+    }
+
+    .nd-to {
+        font-size: 13px;
+        color: #475569;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+        .nd-to span {
+            font-weight: 600;
+        }
+
+    .nd-dates {
+        margin-top: 2px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #919aa3;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .nd-dot {
+        margin: 0 6px;
+    }
+
+    /* ---------------- MOBILE STATUS ---------------- */
+
+    .nd-mobile-status {
+        display: none;
+        margin-top: 8px;
+        font-size: 13px;
+        color: #475569;
+    }
+
+
+
+    .nd-label {
+        font-weight: 500;
+    }
+
+    .nd-value {
+        font-weight: 600;
+    }
+
+    .nd-users {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    /* MOBILE ACTION */
+
+    .nd-mobile-action {
+        display: none;
+        margin-top: 6px;
+    }
+
+    .nd-mobile-action-bottom {
+        display: none;
+        margin-top: 10px;
+    }
+
+    /* ---------------- RIGHT (DESKTOP) ---------------- */
+
+    .nd-right {
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+    }
+
+    /* each status column same width */
+    .nd-col {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        min-width: 140px;
+    }
+    /* heading */
+    .nd-head {
+        font-size: 12px;
+        font-weight: 600;
+        color: #7a7a7a;
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .nd-val {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    /* signed count row */
+    .nd-users {
+        margin-top: 6px;
+        font-size: 12px;
+        color: #8a8a8a;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .nd-action {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+    }
+
+    .checkboxContainer.custom-checkbox-wrapper {
+        flex-shrink: 0;
+    }
+
+
+    @@media (max-width: 768px) {
+
+        .nd-row {
+            flex-direction: column;
+        }
+
+        .nd-right {
+            display: none;
+        }
+
+        .nd-mobile-status {
+            display: block;
+        }
+
+        .nd-info {
+            position: relative;
+        }
+
+        .nd-title {
+            padding-right: 90px; /* space for button */
+        }
+
+        .nd-mobile-action {
+            position: absolute;
+            display: block;
+            top: 0;
+            right: 0;
+        }
+        /* hide bottom button at this size */
+        .nd-mobile-action-bottom {
+            display: none;
+        }
+
+        .nd-title {
+            white-space: normal;
+        }
+    }
+
+    @@media (max-width: 576px) {
+
+        .nd-left {
+            gap: 10px;
+        }
+
+        .nd-mobile-action {
+            display: none;
+        }
+
+
+        .nd-mobile-action-bottom {
+            display: block;
+        }
+
+            .nd-mobile-action-bottom button,
+            .nd-mobile-action-bottom a {
+                width: 100% !important;
+                display: block;
+            }
+    }
+
+    @@media (max-width: 480px) {
+
+        .nd-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nd-left {
+            width: 100%;
+        }
+
+        .nd-info {
+            width: 100%;
+        }
+        /* title wrap instead of ellipsis */
+        .nd-title {
+            white-space: normal;
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+
+        .nd-dates {
+            font-size: 12px;
+            gap: 2px;
+        }
+        /* button at bottom full width */
+        .nd-mobile-action-bottom {
+            width: 100%;
+            margin-top: 12px;
+        }
+
+            .nd-mobile-action-bottom button,
+            .nd-mobile-action-bottom .btn,
+            .nd-mobile-action-bottom a {
+                width: 100%;
+            }
+        /* reduce padding so card fits better */
+        .nd-card {
+            padding: 14px;
+        }
+
+        .nd-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 15px;
+        }
+
+        .checkboxContainer.custom-checkbox-wrapper {
+            margin-top: 2px;
+        }
+
+        .nd-left {
+            gap: 10px;
+        }
+    }
+</style>
+
+
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+    @Html.AntiForgeryToken()
+    <div class="col-md-12" style="height:100%">
+
+        <div class="d-flex justify-content-between mb-3">
+            <h3 class="common-heading-color" id="Filterheading" style="font-size: 25px;"></h3>
+            <div id="docsSearchContainer" class="align-items-center gap-2" style="display:none;">
+                <label for="searchInput" class="form-label mb-0 fw-semibold pr-1">Search:</label>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Type File name & Enter" />
+                    <button class="search-button" id="searchButton">
+                        <i class="fas fa-search"> </i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div class="d-flex  mb-4" style="gap:1%;">
+            @if (AccountType.ToString().ToLower() != "self")
+            {
+                <div class="d-flex custom-checkbox-wrapper">
+                    <input type="checkbox" class="custom-checkbox" id="selectAllCheckbox" style="margin-right:17px;margin-top:8px;">
+
+                    <label id="selectAllCheckboxlabel" style="margin-top:9px;font-size:medium;">Select All</label>
+                </div>
+
+            }
+            else
+            {
+
+                <div class="d-flex custom-checkbox-wrapper">
+                    <input type="checkbox" class="custom-checkbox" id="selectAllCheckbox" style="margin-right:17px;display:none;margin-top:8px;">
+
+                    <label id="selectAllCheckboxlabel" style="margin-top:3px;font-size:medium;display:none;">Select All</label>
+                </div>
+
+            }
+
+
+
+            <div id="signingButtonGroup" style="display: none;">
+                <button class="btn btn-success rounded-3 py-2 fw-semibold" id="groupSignBtn" style="font-size:15px !important;padding: 3px 7px !important;">
+                    Sign Selected  <span id="selectedCount" style=" font-size: 14px; font-weight: 500; color:white">
+
+                    </span>
+                </button>
+            </div>
+
+        </div>
+
+
+
+        <div id="noDataMessageAction" class="text-center" style="display: none;">
+            <div class="card-body" style="padding: 0px;">
+                <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">
+                    No Documents Available
+                </div>
+            </div>
+        </div>
+        <div id="actionCardsOuterCard" class="card shadow-sm border rounded-3 p-3">
+
+            <div id="actionCardsContainer" class="space-y-4"></div>
+
+
+            <table id="ActionTb" class="display" style="width:100%;border:none;">
+                <thead>
+                    <tr style="border:none;"><th style="border:none;"></th></tr>
+                </thead>
+            </table>
+
+
+            <div class="d-flex justify-content-center mt-4">
+                <div id="allDocsLoadedMsgAction"
+                     class="docs-message text-center"
+                     style="display:none; width:70%;">
+
+                    <!-- Top Divider with Text -->
+                    <div style="display:flex; align-items:center; justify-content:center; gap:15px; margin-bottom:8px;">
+                        <div style="flex:1; height:1px; background:#dcdcdc;"></div>
+                        <span style="font-size:12px; letter-spacing:1px; color:#6c7a89; font-weight:600;">
+                            SHOWING <span id="showingCount"></span> OF <span id="totalCount"></span>
+                        </span>
+                        <div style="flex:1; height:1px; background:#dcdcdc;"></div>
+                    </div>
+
+                    <!-- Bottom Text -->
+                    <div style="font-size:13px; color:#8a97a6;">
+                        You've reached the end of your documents
+                        (<span id="bottomShowingCount"></span>/<span id="bottomTotalCount"></span>)
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="d-flex justify-content-end w-100">
+
+                <button id="showMoreBtnAction"
+                        type="button"
+                        class="btn btn-outline-primary rounded-3 me-4"
+                        style="display:none;padding:6px 12px;float:right;margin-right:75px;font-size:14px;">
+                    Show More <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts {
+
+    <script>
+
+        var loginEmail = '@userEmail';
+        var loginorgUid = '@OrganizationUid';
+        var loginSuid = '@Suid';
+        var loginAccounttype = '@AccountType';
+        var IsDocumentBlocked = '@Url.Action("IsDocumentBlocked", "Documents")';
+        var GetOrganizationStatusUrl = '@Url.Action("GetOrganizationStatus", "Documents")';
+        var DocumentDetailsByIdUrl = '@Url.Action("DocumentDetailsById", "Documents")';
+        var GetDelegationbyorgidsuidUrl = '@Url.Action("GetDelegationbyorgidsuid", "Documents")';
+        var GetPaginatedFilteredDocumentsList = '@Url.Action("GetPaginatedFilteredDocumentsList", "Documents")';
+        var SignActionByDocIdForReferedDoc = '@Url.Action("SignActionByDocIdForReferedDoc", "Documents")';
+        var SignActionConfigByDocId = '@Url.Action("SignActionConfigByDocId", "Documents")';
+        var IndexDocuments = '@Url.Action("Index", "Documents")';
+        var GroupSigningStatus = '@Url.Action("GroupSigningStatus", "GroupSigning")';
+        var DocumentsSigningStatus = '@Url.Action("DocumentsSigningStatus", "GroupSigning")';
+        var PerformGroupSigning = '@Url.Action("PerformGroupSigning", "GroupSigning")';
+    </script>
+    <script>
+
+
+        var documentsobjectslist = [];
+        var selectedIdListData = [];
+        var currentPage = 0;
+        var pageSize = 5;
+        var totalRecords = 0;
+        var shimmer;
+
+        let currentSentAjaxRequest = null;
+
+        //Get these parameters from query parameters
+        var status = getQueryParam('status') || 'In Progress';
+        var actionRequired = getQueryParam('action_required') === 'true';
+        var expiredSoon = getQueryParam('expired_soon') === 'true';
+        if (expiredSoon) {
+            document.getElementById("Filterheading").innerHTML = "Expiring Soon Documents";
+        }
+        else {
+            document.getElementById("Filterheading").innerHTML = "Action Required Documents";
+        }
+        $(document).ready(function () {
+
+            $('#DocumentMenu').addClass('active');
+            $('#networkOverlay').hide();
+            $('#actionCardsContainer').empty();
+
+            // Initial load
+            fetchDocuments();
+
+            function fetchDocuments() {
+
+                shimmer = showShimmer(pageSize);
+
+                if (currentSentAjaxRequest) {
+                    currentSentAjaxRequest.abort();
+                }
+
+                currentSentAjaxRequest = $.ajax({
+                    url: GetPaginatedFilteredDocumentsList,
+                    type: 'POST',
+                    headers: {
+
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                    },
+                    dataType: 'json',
+                    data: {
+                        start: currentPage * pageSize,
+                        length: pageSize,
+                        status: status,
+                        action_required: actionRequired,
+                        expired_soon: expiredSoon,
+                        searchValue: $('#searchInput').val()?.trim() || ''
+                    },
+                    success: function (res) {
+
+                        shimmer.remove();
+
+                        totalRecords = res.recordsFiltered || 0;
+
+                        if (totalRecords > 0) {
+                            $("#docsSearchContainer").css("display", "flex");
+                        }
+
+                        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+                        const selectAllCheckboxlabel = document.getElementById('selectAllCheckboxlabel');
+
+                        if (res.data.length === 0 && currentPage === 0) {
+
+                            $('#actionCardsContainer').empty();
+                            $('#noDataMessageAction').show();
+                            $('#actionCardsOuterCard').hide();
+                            $('#showMoreBtnAction').hide();
+                            $('#allDocsLoadedMsgAction').hide();
+
+                            if (selectAllCheckbox) selectAllCheckbox.style.display = 'none';
+                            if (selectAllCheckboxlabel) selectAllCheckboxlabel.style.display = 'none';
+
+                            return;
+                        }
+
+                        $('#noDataMessageAction').hide();
+                        $('#actionCardsOuterCard').show();
+                        if (loginAccounttype.toString().toLowerCase() !== 'self') {
+                            if (selectAllCheckbox) selectAllCheckbox.style.display = 'block';
+                            if (selectAllCheckboxlabel) selectAllCheckboxlabel.style.display = 'block';
+                        }
+
+                        renderAndAppendCards(res.data, totalRecords);
+
+                        // Pagination handling
+                        if ((currentPage + 1) * pageSize >= totalRecords) {
+                            $('#showMoreBtnAction').hide();
+
+                            if (totalRecords > pageSize) {
+                                $('#allDocsLoadedMsgAction').show();
+                                document.getElementById("showingCount").innerText = totalRecords;
+                                document.getElementById("totalCount").innerText = totalRecords;
+
+                                document.getElementById("bottomShowingCount").innerText = totalRecords;
+                                document.getElementById("bottomTotalCount").innerText = totalRecords;
+                                   
+                            }
+                        } else {
+                            $('#showMoreBtnAction').show();
+                            $('#allDocsLoadedMsgAction').hide();
+                        }
+                    }
+                });
+            }
+
+            /* =======================
+               EVENT HANDLERS
+            ======================= */
+
+            $(document).on("click", ".redirect-card", function () {
+                const id = $(this).data("id");
+                redirectToDocumentDetails(id);
+            });
+
+            $(document).on("click", ".checkboxContainer", function (event) {
+                event.stopPropagation();
+                const checkbox = $(this).find("input")[0];
+                toggleRowHighlight(checkbox);
+            });
+
+            const actions = {
+                signActionConfigByDocIdOnclick: (id, current, total) =>
+                    signActionConfigByDocIdOnclick(id, current, total),
+                redirectToDocumentDetails: (id) =>
+                    redirectToDocumentDetails(id)
+            };
+
+            $(document).on("click", ".action-btn", function (event) {
+                event.stopPropagation();
+
+                const action = $(this).data("action");
+                const id = $(this).data("id");
+                const current = $(this).data("current");
+                const total = $(this).data("total");
+
+                if (actions[action]) {
+                    actions[action](id, current, total);
+                }
+            });
+
+            $('#showMoreBtnAction').on('click', function () {
+                currentPage++;
+                $('#showMoreBtnAction').hide();
+                fetchDocuments();
+            });
+
+            $('#searchButton').on('click', function () {
+
+                currentPage = 0;
+                $('#actionCardsContainer').empty();
+                $('#allDocsLoadedMsgAction').hide();
+                $('#noDataMessageAction').hide();
+                $('#actionCardsOuterCard').show();
+                const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+                const selectAllCheckboxlabel = document.getElementById('selectAllCheckboxlabel');
+
+                if (loginAccounttype.toString().toLowerCase() !== 'self') {
+                    if (selectAllCheckbox) selectAllCheckbox.style.display = 'block';
+                    if (selectAllCheckboxlabel) selectAllCheckboxlabel.style.display = 'block';
+                }
+
+                $('#showMoreBtnAction').hide();
+                fetchDocuments();
+            });
+
+            $("#selectAllCheckbox").on("change", function () {
+                toggleSelectAll(this);
+            });
+
+            $("#groupSignBtn").on("click", function () {
+                performGroupSigningAction();
+            });
+
+        });
+
+
+
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+
+        async function renderAndAppendCards(data, total) {
+
+            let container = $('#actionCardsContainer');
+
+            const promises = data.map((item, index) => {
+                return generateDocumentCardHtml(item, loginSuid);
+            });
+
+            const cards = await Promise.all(promises);
+            shimmer.remove();
+            container.append(cards.join(''));
+            updateTimestamps();
+
+        }
+
+
+
+
+
+
+        function showShimmer(count) {
+            let shimmerHtml = `<div class="shimmer-wrapper">`;
+            for (let i = 0; i < count; i++) {
+                shimmerHtml += `<div class="shimmer-item"></div>`;
+            }
+            shimmerHtml += `</div>`;
+            const $shimmer = $(shimmerHtml);
+            $('#actionCardsContainer').append($shimmer);
+
+            // Scroll to the bottom of the shimmer once added
+            setTimeout(() => {
+                $shimmer[0]?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 10); // slight delay for DOM paint
+
+            return $shimmer;
+        }
+
+        function cropFileNames(full) {
+
+            // Adjust crop lengths based on screen width
+            let start, end;
+
+            const width = window.innerWidth;
+
+            if (width >= 1300) {
+                start = 25;
+                end = 25;
+            } else if (width >= 768) {
+                start = 20;
+                end = 20;
+            } else if (width >= 460) {
+                start = 13;
+                end = 13;
+            }
+            else { // Small screens (mobiles)
+                start = 10;
+                end = 10;
+            }
+
+            if (full && full.length > start + end) {
+                return full.slice(0, start) + '...' + full.slice(-end);
+            } else {
+                return full
+            }
+
+
+
+        }
+
+
+        function cropSentListNames(full) {
+
+            const start = 50;
+
+
+            if (full && full.length > start) {
+                return full.slice(0, start) + '...';
+            } else {
+                return full
+            }
+
+        }
+
+
+        function getAllRecepientsNames(item) {
+            if (!item || !Array.isArray(item.recepients)) return "";
+
+            return item.recepients
+                .map(recepient => toProperCase(recepient.name))
+                .filter(name => name) // remove any undefined/null/empty names
+                .join(", ");
+        }
+
+        function toProperCase(str) {
+            if (!str) return "";
+            return str
+                .toLowerCase()
+                .split(" ")
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ");
+        }
+
+
+
+
+        function getViewName(doc) {
+            let docViewname = "";
+            let userEmail = loginEmail;
+            if (doc.ownerEmail === userEmail) {
+                if (doc.multiSign) {
+                    docViewname = "SentDocuments";
+                }
+                else {
+                    docViewname = "MyDocuments";
+                }
+            } else {
+                const isExists = doc.pendingSignList[0]?.email === userEmail;
+                const isInPendingList = doc.pendingSignList?.some(signer => signer.email === userEmail);
+                //the document is from Recieved
+                if (isExists || (doc.disableOrder && isInPendingList)) {
+                    docViewname = "RecievedDocuments";
+                } else {
+
+                    senderDisplay = `${doc.ownerName} `;
+                    actionText = 'referred you a document';
+                    isReferred = true;
+                    docViewname = "ReferedDocuments";
+                }
+            }
+            return docViewname;
+        }
+
+
+        function fetchTooltipMessage(organizationID) {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: GetOrganizationStatusUrl,
+                    type: 'GET',
+                    dataType: 'json',
+                    data: { loginorgUid: organizationID },
+                    error: function (xhr, status, error) {
+                        ajaxErrorHandler(xhr, status, error);
+                        resolve({ success: false, message: 'Error checking organization status' });
+                    },
+                    success: function (response) {
+                        resolve(response);
+                    }
+                });
+            });
+        }
+
+        async function generateDocumentCardHtml(item, suid) {
+            let documentName = await cropFileNames(item.documentName);
+            let createdAt = item.createdAt;
+            let expireDate = item.expireDate;
+            let viewName = getViewName(item);
+            var matchedEsealData = {};
+            var matchedSignData = {};
+            var matchedQrcodeData = {};
+            let recepientsNames = getAllRecepientsNames(item);
+            let croppedRecepientsNames = cropSentListNames(recepientsNames);
+
+            let owner = item.ownerName.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            let ownerName = owner;
+
+
+            let docStatusHtml = renderDocumentStatusHtml(item);
+            let signingStatusHtml = renderSigningStatusHtml(item, suid);
+            var docStatusHtmlval = docStatusHtml.toLocaleLowerCase();
+
+            let actionButtonHtml = renderActionButtonHtml(item, suid, viewName);
+            let showActionButton = !actionButtonHtml.toLowerCase().includes("view");
+            if (item.annotations != null && item.annotations != "{ }") {
+                var signconfig = JSON.parse(item.annotations);
+                for (const key in signconfig) {
+                    if (signconfig.hasOwnProperty(key) && key === suid) {
+                        matchedSignData[key] = signconfig[key];
+                    }
+                }
+            }
+            if (item.qrcodeannotations != null && item.qrcodeannotations != "{ }") {
+                var qrcodeconfig = JSON.parse(item.qrcodeannotations);
+                for (const key in qrcodeconfig) {
+                    if (qrcodeconfig.hasOwnProperty(key) && key === suid) {
+                        matchedQrcodeData[key] = qrcodeconfig[key];
+                    }
+                }
+            }
+            if (item.esealannotations != null && item.esealannotations != "{ }") {
+
+                var esealconfig = JSON.parse(item.esealannotations);
+
+                for (const key in esealconfig) {
+                    if (esealconfig.hasOwnProperty(key) && key === suid) {
+                        matchedEsealData[key] = esealconfig[key];
+                    }
+                }
+
+            }
+
+
+            let docobject = {
+                id: item.id,
+                annotations: matchedSignData,
+                esealannotations: matchedEsealData,
+                qrcodeannotations: matchedQrcodeData,
+                docname: documentName
+
+            }
+            console.log(docobject);
+            var val = docobject.id;
+            if (!documentsobjectslist.some(doc => doc.id === val)) {
+                documentsobjectslist.push(docobject);
+
+            }
+            const masterCheckbox = document.getElementById('selectAllCheckbox');
+            var isAllSelected = masterCheckbox.checked;
+
+            const hasSignOrRetry =
+                actionButtonHtml.includes('sign') || actionButtonHtml.includes('retry');
+
+            var signingstatusval = signingStatusHtml.toLowerCase();
+
+            if (signingstatusval !== 'need to sign' && signingstatusval !== 'failed' && !hasSignOrRetry) {
+                isAllSelected = false;
+            }
+            var makeDisabled = false;
+            if (!hasSignOrRetry) {
+                makeDisabled = true;
+            }
+            var tooltipmessage = 'Document is not available';
+            if (docStatusHtmlval.includes('expired')) {
+                tooltipmessage = 'Document got expired';
+            } else if (signingstatusval.includes('signed')) {
+                tooltipmessage = 'Document is already signed';
+            } else if (docStatusHtmlval.includes('recalled')) {
+                tooltipmessage = 'Document is not available for signing';
+            } else if (signingstatusval.includes('signing in progress')) {
+                tooltipmessage = 'Document signing is already initiated';
+            } else if (signingstatusval.includes('signing')) {
+                tooltipmessage = 'Document signing is already initiated';
+            }
+            if (Object.keys(matchedEsealData).length !== 0) {
+                const orgResponse = await fetchTooltipMessage(matchedEsealData[suid].organizationID);
+                console.log(orgResponse);
+                if (!orgResponse.success) {
+                    tooltipmessage = 'Organization not authorized for eSeal operation';
+                    makeDisabled = true;
+                }
+            }
+
+            const id = item._id || item.id;
+            if (isAllSelected) {
+                selectedIdListData.push(id);
+            }
+            if (loginAccounttype.toString().toLowerCase() !== 'self') {
+                var anyVisible = true;
+            } else {
+                var anyVisible = false;
+            }
+
+            const selectedCountDisplay = document.getElementById('selectedCount');
+            if (selectedCountDisplay) {
+                selectedCountDisplay.innerText = `(${selectedIdListData.length})`;
+            }
+
+            return `
+                <div class="nd-card onhoverclass redirect-doc ${isAllSelected ? 'card-selected' : ''}"
+                     style="cursor:pointer;"
+                     id="doc-${id}" data-id="${id}">
+
+                  <div class="nd-row">
+
+                    <!-- LEFT -->
+                    <div class="nd-left">
+
+                      <!-- CHECKBOX -->
+                      <div style="display:${anyVisible ? "block" : "none"}; margin-top: 4px;"
+                           class="checkboxContainer custom-checkbox-wrapper ${makeDisabled ? 'disabled' : ''}">
+
+                        <input type="checkbox"
+                               class="custom-checkbox document-checkbox"
+                               id="doc_${id}"
+                               value="${id}"
+                               ${isAllSelected ? 'checked' : ''}
+                               ${makeDisabled ? 'disabled' : ''}>
+
+                        <label for="doc_${id}" class="custom-checkmark">
+                          <svg class="check-icon" viewBox="0 0 24 24">
+                            <path d="M20 6L9 17l-5-5"
+                                  fill="none" stroke="white" stroke-width="3" />
+                          </svg>
+                        </label>
+
+                        <div class="tooltip-message">${tooltipmessage}</div>
+                      </div>
+
+                      <!-- ICON -->
+                      <div class="nd-icon">
+                        <i class="fa-solid fa-file-lines"></i>
+                      </div>
+
+                      <!-- INFO -->
+                      <div class="nd-info">
+
+                        <!-- TITLE -->
+                        <div class="nd-title" title="${item.documentName}">
+                          ${documentName}
+                        </div>
+
+                        <!-- MOBILE ACTION (TOP) -->
+                        <div class="nd-mobile-action">
+                          ${actionButtonHtml}
+                        </div>
+
+                        <!-- FROM / TO + DATES -->
+                        <div class="nd-sub">
+
+                          <div class="nd-to">
+                            ${viewName == "MyDocuments"
+                    ? `You initiated document.`
+                    : viewName === "SentDocuments"
+                        ? `To:
+                                       <span title="${recepientsNames}">
+                                         ${croppedRecepientsNames}
+                                       </span>`
+                        : `From:
+                                       <span>${ownerName}</span>`
+                }
+                          </div>
+
+                          <div class="nd-dates">
+                            <span>Created:</span>
+                            <span class="convert-time" data-timestamp="${createdAt}">${createdAt}</span>
+                            <span class="nd-dot">•</span>
+                            <span>Expires:</span>
+                            <span class="convert-time" data-timestamp="${expireDate}">${expireDate}</span>
+                          </div>
+
+                        </div>
+
+                        <!-- MOBILE STATUS -->
+                        <div class="nd-mobile-status">
+
+                          <div>
+                            <span class="nd-label">Document Status:</span>
+                            <span class="nd-value docstats-text">${docStatusHtml}</span>
+                          </div>
+
+                          <div>
+                            <span class="nd-label">My Sign Status:</span>
+                                    ${signingStatusHtml}
+                          </div>
+
+                          <div class="nd-users">
+                            <i class="fa-solid fa-user-group"></i>
+                            <span>${item.completeSignList.length} of ${item.recepientCount} signed</span>
+                          </div>
+
+                          <!-- BUTTON AT BOTTOM ON SMALL MOBILE -->
+                          <div class="nd-mobile-action-bottom">
+                            ${actionButtonHtml}
+                          </div>
+
+                        </div>
+
+                      </div>
+                    </div>
+
+
+                    <!-- RIGHT (DESKTOP) -->
+                    <div class="nd-right">
+
+                      <div class="nd-col">
+                        <div class="nd-head">DOCUMENT STATUS</div>
+                        <div class="nd-val docstats-text">${docStatusHtml}</div>
+                        <div class="nd-users">
+                          <i class="fa-solid fa-user-group"></i>
+                          <span>${item.completeSignList.length} of ${item.recepientCount} signed</span>
+                        </div>
+                      </div>
+
+                      <div class="nd-col">
+                        <div class="nd-head">MY SIGN STATUS</div>
+                        <div class="nd-val signingstats-text">${signingStatusHtml}</div>
+                      </div>
+
+                      <div class="nd-action">
+                        ${actionButtonHtml}
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </div>
+                `;
+
+        }
+
+
+
+        function renderDocumentStatusHtml(item) {
+
+            let className = {
+                "Completed": "completebtn",
+                "In Progress": "inprogressbtn",
+                "Declined": "Declinedbtn"
+            }[item.status] || "otherbtn";
+
+            let popupHtml = "";
+
+            if (item.status === "Completed") {
+                let signers = (item.completeSignList || []).map(val => {
+
+                    let datasuid = val.suid;
+                    let html = '';
+
+                    (item.recepients || []).forEach(i => {
+                        if (i.suid === datasuid) {
+                            const alternates = i.alternateSignatories || [];
+
+                            if (i.hasDelegation) {
+                                // Render the first alternate signatory with a bullet
+                                if (alternates.length > 0) {
+                                    html += `<li class="first-email" style="display:flex;justify-content:start;">
+                                                                                                          <span class="sec" style="padding-left:6%">${alternates[0].email}</span>
+                                                                                                        </li>`;
+                                }
+
+                                // Render the remaining alternate signatories without bullets
+                                for (let j = 1; j < alternates.length; j++) {
+                                    html += `<li class="no-bullet" style="display:flex;">
+                                                                                                      <span class="sec" style="padding-left:6%">${alternates[j].email}</span>
+                                                                                                    </li>`;
+                                }
+
+                                // Render the delegator label and email
+                                html += `<li class="no-bullet delegator-section" style="display:flex;">
+                                        <span class="sec" style="padding-left:6%">Delegator:</span>
+                                    </li>
+                                    <li class="no-bullet delegator-section" style="display:flex;">
+                                        <span class="sec" style="padding-left:6%">${val.email}</span>
+                                    </li>`;
+
+                            } else if (alternates.length > 0) {
+                                html += `<li class="first-email" style="display:flex;justify-content:start;">
+                                                                                                    <span class="sec" style="padding-left:6%">${val.email}</span>
+                                                                                                  </li>
+                                                                          <li class="no-bullet delegator-section" style="display:flex;">
+                                                                            <span class="sec" style="padding-left:6%">Alternative Signatories:</span>
+                                                                          </li>`;
+
+                                alternates.forEach(alt => {
+                                    html += `<li class="no-bullet" style="display:flex;">
+                                                                              <span class="sec" style="padding-left:6%">${alt.email}</span>
+                                                                            </li>`;
+                                });
+
+                            } else {
+                                html += `<li class="first-email" style="display:flex;justify-content:start;">
+                                                                            <span class="sec" style="padding-left:6%">${val.email}</span>
+                                                                          </li>`;
+                            }
+                        }
+                    });
+
+
+
+                    return html;
+                }).join('');
+                popupHtml = `
+                                    <div class='popup'>
+                                        <p class='header'><span class='headersp'>TOTAL RECIPIENTS: ${item.recepientCount}</span></p>
+                                        <div class='row'>
+                                            <p style='text-align:left'>SIGNED: ${item.completeSignList?.length || 0}</p>
+                                            <ul class='email-list' style='margin-bottom:0;'>${signers}</ul>
+                                        </div>
+                                    </div>`;
+            }
+            else if (item.status === "In Progress") {
+                let signers = (item.completeSignList || []).map(val => {
+                    let datasuid = val.suid;
+                    let html = '';
+
+                    (item.recepients || []).forEach(i => {
+                        if (i.suid === datasuid) {
+                            const alternates = i.alternateSignatories || [];
+
+                            if (i.hasDelegation) {
+                                // Render the first alternate signatory with a bullet
+                                if (alternates.length > 0) {
+                                    html += `<li class="first-email" style="display:flex;justify-content:start;">
+                                                                                                              <span class="sec" style="padding-left:6%">${alternates[0].email}</span>
+                                                                                                            </li>`;
+                                }
+
+                                // Render the remaining alternate signatories without bullets
+                                for (let j = 1; j < alternates.length; j++) {
+                                    html += `<li class="no-bullet" style="display:flex;">
+                                                                                                          <span class="sec" style="padding-left:6%">${alternates[j].email}</span>
+                                                                                                        </li>`;
+                                }
+
+                                // Render the delegator label and email
+                                html += `<li class="no-bullet delegator-section" style="display:flex;">
+                                        <span class="sec" style="padding-left:6%">Delegator:</span>
+                                    </li>
+                                    <li class="no-bullet delegator-section" style="display:flex;">
+                                        <span class="sec" style="padding-left:6%">${val.email}</span>
+                                    </li>`;
+
+                            } else if (alternates.length > 0) {
+                                html += `<li class="first-email" style="display:flex;justify-content:start;">
+                                                                                                        <span class="sec" style="padding-left:6%">${val.email}</span>
+                                                                                                      </li>
+                                                                              <li class="no-bullet delegator-section" style="display:flex;">
+                                                                                <span class="sec" style="padding-left:6%">Alternative Signatories:</span>
+                                                                              </li>`;
+
+                                alternates.forEach(alt => {
+                                    html += `<li class="no-bullet" style="display:flex;">
+                                                                                  <span class="sec" style="padding-left:6%">${alt.email}</span>
+                                                                                </li>`;
+                                });
+
+                            } else {
+                                html += `<li class="first-email" style="display:flex;justify-content:start;">
+                                                                                <span class="sec" style="padding-left:6%">${val.email}</span>
+                                                                              </li>`;
+                            }
+                        }
+                    });
+
+
+
+
+                    return html;
+                }).join('');
+
+                let pendings = (item.pendingSignList || []).map(val => {
+                    let datasuid = val.suid;
+                    let html = '';
+
+                    (item.recepients || []).forEach(i => {
+                        if (i.suid === datasuid) {
+                            const alternates = i.alternateSignatories || [];
+
+                            if (i.hasDelegation) {
+                                // Render the first alternate signatory with a bullet
+                                if (alternates.length > 0) {
+                                    html += `<li class="first-email" style="display:flex;justify-content:start;">
+                                                                                                              <span class="sec" style="padding-left:6%">${alternates[0].email}</span>
+                                                                                                            </li>`;
+                                }
+
+                                // Render the remaining alternate signatories without bullets
+                                for (let j = 1; j < alternates.length; j++) {
+                                    html += `<li class="no-bullet" style="display:flex;">
+                                                                                                          <span class="sec" style="padding-left:6%">${alternates[j].email}</span>
+                                                                                                        </li>`;
+                                }
+
+                                // Render the delegator label and email
+                                html += `<li class="no-bullet delegator-section" style="display:flex;">
+                                        <span class="sec" style="padding-left:6%">Delegator:</span>
+                                    </li>
+                                    <li class="no-bullet delegator-section" style="display:flex;">
+                                        <span class="sec" style="padding-left:6%">${val.email}</span>
+                                    </li>`;
+
+                            } else if (alternates.length > 0) {
+                                html += `<li class="first-email" style="display:flex;justify-content:start;">
+                                                                                                        <span class="sec" style="padding-left:6%">${val.email}</span>
+                                                                                                      </li>
+                                                                              <li class="no-bullet delegator-section" style="display:flex;">
+                                                                                <span class="sec" style="padding-left:6%">Alternative Signatories:</span>
+                                                                              </li>`;
+
+                                alternates.forEach(alt => {
+                                    html += `<li class="no-bullet" style="display:flex;">
+                                                                                  <span class="sec" style="padding-left:6%">${alt.email}</span>
+                                                                                </li>`;
+                                });
+
+                            } else {
+                                html += `<li class="first-email" style="display:flex;justify-content:start;">
+                                                                                <span class="sec" style="padding-left:6%">${val.email}</span>
+                                                                              </li>`;
+                            }
+                        }
+                    });
+
+
+
+
+                    return html;
+                }).join('');
+
+                if (item.completeSignList && item.completeSignList.length > 0) {
+                    popupHtml = `
+                                                                                <div class='popup'>
+                                                                                    <p class='header'><span class='headersp'>TOTAL RECIPIENTS: ${item.recepientCount}</span></p>
+                                                                                    <div class='row'>
+                                                                                         <p style='text-align:left'>SIGNED: ${item.completeSignList?.length || 0}</p>
+                                                                                         <ul class='email-list' style='margin-bottom:0;'>${signers}</ul>
+                                                                                        <p style='text-align:left'>PENDING: ${item.pendingSignList?.length || 0}</p>
+                                                                                        <ul class='email-list' style='margin-bottom:0;'>${pendings}</ul>
+                                                                                    </div>
+                                                                                </div>`;
+                }
+                else {
+                    popupHtml = `
+                                                                                <div class='popup'>
+                                                                                    <p class='header'><span class='headersp'>TOTAL RECIPIENTS: ${item.recepientCount}</span></p>
+                                                                                    <div class='row'>
+                                                                                        <p style='text-align:left'>PENDING: ${item.pendingSignList?.length || 0}</p>
+                                                                                        <ul class='email-list' style='margin-bottom:0;'>${pendings}</ul>
+                                                                                    </div>
+                                                                                </div>`;
+                }
+
+            }
+
+
+            if (item.status == "In Progress") {
+                return `
+                                    <div class='status-container' style='position: relative; display: inline-block;'>
+                                                <span class='${className} redirect-card' style='cursor:pointer;font-weight:500;'  data-id="${item.id}" >Signatures Pending</span>
+                                        ${popupHtml}
+                                    </div>`;
+            }
+
+
+            return `
+                                    <div class='status-container' style='position: relative; display: inline-block;'>
+                                                <span class='${className} redirect-card' style='cursor:pointer;font-weight:500;' data-id="${item.id}">${item.status}</span>
+                                        ${popupHtml}
+                                    </div>`;
+        }
+
+        function renderSigningStatusHtml(item, suid) {
+            let rec = (item.recepients || []).find(r => r.suid === suid);
+
+            let statusMap = {
+                "Need to sign": `<span class='inprogressbtn signingstats-text nd-value' style="font-weight:500;">Need to Sign</span>`,
+                "Waiting_for_Others": `<span class='inprogressbtn signingstats-text nd-value' style="font-weight:500;">Waiting for Others</span>`,
+                "Signing_Pending": `<span class='inprogressbtn signingstats-text nd-value' style="font-weight:500;">Signing in Progress</span>`,
+                "Signing_in_progress": `<span class='inprogressbtn signingstats-text nd-value' style="font-weight:500;">Signing in Progress</span>`,
+                "Pin_Failed": `<span class='Declinedbtn signingstats-text nd-value' style="font-weight:500;">Failed</span>`,
+                "Failed": `<span class='Declinedbtn signingstats-text nd-value' style="font-weight:500;">Failed</span>`,
+                "Rejected": `<span class='Declinedbtn signingstats-text nd-value' style="font-weight:500;">Rejected</span>`,
+                "Signed": `<span class='completebtn signingstats-text nd-value' style="font-weight:500;">Signed</span>`
+            };
+
+
+            if (!rec) {
+                let loginrecpdata = null;
+
+                (item.recepients || []).forEach(r => {
+                    (r.alternateSignatories || []).forEach(alternativeSignatory => {
+                        if (alternativeSignatory.suid === suid) {
+                            loginrecpdata = r;
+                        }
+                    });
+                });
+                if (!loginrecpdata || !loginrecpdata.status) {
+                    return "<div >---</div>";
+                }
+                return statusMap[loginrecpdata.status] || "<div>---</div>";
+            }
+
+            return statusMap[rec.status] || "<div>---</div>";
+        }
+
+        function renderActionButtonHtml(item, suid, viewName) {
+            if (viewName == "ReferedDocuments") {
+                const baseBtn = "viewbutton rounded-3";
+                const style = "font-size:small;padding:4px 12px;max-width:90px;width:100%;text-transform: none !important;";
+                const id = item._id || item.id;
+
+                const allRecipients = item.recepients || [];
+                const pendingSignList = item.pendingSignList || [];
+                const completeSignList = item.completeSignList || [];
+
+                const allList = [...completeSignList, ...pendingSignList];
+                let matchingRecipient = null;
+
+                // Helper to check if user is in alternate signatories
+                const isUserAlternateFor = (recipient) => {
+                    return (recipient.alternateSignatories || []).some(alt => alt.suid === suid);
+                };
+
+                const findRecipientWithAltMatch = () => {
+                    for (const recipient of allRecipients) {
+                        if (isUserAlternateFor(recipient)) {
+                            return recipient;
+                        }
+                    }
+                    return null;
+                };
+
+                const renderButton = (icon, label, action) => {
+                    if (action === "signActionConfigByDocIdOnclick") {
+                        return `<button type='button' class='${baseBtn} action-btn' style='${style}'
+                                                             data-action='${action}'
+                                                             data-id='${id}'
+                                                             data-current='${currentDocNo}'
+                                                             data-total='${totalDocs}'>
+                                                    <i class='${icon}'></i>&nbsp;${label}
+                                                    </button>`;
+                    }
+                    return `<button type='button' class='${baseBtn} action-btn' style='${style}'
+                                                         data-action='${action}'
+                                                         data-id='${id}'>
+                                                    <i class='${icon}'></i>&nbsp;${label}
+                                                    </button>`;
+                };
+
+                if (item.status === "In Progress") {
+                    if (!item.disableOrder) {
+                        const firstUser = pendingSignList.length > 0 ? pendingSignList[0] : null;
+
+                        if (firstUser) {
+                            const firstRecipient = allRecipients.find(r => r.suid === firstUser.suid);
+
+                            if (firstRecipient && isUserAlternateFor(firstRecipient)) {
+                                matchingRecipient = firstRecipient;
+
+                                if ((matchingRecipient.status === "Failed" || matchingRecipient.status === "Pin Failed") &&
+                                    matchingRecipient.signedBy === userEmail) {
+                                    return renderButton("fa-solid fa-arrow-rotate-left", "Retry", "signActionConfigByDocIdOnclick");
+                                } else if (["Signing_in_Progress", "Signing_Pending", "Waiting_for_Others", "Signed", "Rejected"].includes(matchingRecipient.status)) {
+                                    return renderButton("fa-regular fa-eye", "View", "redirectToDocumentDetails");
+                                } else {
+                                    return renderButton("fa fa-pencil", "Sign", "signActionConfigByDocIdOnclick");
+                                }
+                            } else {
+                                return renderButton("fa-regular fa-eye", "View", "redirectToDocumentDetails");
+                            }
+                        }
+                    } else {
+
+                        matchingRecipient = findRecipientWithAltMatch();
+                        if (matchingRecipient) {
+                            if ((matchingRecipient.status === "Failed" || matchingRecipient.status === "Pin_Failed") &&
+                                matchingRecipient.signedBy === userEmail) {
+                                return renderButton("fa-solid fa-arrow-rotate-left", "Retry", "signActionConfigByDocIdOnclick");
+                            } else if (["Signing_in_Progress", "Signing_Pending", "Waiting_for_Others", "Signed", "Rejected"].includes(matchingRecipient.status)) {
+                                return renderButton("fa-regular fa-eye", "View", "redirectToDocumentDetails");
+                            } else {
+                                return renderButton("fa fa-pencil", "Sign", "signActionConfigByDocIdOnclick");
+                            }
+                        } else {
+                            return renderButton("fa-regular fa-eye", "View", "redirectToDocumentDetails");
+                        }
+
+                    }
+                }
+
+                return renderButton("fa-regular fa-eye", "View", "redirectToDocumentDetails");
+            }
+            else {
+                let rec = (item.recepients || []).find(r => r.suid === suid);
+
+                const pendingSignList = item.pendingSignList || [];
+
+                let baseBtn = "viewbutton rounded-3";
+                let style = "font-size:small;padding:4px 12px;max-width:90px;width:100%;text-transform: none !important;";
+                let id = item.id || item._id;
+
+                if (!rec) return `<button type='button' class='${baseBtn} redirect-card' data-id="${id}" style='${style}'>
+                                        <i class='fa-regular fa-eye'></i>&nbsp;View</button>`;
+
+
+
+                if (item.status === "In Progress") {
+                    if (item.disableOrder) {
+                        switch (rec.status) {
+                            case "Need to sign":
+                                return `<button type='button' class='${baseBtn}' style='${style}' onclick='event.stopPropagation();signActionConfigByDocIdOnclick("${id},"${viewName}")'>
+                                        <i class='fa fa-pencil'></i>&nbsp;Sign</button>`;
+                            case "Signing_Pending":
+                            case "Signing_in_Progress":
+                            case "Waiting_for_Others":
+                            case "Rejected":
+                            case "Signed":
+                                return `<button type='button' class='${baseBtn} redirect-card' style='${style}' data-id="${id}">
+                                        <i class='fa-regular fa-eye'></i>&nbsp;View</button>`;
+                            case "Pin_Failed":
+                            case "Failed":
+                                return `<button type='button' class='${baseBtn}' style='${style}' onclick='event.stopPropagation(); signActionConfigByDocIdOnclick("${id}","${viewName}")'>
+                                        <i class='fa-solid fa-arrow-rotate-left'></i>&nbsp;Retry</button>`;
+                            default:
+                                return `<button type='button redirect-card' class='${baseBtn} redirect-card' style='${style}' data-id="${id}">
+                                        <i class='fa-regular fa-eye'></i>&nbsp;View</button>`;
+                        }
+                    } else {
+                        if (pendingSignList[0].suid === suid) {
+                            switch (rec.status) {
+                                case "Need to sign":
+                                    return `<button type='button' class='${baseBtn}' style='${style}' onclick='event.stopPropagation();signActionConfigByDocIdOnclick("${id}", "${viewName}")'>
+                                        <i class='fa fa-pencil'></i>&nbsp;Sign</button>`;
+                                case "Signing_Pending":
+                                case "Signing_in_Progress":
+                                case "Waiting_for_Others":
+                                case "Rejected":
+                                case "Signing in progress":
+                                case "Signed":
+                                    return `<button type='button' class='${baseBtn} redirect-card' style='${style}' data-id="${id}">
+                                        <i class='fa-regular fa-eye'></i>&nbsp;View</button>`;
+                                case "Pin_Failed":
+                                case "Failed":
+                                    return `<button type='button' class='${baseBtn}' style='${style}' onclick='event.stopPropagation();signActionConfigByDocIdOnclick("${id}","${viewName}")'>
+                                        <i class='fa-solid fa-arrow-rotate-left'></i>&nbsp;Retry</button>`;
+                                default:
+                                    return `<button type='button' class='${baseBtn} redirect-card' style='${style}' data-id="${id}">
+                                        <i class='fa-regular fa-eye'></i>&nbsp;View</button>`;
+                            }
+                        } else {
+                            return `<button type='button' class='${baseBtn} redirect-card' style='${style}' data-id="${id}">
+                                        <i class='fa-regular fa-eye'></i>&nbsp;View</button>`;
+                        }
+                    }
+                }
+
+                return `<button type='button' class='${baseBtn} redirect-card' style='${style}' data-id="${id}">
+                                        <i class='fa-regular fa-eye'></i>&nbsp;View</button>`;
+            }
+
+        }
+
+
+
+        function redirectToDocumentDetails(id) {
+
+            const masterCheckbox = document.getElementById('selectAllCheckbox');
+            masterCheckbox.checked = false;
+
+            // Construct the URL for the action
+            var url = DocumentDetailsByIdUrl + "/" + id;
+            // Redirect to the URL
+            window.location.href = url;
+        }
+
+
+        async function signActionConfigByDocIdOnclick(docId, viewName) {
+
+            const masterCheckbox = document.getElementById('selectAllCheckbox');
+            masterCheckbox.checked = false;
+            try {
+                const response = await $.ajax({
+                    type: 'POST',
+                    headers: {
+
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                    },
+                    url: IsDocumentBlocked,
+                    data: {
+                        docId: docId,
+                    }
+                });
+
+                if (!response.success) {
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: response.message,
+                    });
+                } else {
+                    var delegation_req_data = {
+                        id: loginorgUid,
+                        suid: loginSuid,
+                        email: loginEmail,
+                    };
+                    var hasDelegationFound = false;
+
+                    // Await the response from delegation check
+                    var delegation_response = await handle_delegation_orgid_suid_selfloginuser(delegation_req_data);
+
+                    if (delegation_response != undefined && delegation_response.listdata.length > 0) {
+                        hasDelegationFound = true;
+                    }
+
+                    if (hasDelegationFound) {
+                        console.log("Delegation found. Further processing stopped.");
+                        swal({
+                            type: 'info',
+                            title: 'Info',
+                            text: "Currently having an active delegation.\nDelegatee: " + delegation_response.swallist.join(', '),
+                        });
+                        return false; // Stop further execution
+                    } else {
+
+                        if (viewName == "ReferedDocuments") {
+                            window.location.href = SignActionByDocIdForReferedDoc + '?docId=' + docId + '&viewName=' + viewName;
+                        }
+                        else {
+                            window.location.href = SignActionConfigByDocId + '?docId=' + docId + '&viewName=' + viewName;
+                        }
+
+                    }
+                }
+            } catch (error) {
+                ajaxErrorHandler(error);
+            }
+        }
+
+
+        async function SignActionByDocIdForReferedDocIdOnclick(docId) {
+
+            try {
+                const response = await $.ajax({
+                    type: 'POST',
+                    headers: {
+
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                    },
+                    url: IsDocumentBlocked,
+                    data: {
+                        docId: docId,
+                    }
+                });
+
+                if (!response.success) {
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: response.message,
+                    });
+                } else {
+                    var delegation_req_data = {
+                        id: loginorgUid,
+                        suid: loginSuid,
+                        email: loginEmail,
+                    };
+                    var hasDelegationFound = false;
+
+                    // Await the response from delegation check
+                    var delegation_response = await handle_delegation_orgid_suid_selfloginuser(delegation_req_data);
+
+                    if (delegation_response != undefined && delegation_response.listdata.length > 0) {
+                        hasDelegationFound = true;
+                    }
+
+                    if (hasDelegationFound) {
+                        console.log("Delegation found. Further processing stopped.");
+                        swal({
+                            type: 'info',
+                            title: 'Info',
+                            text: "Currently having an active delegation.\nDelegatee: " + delegation_response.swallist.join(', '),
+                        });
+                        return false; // Stop further execution
+                    } else {
+
+                        var viewName = "ReferedDocuments";
+                        window.location.href = SignActionByDocIdForReferedDoc + '?docId=' + docId + '&viewName=' + viewName;
+                    }
+                }
+            } catch (error) {
+                ajaxErrorHandler(error);
+            }
+        }
+
+        async function handle_delegation_orgid_suid_selfloginuser(delegation_req_data) {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: "GET",
+                    url: GetDelegationbyorgidsuidUrl,
+                    data: {
+                        organizationId: delegation_req_data.id,
+                        suid: delegation_req_data.suid
+                    },
+                    beforeSend: function () {
+                        $('#overlay').show();
+                    },
+                    complete: function () {
+                        $('#overlay').hide();
+                    },
+                    success: function (response) {
+                        if (response.success === true) {
+                            var result_list = response.result;
+                            var swal_list = [];
+                            var list_data = [];
+
+                            for (var i = 0; i < result_list.length; i++) {
+                                var obj_data = {
+                                    email: result_list[i].delegateeEmail,
+                                    suid: result_list[i].delegateeSuid,
+                                };
+                                swal_list.push(result_list[i].delegateeEmail);
+                                list_data.push(obj_data);
+                            }
+
+                            let response_data_obj = {
+                                swallist: swal_list,
+                                listdata: list_data,
+                                delegateeid: response.result[0]?.delegationId || '',
+                            };
+
+                            resolve(response_data_obj);
+                        } else {
+                            swal({
+                                title: "Error",
+                                text: response.message || "Unknown error occurred",
+                                type: "error",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = IndexDocuments;
+                                }
+                            });
+                            resolve(false);
+                        }
+                    },
+                    error: function (error) {
+                        ajaxErrorHandler(error);
+                        resolve(false);
+                    }
+                });
+            });
+        }
+
+
+        function toggleRowHighlight(checkbox) {
+            const cardElement = checkbox.closest('.card');
+            const signingStatusEl = cardElement.querySelector('.signingstats-text');
+            const signingStatus = signingStatusEl ? signingStatusEl.textContent.trim().toLowerCase() : '';
+            const actionHtml = cardElement.querySelector('button');
+            //const actionHtml = actionContainer ? actionContainer.innerHTML.toLowerCase() : '';
+            const hasSignOrRetry = actionHtml
+                ? actionHtml.textContent.toLowerCase().includes('sign') || actionHtml.textContent.toLowerCase().includes('retry')
+                : false;
+            console.log(hasSignOrRetry);
+            // Check if the status is not allowed
+            if (checkbox.checked && !(signingStatus.includes('need to sign') || signingStatus.includes('failed'))) {
+                // Show alert and uncheck the box
+                swal({
+                    type: 'info',
+                    title: 'Info',
+                    text: 'Only documents that need to be signed or failed documents can be selected.',
+                    confirmButtonText: 'OK'
+                });
+
+                checkbox.checked = false;
+                return; // Do not proceed with highlighting or updating
+            }
+            if (!hasSignOrRetry) {
+                swal({
+                    type: 'info',
+                    title: 'Info',
+                    text: 'This document is currently not available for signing as others need to sign',
+                    confirmButtonText: 'OK'
+                });
+
+                checkbox.checked = false;
+                return;
+            }
+            var responseFlag = true;
+            var requireddata = documentsobjectslist.find((item) => item.id = checkbox.id);
+            var matchedEsealData = requireddata.esealannotations;
+            if (Object.keys(matchedEsealData).length !== 0) {
+                var responseFlag = true;
+                $.ajax({
+                    url: GetOrganizationStatusUrl,
+                    type: 'GET',
+                    dataType: 'json', // Corrected the dataType to 'json' to match the expected response type
+                    data: { loginorgUid: matchedEsealData[loginSuid].organizationID }, // Encapsulate loginorgUid in an object
+                    success: function (response) {
+                        if (!response.success) {
+                            swal({
+                                type: 'info',
+                                title: 'Info',
+                                text: `You can not perform eseal operation, please contact organization `
+                            }, function (isConfirm) {
+                                //window.location.href = '@Url.Action("Index", "Documents")?viewName=' + viewName;
+                            });
+                            responseFlag = false;
+                        } else {
+                            console.log(response)
+                            responseFlag = true;
+                        }
+                    },
+
+                    error: ajaxErrorHandler
+                });
+
+            }
+            if (!responseFlag) {
+                checkbox.checked = false;
+                return;
+            }
+
+            // Proceed with visual highlighting
+            if (checkbox.checked) {
+                cardElement.classList.add('card-selected');
+            } else {
+                cardElement.classList.remove('card-selected');
+            }
+
+            // Sync "Select All"
+            const allCheckboxes = document.querySelectorAll('.document-checkbox');
+            const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+            document.getElementById('selectAllCheckbox').checked = allChecked;
+
+            // Update selected ID list
+            updateSelectedIdList();
+        }
+
+
+
+        function applySelectAllToNewlyVisibleItems() {
+            const checkboxes = document.querySelectorAll('.document-checkbox');
+            checkboxes.forEach(checkbox => {
+                if (!checkbox.checked) {
+                    checkbox.checked = true;
+                    const cardElement = checkbox.closest('.card');
+                    if (cardElement) {
+                        cardElement.classList.add('card-selected');
+                    }
+                }
+            });
+
+            updateSelectedIdList();
+        }
+        let isAllSelected = false; // Global flag
+
+        function toggleSelectAll(masterCheckbox) {
+            const checked = masterCheckbox.checked;
+            isAllSelected = checked;
+
+            // Get only checkboxes inside visible containers
+            const visibleContainers = Array.from(document.querySelectorAll('.checkboxContainer')).filter(container => {
+                return container.offsetParent !== null; // visible on screen
+            });
+
+            let checkboxes = [];
+            visibleContainers.forEach(container => {
+                checkboxes.push(...container.querySelectorAll('.document-checkbox'));
+            });
+
+            checkboxes.forEach(checkbox => {
+                const cardElement = checkbox.closest('.card');
+
+                if (cardElement) {
+                    // const signingStatusEl = cardElement.querySelector('.signingstats-text');
+                    // const signingStatus = signingStatusEl ? signingStatusEl.textContent.trim().toLowerCase() : '';
+
+                    // const actionButtonEl = cardElement.querySelector('.d-flex.align-items-center.gap-1.px-3 button');
+                    // let actionButtonType = '';
+                    // let hasSignOrRetry = false;
+
+                    // if (actionButtonEl) {
+                    // 	const btnText = actionButtonEl.textContent.trim().toLowerCase();
+                    // 	if (btnText.includes('sign')) {
+                    // 		actionButtonType = 'sign';
+                    // 		hasSignOrRetry = true;
+                    // 	} else if (btnText.includes('retry')) {
+                    // 		actionButtonType = 'retry';
+                    // 		hasSignOrRetry = true;
+                    // 	} else if (btnText.includes('view')) {
+                    // 		actionButtonType = 'view';
+                    // 		hasSignOrRetry = false;
+                    // 	}
+                    // }
+
+                    // if (signingStatus.includes('need to sign') || signingStatus.includes('failed')) {
+                    // 	if (!hasSignOrRetry) {
+                    // 		checkbox.checked = false;
+                    // 		cardElement.classList.remove('card-selected');
+                    // 	} else {
+                    // 		checkbox.checked = checked;
+                    // 		cardElement.classList.toggle('card-selected', checked);
+                    // 	}
+                    // } else {
+                    // 	checkbox.checked = false;
+                    // 	cardElement.classList.remove('card-selected');
+                    // }
+
+                    if (checkbox.disabled) {
+                        checkbox.checked = false;
+                        cardElement.classList.remove('card-selected');
+                    } else {
+                        checkbox.checked = checked;
+                        cardElement.classList.toggle('card-selected', checked);
+                    }
+                }
+            });
+
+            updateSelectedIdList();
+        }
+
+
+
+        function applySelectAllToNewlyVisibleItems() {
+            if (!isAllSelected) return;
+
+            const checkboxes = document.querySelectorAll('.document-checkbox');
+            checkboxes.forEach(checkbox => {
+                if (!checkbox.checked) {
+                    checkbox.checked = true;
+                    const cardElement = checkbox.closest('.card');
+                    if (cardElement) {
+                        cardElement.classList.add('card-selected');
+                    }
+                }
+            });
+
+            updateSelectedIdList();
+        }
+        function statusupadteapi() {
+            $.ajax({
+                type: 'POST',
+                headers: {
+
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                },
+                url: GroupSigningStatus, // Change to your endpoint
+                contentType: 'application/json',
+                data: JSON.stringify({ documentIds: selectedIdListData }),
+                success: function (response) {
+                    console.log('Success:', response);
+                    swal({
+                        title: "info",
+                        text: "Document Signing is initiated.",
+                        type: "info",
+                    }, function (isConfirm) {
+                        console.log(response);
+                        if (isConfirm) {
+                            window.location.href = DocumentsSigningStatus + "?groupId=" + response.result;
+                        }
+                    });
+
+                    // handle success
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                    // handle error
+                }
+            });
+        }
+        function performGroupSigningAction() {
+            if (selectedIdListData.length === 0) {
+                swal({
+                    title: "Info",
+                    text: "Please select documents for signing",
+                    type: "info",
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        //window.location.reload();
+                    }
+                });
+                return;
+            } else if (selectedIdListData.length < 2) {
+                swal({
+                    title: "Info",
+                    text: "Please select at least two documents to perform Group Signing, or continue with the Normal Signing process.",
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        //window.location.reload();
+                    }
+                });
+                return;
+            } else if (selectedIdListData.length > 20) {
+                swal({
+                    title: "Info",
+                    text: "Maximum limit reached. You can select only 20 documents.",
+                    type: "info",
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        //window.location.reload();
+                    }
+                });
+                return;
+            }
+            document.getElementById('overlay6').style.display = 'flex';
+            $.ajax({
+                type: 'POST',
+                headers: {
+
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+                },
+                url: PerformGroupSigning, // Change to your endpoint
+                contentType: 'application/json',
+                data: JSON.stringify({ documentIds: selectedIdListData }),
+                success: function (response) {
+                    document.getElementById('overlay6').style.display = 'none';
+                    console.log('Success:', response);
+                    if (response.success) {
+                        swal({
+                            title: "info",
+                            text: "Document Signing is initiated.",
+                            type: "info",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = DocumentsSigningStatus + "?groupId=" + response.result;
+                            }
+                        });
+
+                    } else {
+                        swal({
+                            title: "Error",
+                            text: response.message,
+                            type: "error",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.reload();
+                            }
+                        });
+
+                        // handle success
+                    }
+
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                    // handle error
+                }
+            });
+        }
+        function updateSelectedIdList() {
+            const selectedCheckboxes = document.querySelectorAll('.document-checkbox:checked');
+            const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+            console.log("Selected IDs:", selectedIds);
+            const selectedCountDisplay = document.getElementById('selectedCount');
+            if (selectedCountDisplay) {
+                selectedCountDisplay.innerText = `(${selectedIds.length})`;
+            }
+            const buttonGroup = document.getElementById('signingButtonGroup');
+            if (buttonGroup) {
+                buttonGroup.style.display = selectedIds.length > 0 ? 'inline-flex' : 'none';
+            }
+            selectedIdListData = selectedIds;
+            window.selectedDocumentIds = selectedIds;
+            const masterCheckbox = document.getElementById('selectAllCheckbox');
+            if (masterCheckbox.checked && selectedIds.length === 0) {
+                swal({
+                    title: "Info",
+                    text: "No documents are available for signing",
+                    type: "info",
+                }, function (isConfirm) {
+
+                });
+
+                masterCheckbox.checked = false;
+
+            }
+        }
+
+
+        function updateMasterCheckboxAndSelection() {
+            const allCheckboxes = document.querySelectorAll('.document-checkbox');
+            const visibleCheckboxes = Array.from(allCheckboxes).filter(cb => !cb.closest('.record').classList.contains('hidden'));
+            const checkedVisible = visibleCheckboxes.filter(cb => cb.checked).length;
+
+            const masterCheckbox = document.getElementById('selectAllCheckbox');
+
+            if (checkedVisible === 0) {
+                masterCheckbox.checked = false;
+                masterCheckbox.indeterminate = false;
+                isAllSelected = false;
+            } else if (checkedVisible === visibleCheckboxes.length) {
+                masterCheckbox.checked = true;
+                masterCheckbox.indeterminate = false;
+                isAllSelected = true;
+            } else {
+                masterCheckbox.checked = false;
+                masterCheckbox.indeterminate = true;
+                isAllSelected = false;
+            }
+
+            updateSelectedIdList();
+        }
+
+        document.getElementById("searchInput").addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.getElementById("searchButton").click();
+            }
+        });
+
+        window.signActionConfigByDocIdOnclick = signActionConfigByDocIdOnclick;
+
+
+
+    </script>
+}

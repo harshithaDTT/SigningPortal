@@ -1,0 +1,1579 @@
+﻿@using System.Security.Claims;
+@{
+    var name = User.FindFirst(ClaimTypes.Name).Value;
+
+    var Email = User.FindFirst(ClaimTypes.Email).Value;
+}
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+
+
+
+<style>
+    .document-icon-wapper {
+        width: 1.75rem;
+        height: 1.75rem;
+        background: linear-gradient(135deg, #0A1F44 0%, #059669 100%);
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .signbutton {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        background: #ffff;
+        border: 2px solid #8dd3bb;
+        color: #198754;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .signbutton:hover {
+            background: #0ea66b;
+            border-color: #0ea66b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2);
+        }
+
+
+    .page-container {
+        max-width: 1200px;
+        margin: auto;
+    }
+
+    /* Header */
+    .welcome-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0A1F44;
+        margin-bottom: 5px;
+    }
+
+    .welcome-sub {
+        font-size: 1rem;
+        color: #64748B;
+        margin-bottom: 30px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 8px 13px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border-top: 5px solid transparent;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .stat-card:hover {
+            transform: scale(1.05); /* slight zoom */
+            box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+        }
+
+    .stat-icon {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-bottom: 0.75rem;
+        padding: 1.5rem
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .stat-label {
+        font-size: 0.900rem;
+        font-weight: 500;
+        color: #64748B;
+    }
+
+    .stat-trend {
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #28a745;
+    }
+
+    /* Upload Card */
+    .upload-box {
+        background: #e7fff0;
+        border: 2px dashed #2ecc71;
+        padding: 25px;
+        border-radius: 14px;
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .upload-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0a2a43;
+    }
+
+    .upload-sub {
+        color: #6c7480;
+        margin-top: 3px;
+    }
+
+    .upload-btn {
+        background: #1fa463;
+        padding: 12px 20px;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .widget-row {
+        display: flex;
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .widget-card {
+        width: 50%;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .widget-header {
+        padding: 1.5rem;
+        font-size: 1.125rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #0A1F44
+    }
+
+    .action-required .widget-header {
+        background: #fff6e4 !important; /* light yellow */
+        color: #0A1F44;
+    }
+
+    .expiring-soon .widget-header {
+        background: #ffecec; /* light red/pink */
+        color: #0A1F44;
+    }
+
+    .widget-body {
+        padding: 50px 10px;
+        text-align: center;
+    }
+
+    .empty-icon {
+        font-size: 40px;
+        opacity: 0.4;
+        margin-bottom: 10px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #4a4a4a;
+    }
+
+    .empty-sub {
+        color: #7f8c8d;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+
+    @@media (max-width: 768px) {
+        /* Stats Grid: Change from 4 columns to 2 columns */
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .widget-row {
+            flex-direction: column;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 10px;
+        }
+
+        .widget-card {
+            width: 100% !important;
+        }
+
+        .upload-box {
+            flex-direction: column; /* Stack content and button vertically */
+            align-items: flex-start;
+        }
+
+        .upload-btn {
+            margin-top: 15px; /* Add space between text and button */
+            width: 100%; /* Make button full width */
+            justify-content: center;
+        }
+    }
+
+    /* Pure Mobile (Max-width 576px) */
+    @@media (max-width: 576px) {
+        body {
+            padding: 15px; /* Reduce padding on smallest screens */
+        }
+        /* Stats Grid: Change from 2 columns to 1 column (stacking) */
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .welcome-title {
+            font-size: 30px;
+        }
+
+        .widget-row {
+            flex-direction: column;
+            width: 100% !important;
+        }
+
+        .widget-card {
+            width: 100% !important;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .doc-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 10px;
+        margin-bottom: 8px;
+        background: #ffffff;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        transition: background 0.2s;
+    }
+
+        .doc-row:hover {
+            background: #f4f6fa;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+    .doc-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .doc-icon {
+        font-size: 20px;
+        color: #6c757d; /* muted gray */
+    }
+
+    .doc-text .doc-sender {
+        font-size: 13px;
+        color: #333;
+        text-align: left;
+    }
+
+    .doc-text .doc-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #222;
+        margin-top: 2px;
+        text-align: left;
+    }
+
+
+
+
+
+    #docs-container {
+        position: relative;
+        height: 250px; /* Fixed height for scroll */
+        overflow-y: auto; /* Enable vertical scrolling */
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    #expiring-docs-container {
+        position: relative;
+        height: 250px; /* Fixed height for scroll */
+        overflow-y: auto; /* Enable vertical scrolling */
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .scrolling {
+        animation: scroll-up 10s linear infinite;
+    }
+
+    @@keyframes scroll-up {
+        0% {
+            transform: translateY(0);
+        }
+
+        100% {
+            transform: translateY(-100%);
+        }
+    }
+
+    /* Default state: scrollbar hidden */
+    /* Simulated hidden scrollbar */
+    #docs-container.hide-scrollbar {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE 10+ */
+    }
+
+        #docs-container.hide-scrollbar::-webkit-scrollbar {
+            visibility: hidden; /* Chrome, Safari */
+        }
+
+    /* On hover: scrollbar visible again */
+    #docs-container.show-scrollbar {
+        scrollbar-width: thin;
+    }
+
+        #docs-container.show-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #docs-container.show-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #bbb;
+            border-radius: 3px;
+        }
+
+    #docs-container.hide-scrollbar {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE 10+ */
+    }
+
+        #docs-container.hide-scrollbar::-webkit-scrollbar {
+            visibility: hidden; /* Chrome, Safari */
+        }
+
+    /* On hover: scrollbar visible again */
+    #expiring-docs-container.show-scrollbar {
+        scrollbar-width: thin;
+    }
+
+        #expiring-docs-container.show-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #expiring-docs-container.show-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #bbb;
+            border-radius: 3px;
+        }
+
+    #expiring-docs-container.hide-scrollbar {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE 10+ */
+    }
+
+        #expiring-docs-container.hide-scrollbar::-webkit-scrollbar {
+            visibility: hidden; /* Chrome, Safari */
+        }
+
+    .click-here-btn {
+        height: 33px;
+        width: 120px;
+        border-radius: 8px;
+        border: none;
+        background-color: #acc33e;
+        font-size: 15px;
+        color: white;
+        outline: none !important;
+    }
+
+    .shimmer-wrapper .shimmer-item {
+        height: 50px;
+        margin: 10px;
+        border-radius: 8px;
+        background: #f3f3f3;
+        position: relative;
+        overflow: hidden;
+    }
+
+        /* Shimmer band */
+        .shimmer-wrapper .shimmer-item::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient( to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100% );
+            animation: shimmer-horizontal 1.6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+
+
+    @@keyframes shimmer-horizontal {
+        0% {
+            left: -100%;
+        }
+
+        100% {
+            left: 100%;
+        }
+    }
+
+
+    .hidden {
+        display: none !important;
+    }
+
+
+
+    .click-here-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(163, 217, 119, 0.4);
+    }
+
+    .lds-spinner div {
+        transform-origin: 40px 40px;
+        animation: lds-spinner 1.2s linear infinite;
+    }
+
+        .lds-spinner div:after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 3px;
+            left: 37px;
+            width: 6px;
+            height: 18px;
+            border-radius: 20%;
+            background: #eee;
+        }
+
+        .lds-spinner div:nth-child(1) {
+            transform: rotate(0deg);
+            animation-delay: -1.1s;
+        }
+
+        .lds-spinner div:nth-child(2) {
+            transform: rotate(30deg);
+            animation-delay: -1s;
+        }
+
+        .lds-spinner div:nth-child(3) {
+            transform: rotate(60deg);
+            animation-delay: -0.9s;
+        }
+
+        .lds-spinner div:nth-child(4) {
+            transform: rotate(90deg);
+            animation-delay: -0.8s;
+        }
+
+        .lds-spinner div:nth-child(5) {
+            transform: rotate(120deg);
+            animation-delay: -0.7s;
+        }
+
+        .lds-spinner div:nth-child(6) {
+            transform: rotate(150deg);
+            animation-delay: -0.6s;
+        }
+
+        .lds-spinner div:nth-child(7) {
+            transform: rotate(180deg);
+            animation-delay: -0.5s;
+        }
+
+        .lds-spinner div:nth-child(8) {
+            transform: rotate(210deg);
+            animation-delay: -0.4s;
+        }
+
+        .lds-spinner div:nth-child(9) {
+            transform: rotate(240deg);
+            animation-delay: -0.3s;
+        }
+
+        .lds-spinner div:nth-child(10) {
+            transform: rotate(270deg);
+            animation-delay: -0.2s;
+        }
+
+        .lds-spinner div:nth-child(11) {
+            transform: rotate(300deg);
+            animation-delay: -0.1s;
+        }
+
+        .lds-spinner div:nth-child(12) {
+            transform: rotate(330deg);
+            animation-delay: 0s;
+        }
+
+    @@keyframes lds-spinner {
+        0% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0;
+        }
+    }
+
+    /* Final number styling */
+    .stat-number {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #0A1F44 !important;
+        display: inline-block;
+        margin-bottom: 0.25rem;
+        line-height: 1.875rem;
+        height: 1.875rem;
+    }
+
+        /* Shimmer loading state */
+        .stat-number.loading {
+            width: 48px; /* slightly wider than typical 2–3 digit numbers */
+            background: linear-gradient(90deg, #f3f4f6 0%, #e2e8f0 50%, #f3f4f6 100%);
+            border-radius: 6px;
+            animation: shimmer 1.2s infinite;
+            color: transparent !important;
+        }
+
+    /* Shimmer animation */
+    @@keyframes shimmer {
+        0% {
+            background-position: -100px 0;
+        }
+
+        100% {
+            background-position: 100px 0;
+        }
+    }
+
+    .recent-activity-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        padding: 12px 0;
+    }
+
+    .recent-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .recent-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 18px;
+    }
+
+        .recent-title i {
+            color: #059669;
+        }
+
+    .view-all {
+        color: #059669;
+        font-weight: 500;
+        text-decoration: none;
+        padding: 7px 7px;
+        font-size: 0.875rem;
+        border: 1px solid #059669;
+    }
+
+        .view-all:hover {
+            background: #059669;
+            border: none;
+            color: #fff;
+            box-shadow: 0 8px 18px #d1f4e0;
+        }
+
+    .recent-list {
+        padding: 4px 0;
+    }
+
+    .recent-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+        .recent-row:last-child {
+            border-bottom: none;
+        }
+
+    .recent-left {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+    }
+
+    .recent-doc-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: #065f46;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+    }
+
+    .recent-doc-info .recent-doc-name {
+        font-weight: 600;
+        display: block !important;
+        margin-bottom: 5px !important
+    }
+
+    .recent-doc-meta {
+        font-size: 14px;
+        color: #64748b;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width:7.5rem;
+        justify-content:center;
+    }
+
+    .recent-in-progress {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #93c5fd;
+    }
+
+    .recent-draft {
+        background: #e8e9eb;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+
+    .recent-completed {
+        background: #d1f4e0;
+        border: 2px solid #8dd3bb;
+        border-radius: 50px;
+        color: #198754;
+    }
+
+    .recent-declined {
+        background: #ffeaea;
+        border: 1px solid #ff9c9c;
+        color: #cc0000;
+    }
+
+    .recent-in-progress {
+        background: #fbeeba;
+        color: #fb8604;
+        border: 1px solid #fb8604;
+    }
+    /* Right section (status + eye) */
+    .recent-right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 14px;
+        min-width: 220px; /* 🔥 ensures alignment */
+    }
+
+    /* Eye button */
+    .view-btn {
+        border: none;
+        background: transparent;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 12px;
+        padding: 6px;
+        border-radius: 6px;
+        transition: background 0.2s, color 0.2s;
+    }
+
+        .view-btn:hover {
+            background: #d1f4e0;
+            border: 2px solid #8dd3bb;
+            color: #198754;
+        }
+
+</style>
+
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+    @Html.AntiForgeryToken()
+    <!-- HEADER -->
+    <div>
+        <div class="welcome-title" id="welcomename"></div>
+        <div class="welcome-sub">Here's what's happening with your documents today</div>
+    </div>
+
+    <!-- STATS GRID -->
+    <div class="stats-grid">
+
+        <div class="stat-card my-documents" style="border-top-color:#2c7be5;">
+            <div class="stat-icon" style="background:#2c7be5;">
+                <i class="fa-solid fa-folder-open" style="color:white"></i>
+            </div>
+            <div class="stat-value">
+
+                <div id="MYDOCUMENTS" class="stat-number loading">
+                </div>
+            </div>
+            <div class="stat-label">MY DOCUMENTS</div>
+        </div>
+        <div class="stat-card sent-documents" style="border-top-color:#28a745;">
+            <div class="stat-icon" style="background:#28a745">
+                <i class="fa-solid fa-paper-plane" style="color:white"></i>
+            </div>
+            <div class="stat-value">
+                <div id="SENTDOCUMENTS" class="stat-number loading">
+                </div>
+            </div>
+            <div class="stat-label">SENT DOCUMENTS</div>
+        </div>
+
+        <div class="stat-card received-documents" style="border-top-color:#06B6D4">
+            <div class="stat-icon" style="background:#06B6D4">
+                <i class="fa-solid fa-file-import" style="color:white"></i>
+            </div>
+            <div class="stat-value">
+                <div id="RECEIVEDDOCUMENTS" class="stat-number loading">
+                </div>
+            </div>
+            <div class="stat-label">RECEIVED DOCUMENTS</div>
+        </div>
+
+        <div class="stat-card referred-documents" style="border-top-color:#f39c12;">
+            <div class="stat-icon" style="background:#f39c12;">
+                <i class="fa-solid fa-link" style="color:white"></i>
+            </div>
+            <div class="stat-value">
+                <div id="REFERREDDOCUMENTS" class="stat-number loading">
+                </div>
+            </div>
+            <div class="stat-label">REFERRED DOCUMENTS</div>
+        </div>
+
+    </div>
+
+
+
+    <!-- UPLOAD DOCUMENT BOX -->
+    <div class="upload-box">
+        <div>
+            <div class="upload-title">Ready to sign a document?</div>
+            <div class="upload-sub">Upload from your device or cloud storage</div>
+        </div>
+
+        <button class="upload-btn  gap-3 whitespace-nowrap" style="display:inline-flex;justify-content:center;align-items:center" id="createDocumentBtn">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+            Upload Document<i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <div class="widget-row mb-4">
+
+        <!-- Action Required -->
+        <div class="widget-card action-required" id="actionrequiredDocsContainer">
+
+            <!-- Header (Old ID kept) -->
+            <div id="actionRequiredText" class="widget-header"
+                 style="position: sticky; top: 0; background: white; z-index: 10; border-bottom:1px solid #d8dbe0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-alert w-5 h-5" style="color: rgb(217 119 6 / 1);"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>
+                <span class="widget-title">Action Required</span>
+                <i class="fa fa-external-link action-required-icon"
+                   style="margin-left:auto; font-size:smaller; cursor:pointer;"></i>
+            </div>
+
+            <!-- Shimmer Loader (Old structure kept) -->
+            <div class="p-0 shimmer-wrapper"
+                 style="flex-grow:1; overflow-y:auto; border-bottom-left-radius:0.5rem; border-bottom-right-radius:0.5rem;">
+                <div class="shimmer-item"></div>
+                <div class="shimmer-item"></div>
+                <div class="shimmer-item"></div>
+            </div>
+
+            <!-- Action Required Data Container (Old ID kept) -->
+            <div id="docs-container" class="widget-body"
+                 style="flex-grow:1; overflow-y:auto; position:relative;">
+                <!-- JS will inject dynamic rows here -->
+            </div>
+
+        </div>
+
+
+        <!-- Expiring Soon -->
+        <!-- Expiring Soon -->
+        <div class="widget-card expiring-soon" id="expiringSoonDocsContainer">
+
+            <!-- Header -->
+            <div id="expiringSoonText" class="widget-header"
+                 style="position: sticky; top: 0;z-index: 10; border-bottom:1px solid #d8dbe0;">
+                <i class="fa-regular fa-clock" style="color:rgb(220 38 38 /1)"></i>
+                <span class="widget-title">Expiring Today</span>
+                <i class="fa fa-external-link expiry-required-icon"
+                   style="margin-left:auto; font-size:smaller; cursor:pointer;"></i>
+            </div>
+
+            <!-- Shimmer Loader -->
+            <div class="p-0 shimmer-wrapper"
+                 style="flex-grow:1; overflow-y:auto; border-bottom-left-radius:0.5rem; border-bottom-right-radius:0.5rem;">
+                <div class="shimmer-item"></div>
+                <div class="shimmer-item"></div>
+                <div class="shimmer-item"></div>
+            </div>
+
+            <!-- Data Container -->
+            <div id="expiring-docs-container" class="widget-body"
+                 style="flex-grow:1; overflow-y:auto; position:relative;">
+                <!-- JS injects rows -->
+            </div>
+
+        </div>
+
+
+    </div>
+
+    <div class="recent-activity-card">
+
+        <!-- Header -->
+        <div class="recent-header">
+            <div class="recent-title">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+                <span>Recent Documents</span>
+            </div>
+
+            
+        </div>
+      
+        <!-- List -->
+        <div id="recentActivityList" class="recent-list">
+            <!-- JS will inject rows -->
+        </div>
+
+    </div>
+
+</div>
+<script>
+    var DocStats = '@Url.Action("DocStats", "Dashboard")';
+    var CreateDocuments = '@Url.Action("CreateDocuments", "Documents")';
+    var GetDraftDocuments = '@Url.Action("GetDraftDocuments", "Documents")';
+    var GetmyandsentandreceivedlistDocuments = '@Url.Action("GetmyandsentandreceivedlistDocuments", "Documents")';
+    var GetSentDocuments = '@Url.Action("GetSentDocuments", "Documents")';
+    var GetFilteredDocumentsList = '@Url.Action("GetFilteredDocumentsList", "Documents")';
+    var redirectingurlMydocumnets = '@Url.Action("MyDocumentsList", "Documents")';
+    var redirectingurlSentdocumnets = '@Url.Action("SentDocumentsList", "Documents")';
+    var redirectingurlReceiveddocumnets = '@Url.Action("ReceivedDocumentsList", "Documents")';
+    var redirectingurlReferreddocumnets = '@Url.Action("ReferredDocumentsList", "Documents")';
+    var CreateDocumentsSEND = '@Url.Action("CreateDocuments", "Documents")?param=SEND';
+    var CreateDocumentsSIGN = '@Url.Action("CreateDocuments", "Documents")?param=SIGN';
+    var IsDocumentBlocked = '@Url.Action("IsDocumentBlocked", "Documents")';
+    var currentemailval = "@Email";
+    var DocumentDetailsByIdUrl = '@Url.Action("DocumentDetailsById", "Documents")'
+    var SignActionByDocIdForReferedDoc = '@Url.Action("SignActionByDocIdForReferedDoc", "Documents")';
+    var SignActionConfigByDocId = '@Url.Action("SignActionConfigByDocId", "Documents")';
+    let scrollInterval = null;
+    let pauseTimeout = null;
+    var myDocumentsListUrl = '@Url.Action("MyDocumentsList", "Documents")';
+    var username = '@name';
+    $(document).ready(function () {
+
+        const parts = username.split(" ");
+        console.log(parts[0]);
+        var textvalue = `Welcome Back, ${parts[0]}`;
+        $('#welcomename').text(textvalue);
+        window.getDocumentsData();
+
+        window.getDocumentStats();
+        $(".action-required-icon").on("click", function () {
+            redirectToIndex('In Progress', true, false);
+        });
+
+        $(".expiry-required-icon").on("click", function () {
+            redirectToIndex('In Progress', true, true);
+        });
+
+
+        $(".my-documents").on("click", function () {
+            redirectToIndex('MyDocuments', false, false);
+        });
+
+        $(".sent-documents").on("click", function () {
+            redirectToIndex('SentDocuments', false, false);
+        });
+
+        $(".received-documents").on("click", function () {
+            redirectToIndex('RecievedDocuments', false, false);
+        });
+
+        $(".referred-documents").on("click", function () {
+            redirectToIndex('ReferedDocuments', false, false);
+        });
+        $("#createDocumentBtn").on("click", handlecreateDocument);
+        $(document).on("click", ".sign-doc-row", function () {
+            const id = $(this).data("id");
+            const isReferred = $(this).data("referred");
+            const viewName = $(this).data("viewname");
+
+            signActionConfigByDocIdOnclick(id, isReferred, viewName);
+        });
+    });
+
+
+
+    function handlecreateDocument() {
+        //document.getElementById("navigationNetworkOverlay").style.display = "block";
+        window.location.href = CreateDocuments;
+    }
+    async function signActionConfigByDocIdOnclick(docId, isReffered, viewName) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        try {
+            const response = await $.ajax({
+                type: 'POST',
+                url: IsDocumentBlocked,
+                headers: {
+                    'RequestVerificationToken': token
+                },
+                data: {
+                    docId: docId,
+                }
+            });
+
+            if (!response.success) {
+                swal({
+                    type: 'info',
+                    title: 'Info',
+                    text: response.message,
+                });
+            } else {
+                if (isReffered) {
+                    window.location.href = SignActionByDocIdForReferedDoc + '?docId=' + docId + '&viewName=' + viewName;
+                }
+                else {
+                    window.location.href = SignActionConfigByDocId + '?docId=' + docId + '&viewName=' + viewName;
+                }
+            }
+        } catch (error) {
+            ajaxErrorHandler(error);
+        }
+
+    }
+
+
+    function redirectToIndex(status, actionRequired, expiredSoon) {
+        // document.getElementById("navigationNetworkOverlay").style.display = "block";
+        var url = GetFilteredDocumentsList + '?status=' + status;
+
+        // Append actionRequired and expiredSoon parameters if provided
+        if (actionRequired !== undefined) {
+            url += '&action_required=' + actionRequired;
+        }
+        if (expiredSoon !== undefined) {
+            url += '&expired_soon=' + expiredSoon;
+        }
+
+        if (status === "In Progress") {
+            window.location.href = url
+        }
+        else if (status === 'MyDocuments') {
+            window.location.href = redirectingurlMydocumnets;
+        } else if (status === 'SentDocuments') {
+            window.location.href = redirectingurlSentdocumnets;
+        } else if (status === 'RecievedDocuments') {
+            window.location.href = redirectingurlReceiveddocumnets;
+        } else if (status === 'ReferedDocuments') {
+            window.location.href = redirectingurlReferreddocumnets;
+        }
+
+    }
+
+
+
+    window.getDocumentStats = function () {
+        if (scrollInterval !== null) {
+            clearInterval(scrollInterval);
+            scrollInterval = null;
+        }
+        if (pauseTimeout !== null) {
+            clearTimeout(pauseTimeout);
+            pauseTimeout = null;
+        }
+        showShimmerLoader();
+        document.getElementById("actionrequiredDocsContainer").style.border = '1px solid #d8dbe0';
+        document.getElementById("actionrequiredDocsContainer").style.boxShadow = "0 0px 3px 0 rgb(0 0 0 / 20%)";
+        document.getElementById("actionrequiredDocsContainer").style.borderRadius = '0.5rem';
+        document.getElementById("actionRequiredText").style.borderTopLeftRadius = '0.5rem';
+        document.getElementById("actionRequiredText").style.borderTopRightRadius = '0.5rem';
+        document.getElementById("docs-container").style.borderTopLeftRadius = '0.5rem';
+        document.getElementById("docs-container").style.borderTopRightRadius = '0.5rem';
+        document.getElementById("actionRequiredText").style.border = 'none';
+        document.getElementById("actionRequiredText").style.borderBottom = '1px solid #d8dbe0';
+        $("#docs-container").hide();
+        $.ajax({
+            type: "GET",
+            url: DocStats,
+            datatype: "json",
+
+            success: function (response) {
+                $(".lds-spinner").hide();
+                hideShimmerLoader();
+                if (response.success) {
+                    $("#docs-container").show();
+                    document.getElementById("MYDOCUMENTS").classList.remove("loading");
+                    $('#MYDOCUMENTS').text(response.result.ownDocumentStatus.cnt_draft);
+                    document.getElementById("SENTDOCUMENTS").classList.remove("loading");
+                    $('#SENTDOCUMENTS').text(response.result.ownDocumentStatus.cnt_send);
+                    document.getElementById("RECEIVEDDOCUMENTS").classList.remove("loading");
+                    $('#RECEIVEDDOCUMENTS').text(response.result.ownDocumentStatus.cnt_received);
+                    document.getElementById("REFERREDDOCUMENTS").classList.remove("loading");
+                    $('#REFERREDDOCUMENTS').text(response.result.ownDocumentStatus.cnt_referred);
+
+                    $("#MYDOCUMENTS").show();
+                    $("#SENTDOCUMENTS").show();
+                    $("#RECEIVEDDOCUMENTS").show();
+                    $("#REFERREDDOCUMENTS").show();
+                    console.log(response.result.actionRequiredList);
+                    getActionRequiredDocuments(response.result.actionRequiredList);
+                    getExpiringSoonDocuments(response.result.actionRequiredList);
+
+
+                } else {
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: response.message
+
+                    });
+                    return;
+                }
+            },
+            error: ajaxErrorHandler,
+        });
+    }
+    // To SHOW shimmer loader
+    function showShimmerLoader() {
+        $('#expiring-docs-container').css('display', 'none');
+        const shimmerItems = document.querySelectorAll(".shimmer-item");
+        shimmerItems.forEach(item => item.classList.remove("hidden"));
+    }
+
+    // To HIDE shimmer loader
+    function hideShimmerLoader() {
+        $('#expiring-docs-container').css('display', 'flex');
+        const shimmerItems = document.querySelectorAll(".shimmer-item");
+        shimmerItems.forEach(item => item.classList.add("hidden"));
+    }
+
+
+    function getExpiringSoonDocuments(response) {
+        if (response && response.length > 0) {
+            renderExpiringSoonCards(response);
+        } else {
+            document.getElementById("expiring-docs-container").style.backgroundColor = "#ffffff";
+
+            $('#expiring-docs-container').html(`
+                                    <div class="d-flex flex-column justify-content-center align-items-center" style="flex-grow:1;">
+                                        <div class="empty-icon">📄</div>
+                                        <div class="empty-title">No expiring documents</div>
+                                        <div class="empty-sub">All documents are on track</div>
+                                    </div>
+                                `);
+        }
+    }
+
+    function getActionRequiredDocuments(response) {
+        if (response && response.length > 0) {
+            renderDocumentCards(response);
+        } else {
+            document.getElementById("docs-container").style.backgroundColor = "#ffffff";
+
+            $('#docs-container').html(`
+                                     <div class="widget-body">
+                                        <div class="empty-icon">📄</div>
+                                            <div class="empty-title">No Action Required</div>
+                                            <div class="empty-sub">There are no documents awaiting your review or signature at this time</div>
+
+                                                    `);
+
+
+        }
+    }
+
+
+    function cropFileNames(full) {
+
+        const start = 25;
+        const end = 25;
+
+        if (full && full.length > start + end) {
+            return full.slice(0, start) + '...' + full.slice(-end);
+        } else {
+            return full
+        }
+
+    }
+
+    function renderExpiringSoonCards(documents) {
+
+        const container = document.getElementById("expiring-docs-container");
+        container.innerHTML = "";
+        let html = '';
+        const currentUserEmail = currentemailval;
+        documents.forEach(doc => {
+            if (parseInt(doc.daysToComplete, 10) < 2) {
+                let senderDisplay = "";
+                let actionText = "";
+                let isReferred = false;
+                let docViewname = "";
+                let documentName = cropFileNames(doc.documentName);
+
+                if (doc.ownerEmail === currentUserEmail) {
+                    senderDisplay = "";
+                    actionText = 'You initiated a document for signing';
+                    if (doc.multiSign) {
+                        docViewname = "SentDocuments";
+                    }
+                    else {
+                        docViewname = "MyDocuments";
+                    }
+                } else {
+                    const isExists = doc.pendingSignList[0]?.email === currentUserEmail;
+                    const isInPendingList = doc.pendingSignList?.some(signer => signer.email === currentUserEmail);
+                    //the document is from Recieved
+                    if (isExists || (doc.disableOrder && isInPendingList)) {
+                        senderDisplay = `${doc.ownerName} `;
+                        actionText = 'sent you a document';
+                        docViewname = "RecievedDocuments";
+                    } else {
+
+                        senderDisplay = `${doc.ownerName} `;
+                        actionText = 'referred you a document';
+                        isReferred = true;
+                        docViewname = "ReferedDocuments";
+                    }
+                }
+                html += `
+                                                    <div class="doc-row sign-doc-row" style="cursor:pointer;"  data-id="${doc._id}" data-referred="${isReferred}" data-viewname="${docViewname}">
+                                                        <div class="doc-info">
+                                                                  <div class="document-icon-wapper">
+                                                                  <i class="fa-solid fa-file-lines sidebar-icon" style="font-weight:500;font-size:0.85rem"></i>
+                                                              </div>
+
+                                                            <div class="doc-text">
+                                                                <div class="doc-sender">${senderDisplay}${actionText}</div>
+                                                                <div class="doc-name" ${documentName != doc.documentName ? `title="${doc.documentName}"` : ''}>${documentName}</div>
+                                                            </div>
+                                                        </div>
+                                                            <button type="button" class="signbutton rounded-3" style="font-size:small;padding:4px 12px;max-width:90px;width:100%;text-transform: none !important;" >
+                                                                 <i class="fa fa-pencil"></i>&nbsp;Sign
+                                                        </button>
+                                                    </div>
+                                                `;
+            }
+        });
+
+        if (html === '') {
+            html = `  <div class="widget-body">
+                                            <div class="empty-icon">📄</div>
+                                            <div class="empty-title">No expiring documents</div>
+                                            <div class="empty-sub">All documents are on track</div>`
+        }
+
+        $('#expiring-docs-container').html(html);
+        const hasVerticalScroll = container.scrollHeight > container.clientHeight;
+        if (hasVerticalScroll) {
+            document.getElementById("expiringSoonDocsContainer").style.border = '1px solid transparent';
+            document.getElementById("expiringSoonDocsContainer").style.borderRadius = 'none';
+            document.getElementById("expiringSoonDocsContainer").style.boxShadow = 'none';
+            document.getElementById("expiringSoonText").style.border = '1px solid #d8dbe0';
+            document.getElementById("expiringSoonText").style.marginBottom = '5px';
+            startAutoScrolling();
+        }
+        else {
+            document.getElementById("expiringSoonText").style.marginBottom = '5px';
+            $('.doc-row').css({ marginLeft: '8px', marginRight: '8px' });
+        }
+
+    }
+
+
+    function renderDocumentCards(documents) {
+        const docsContainer = document.getElementById("docs-container");
+        docsContainer.innerHTML = "";
+        let html = '';
+        const currentUserEmail = currentemailval;
+        documents.forEach(doc => {
+
+            let senderDisplay = "";
+            let actionText = "";
+            let isReferred = false;
+            let docViewname = "";
+            let documentName = cropFileNames(doc.documentName);
+
+            if (doc.ownerEmail === currentUserEmail) {
+                senderDisplay = "";
+                actionText = 'You initiated a document for signing';
+                if (doc.multiSign) {
+                    docViewname = "SentDocuments";
+                }
+                else {
+                    docViewname = "MyDocuments";
+                }
+            } else {
+                const isExists = doc.pendingSignList[0]?.email === currentUserEmail;
+                const isInPendingList = doc.pendingSignList?.some(signer => signer.email === currentUserEmail);
+                //the document is from Recieved
+                if (isExists || (doc.disableOrder && isInPendingList)) {
+                    senderDisplay = `${doc.ownerName} `;
+                    actionText = 'sent you a document';
+                    docViewname = "RecievedDocuments";
+                } else {
+
+                    senderDisplay = `${doc.ownerName} `;
+                    actionText = 'referred you a document';
+                    isReferred = true;
+                    docViewname = "ReferedDocuments";
+                }
+            }
+            html += `
+                                            <div class="doc-row sign-doc-row" style="cursor:pointer;"  data-id="${doc._id}" data-referred="${isReferred}" data-viewname="${docViewname}">
+                                                <div class="doc-info">
+                                                          <div class="document-icon-wapper">
+                                                          <i class="fa-solid fa-file-lines sidebar-icon" style="font-weight:500;font-size:0.85rem"></i>
+                                                      </div>
+
+                                                    <div class="doc-text">
+                                                        <div class="doc-sender">${senderDisplay}${actionText}</div>
+                                                        <div class="doc-name" ${documentName != doc.documentName ? `title="${doc.documentName}"` : ''}>${documentName}</div>
+                                                    </div>
+                                                </div>
+                                                    <button type="button" class="signbutton rounded-3" style="font-size:small;padding:4px 12px;max-width:90px;width:100%;text-transform: none !important;" >
+                                                         <i class="fa fa-pencil"></i>&nbsp;Sign
+                                                </button>
+                                            </div>
+                                        `;
+        });
+
+        $('#docs-container').html(html);
+
+
+        const hasVerticalScroll = docsContainer.scrollHeight > docsContainer.clientHeight;
+        if (hasVerticalScroll) {
+            document.getElementById("actionrequiredDocsContainer").style.border = '1px solid transparent';
+            document.getElementById("actionrequiredDocsContainer").style.borderRadius = 'none';
+            document.getElementById("actionrequiredDocsContainer").style.boxShadow = 'none';
+            document.getElementById("actionRequiredText").style.border = '1px solid #d8dbe0';
+            document.getElementById("actionRequiredText").style.marginBottom = '5px';
+            startAutoScrolling();
+        }
+        else {
+            document.getElementById("actionRequiredText").style.marginBottom = '5px';
+            $('.doc-row').css({ marginLeft: '8px', marginRight: '8px' });
+        }
+    }
+
+
+    function startAutoScrolling() {
+        const docsContainer = $('#docs-container');
+
+        function isAtBottom() {
+            const currentScroll = docsContainer.scrollTop();
+            const maxScroll = docsContainer[0].scrollHeight - docsContainer.outerHeight();
+            return currentScroll >= maxScroll - 1;
+        }
+
+        function scrollContent() {
+            if (isAtBottom()) {
+                stopScrolling();
+                pauseTimeout = setTimeout(() => {
+                    docsContainer.animate({ scrollTop: 0 }, 300, () => {
+                        if (!docsContainer.is(':hover')) {
+                            startScrolling();
+                        }
+                    });
+                }, 2000);
+            } else {
+                docsContainer.scrollTop(docsContainer.scrollTop() + 0.5);
+            }
+        }
+
+        function startScrolling() {
+            if (scrollInterval !== null) return; // Prevent duplicate intervals
+
+            docsContainer.addClass('hide-scrollbar').removeClass('show-scrollbar');
+            scrollInterval = setInterval(scrollContent, 50);
+        }
+
+        function stopScrolling() {
+            if (scrollInterval !== null) {
+                clearInterval(scrollInterval);
+                scrollInterval = null;
+            }
+            if (pauseTimeout !== null) {
+                clearTimeout(pauseTimeout);
+                pauseTimeout = null;
+            }
+        }
+
+        // Always stop on hover
+        docsContainer.off('mouseenter.autoscroll').on('mouseenter.autoscroll', () => {
+            stopScrolling();
+            docsContainer.removeClass('hide-scrollbar').addClass('show-scrollbar');
+        });
+
+        //Resume
+        docsContainer.off('mouseleave.autoscroll').on('mouseleave.autoscroll', () => {
+            docsContainer.removeClass('show-scrollbar').addClass('hide-scrollbar');
+
+            if (scrollInterval === null && pauseTimeout === null && docsContainer[0].scrollHeight > docsContainer.outerHeight()) {
+                startScrolling();
+            }
+        });
+
+
+        // Initial scroll state
+        if (!docsContainer.is(':hover')) {
+            startScrolling();
+        }
+    }
+
+
+    function getDocumentsData() {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            url: GetmyandsentandreceivedlistDocuments,
+            type: 'POST',
+            dataType: 'json',
+            headers: {
+                'RequestVerificationToken': token
+            },
+            success: function (response) {
+                console.log(response);
+                if(response.data.length<1){
+                    let html = '';
+                    html = ` <div id="noDataMessageDraft">
+         <div class="text-center py-5"
+              style="border-radius: 12px; background:#f9fafb; margin-top:20px;">
+
+             <!-- Icon Circle -->
+             <div style="
+             width:80px;
+             height:80px;
+             margin:0 auto 20px auto;
+             background:#eef1f5;
+             border-radius:50%;
+             display:flex;
+             align-items:center;
+             justify-content:center;
+         ">
+                 <i class="fa-regular fa-file-lines"
+                    style="font-size:32px; color:#6b7280;"></i>
+             </div>
+
+             <!-- Main Title -->
+             <h4 style="font-weight:600; color:#1f2937; margin-bottom:8px;">
+                 No recent documents found
+             </h4>
+
+             <!-- Subtitle -->
+             <p style="color:#6b7280; font-size:15px; margin:0;">
+                 Upload your first document to get your first sign
+             </p>
+
+         </div>
+     </div>
+
+    `
+                    $('#recentActivityList').html(html);
+                    return;
+                }
+                renderRecentActivity(response.data);
+            },
+               error: ajaxErrorHandler,
+        });
+    }
+      function redirectToDocumentDetails(id,view) {
+      // Construct the URL for the action
+      var viewName = view;
+      console.log(id);
+      console.log(view);
+      var url = DocumentDetailsByIdUrl + '?id=' + id + '&viewName=' + viewName;
+      // Redirect to the URL
+      window.location.href = url;
+  }
+
+    function renderRecentActivity(data) {
+
+        let html = '';
+
+        data.forEach(item => {
+
+            /* ---------- STATUS ---------- */
+            let badgeClass = 'recent-in-progress';
+            let badgeIcon = '<i class="fa-regular fa-clock"></i>';
+
+            if (item.status === 'Expired') {
+                badgeClass = 'recent-draft';
+                badgeIcon = '<i class="fa-regular fa-file"></i>';
+            }
+            else if (item.status === 'Completed') {
+                badgeClass = 'recent-completed';
+                badgeIcon = '<i class="fa-regular fa-circle-check"></i>';
+            }
+            else if (item.status === 'Declined') {
+                badgeClass = 'recent-declined';
+                badgeIcon = '<i class="fa-regular fa-circle-xmark"></i>';
+            }
+
+            /* ---------- DOCUMENT NAME ---------- */
+            let documentName = cropFileNames(item.documentName);
+
+            /* ---------- DATE ---------- */
+            let date = new Date(item.createdAt)
+                .toLocaleDateString('en-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
+
+            /* ---------- CATEGORY ---------- */
+            let category = item.source || 'Document';
+            if (category === "Sent Documents") {
+
+                let completedEmails = (item.completeSignList || [])
+                    .map(x => x.email || x);
+
+                let pendingEmails = (item.pendingSignList || [])
+                    .map(x => x.email || x);
+
+                let allEmails = [...new Set([...completedEmails, ...pendingEmails])];
+
+                if (allEmails.length > 0) {
+
+                    let fullEmailList = allEmails.join(', '); // For hover tooltip
+
+                    let visibleText = '';
+
+                    if (allEmails.length === 1) {
+                        // Only one email → show fully
+                        visibleText = allEmails[0];
+                    }
+                    else {
+                        // First email full
+                        let firstEmail = allEmails[0];
+
+                        // Second email first 5 letters only
+                        let secondEmailShort = allEmails[1].substring(0, 5) + '...';
+
+                        visibleText = `${firstEmail}, ${secondEmailShort}`;
+                    }
+
+                    categoryText = `
+                <span title="${fullEmailList}">
+                    Sent To: ${visibleText}
+                </span>
+            `;
+                }
+                else {
+                    categoryText = `Sent`;
+                }
+            }
+
+            else if (category === "Received Documents") {
+
+                categoryText = `Received From: ${item.ownerEmail || '-'}`;
+
+            }
+            else {
+
+                categoryText = "You initiated a document for signing";
+
+            }
+
+            /* ---------- SIGNED INFO ---------- */
+            let signedText = ` ${item.completeSignList.length}/ ${item.recepients.length} Signed`;
+            html += `
+                                        <div class="recent-row">
+                                            <div class="recent-left">
+                                                            <div class="sidebar-icon-wrapper">
+                                                        <i class="fa-regular fa-file-lines sidebar-icon"></i>
+                                                </div>
+
+                                                    <div class="recent-doc-info">
+                                                        <div class="recent-doc-name"
+                                                         title="${item.documentName}">
+                                                        ${documentName}
+                                                    </div>
+
+                                                        <div class="recent-doc-meta">
+                                                            ${categoryText} &nbsp;•&nbsp; ${date}
+                                                        ${signedText ? '&nbsp;•&nbsp; ' + signedText : ''}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                                  <div class="recent-right">
+                                                    <div class="status-badge ${badgeClass}">
+                                                        ${badgeIcon} ${item.status}
+                                                    </div>
+
+                                                    <button class="view-btn"
+                                                            title="View details"
+                                                            onclick="redirectToDocumentDetails('${item.id}','${category}')">
+                                                                <i class="fa fa-eye" style="width:20px;" ></i>
+                                                    </button>
+                                                </div>
+
+                                        </div>
+                                    `;
+        });
+
+        $('#recentActivityList').html(html);
+    }
+</script>

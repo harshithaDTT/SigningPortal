@@ -1,0 +1,676 @@
+﻿@model SigningPortal.Web.ViewModels.BulkSign.AllBulkSignTemplatesListViewModel
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "View";
+}
+@{
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var bulksign = User.IsInRole("bulkSign");
+    var AccountType = User.FindFirst("AccountType").Value;
+    var OrganizationName = "";
+    var OrganizationUid = "";
+    var login_esealsignatoryrole = User.IsInRole("eSealSignatory");
+    var selfemails = "";
+    if (AccountType != "Self")
+    {
+        selfemails = User.FindFirst("SelfEmails").Value;
+        OrganizationName = User.FindFirst("OrganizationName").Value;
+        OrganizationUid = User.FindFirst("OrganizationUid").Value;
+    }
+}
+
+
+<style>
+    /* Custom dropdown menu style */
+    .custom-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .custom-dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #fff;
+        min-width: 120px;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 1;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+    }
+
+    .custom-dropdown-content a {
+        color: #333;
+        padding: 0.25rem 1rem;
+        text-decoration: none;
+        display: block;
+        font-size: 14px;
+     }
+
+     .custom-dropdown-content a:hover {
+         background-color: rgba(0, 0, 0, 0.05) !important;
+         color: #333 !important;
+     } 
+
+    .custom-dropdown:hover .custom-dropdown-content {
+        display: block;
+    }
+
+    .custom-dropdown-content li {
+        list-style: none;
+    }
+
+    .btn {
+        text-transform: capitalize !important;
+        font-size: 12px !important;
+    }
+
+    /* Ensure full width for table */
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+        background-color: transparent;
+    }
+
+    .dataTables_wrapper {
+        position: relative !important;
+        clear: both !important;
+        width: 100% !important;
+    }
+
+    .card-title {
+        margin-bottom: 10px !important;
+    }
+
+    /* Ensure popup text of sweetalert looking perfect or not */
+    .sweet-alert button.cancel {
+        background-color: rgb(244, 67, 54) !important;
+    }
+
+    .sweet-alert p {
+        color: #797979;
+        font-size: 1.125em !important;
+        text-align: center;
+        font-family: sans-serif;
+        font-weight: 300;
+        position: relative;
+        text-align: inherit;
+        float: none;
+        margin: 0;
+        padding: 0;
+        line-height: normal;
+    }
+    /* Styling the expand "+" icon */
+    table.dataTable > tbody > tr > td.control::before {
+        font-size: 20px; /* Make the icon bigger */
+        font-weight: bold;
+        color: #007bff; /* Blue color */
+        display: inline-block;
+        text-align: center;
+        width: 24px; /* Ensures proper alignment */
+        height: 24px; /* Ensures proper alignment */
+        line-height: 24px; /* Centers icon vertically */
+        border-radius: 24px;
+    }
+
+    /* Styling the collapse "−" icon */
+    table.dataTable > tbody > tr.parent > td.control::before {
+        font-size: 15px !important;
+        font-weight: bold;
+        display: inline-block;
+        text-align: center;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        border-radius: 20px;
+    }
+
+    table.dataTable tbody tr.parent td.control::before {
+        background-color: forestgreen !important;
+        color: white !important;
+    }
+</style>
+
+@if (Model.draftDocuments.Count == 0)
+{
+    <div class=" text-center">
+        <div class="card-body" style=" padding:0px;">
+            <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">No  Records Are Found</div>
+        </div>
+    </div>
+}
+else
+{
+    <table id="myList" class="table table-striped table-bordered table-hover table-checkable order-column full-width" style="width:100%;">
+        <thead style="text-align:center">
+            <tr>
+                <th></th>
+                <th style="text-align:justify">Template Name</th>
+                <th>Transaction Name</th>
+                <th>Created Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody style="text-align:center">
+            @foreach (var item in Model.draftDocuments)
+            {
+                <tr class="odd gradeX">
+                    <td></td>
+                    <td style="text-align: left !important;">
+                        @item.TemplateName
+                    </td>
+                    <td>@item.Transaction</td>
+                    @* <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td> *@
+                    <td class="convert-time" data-timestamp="@item.CreatedAt.ToString("o")">
+                        @item.CreatedAt.ToString("dd/MM/yyyy")
+                    </td>
+
+                    @if (item.Status == "Completed")
+                    {
+                        <td>
+                            <a class="completebtn" asp-action="BulkSigningStatus" asp-controller="BulkSign" asp-route-correlationId="@item.CorelationId">
+                                @item.Status
+                            </a>
+                        </td>
+                    }
+                    else if (item.Status == "Draft")
+                    {
+                        <td>
+                            <a class="otherbtn">
+                                @item.Status
+                            </a>
+                        </td>
+                    }
+                    else if (item.Status == "In Progress")
+                    {
+                        <td>
+                            <a class="inprogressbtn" asp-action="BulkSigningStatus" asp-controller="BulkSign" asp-route-correlationId="@item.CorelationId">
+                                @item.Status
+                            </a>
+                        </td>
+                    }
+                    else if (item.Status == "Failed")
+                    {
+                        <td>
+                            <a class="Failedbtn">
+                                @item.Status
+                            </a>
+                        </td>
+                    }
+                    else if (item.Status == "Pending")
+                    {
+                        <td>
+                            <a class="otherbtn">
+                                @item.Status
+                            </a>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            <a class="titledefault">
+                                @item.Status
+                            </a>
+                        </td>
+                    }
+
+                    <td class="valigntop">
+                        <div class="custom-dropdown btn-group">
+                            <button class="btn btn-success deepGreen-bgcolor no-margin" type="button" data-toggle="dropdown" aria-expanded="false">
+                                Actions
+                                <i class="fa fa-caret-down"></i>
+                            </button>
+                            <div class="custom-dropdown-content" style="height: max-content !important;">
+                                @if (item.Status == "Pending" || item.Status == "Draft")
+                                {
+                                    <a onclick="PerformBulkSign('@item.CorelationId','@item.SignatureAnnotations','@item.EsealAnnotations')">
+                                        <i class="icon-pencil"></i> Sign
+                                    </a>
+                                }
+                                @if (item.Status == "Completed")
+                                {
+                                   @*  <a asp-action="BulkSigningStatus" asp-controller="BulkSign" asp-route-correlationId="@item.CorelationId">
+                                        <i class="icon-pencil"></i> View
+                                    </a> *@
+                                    <a href="javascript:void(0);" onclick="handleBulkSigningStatus('@item.CorelationId')">
+                                        <i class="icon-pencil"></i> View
+                                    </a>
+
+                                }
+                                @if (item.Status != "Completed")
+                                {
+                                    <a href="#" onclick="TemplateDetails('@item.CorelationId')">
+                                        <i class="icon-pencil"></i> View
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<script>
+    var loginOrgId = '@OrganizationUid';
+    var viewName = "MyDocuments";
+    var bulksignPermisson = '@bulksign';
+    $(document).ready(function () {
+        $('#BulkSign').addClass('active');
+        $('#myList').DataTable({
+            searching: false,
+            paging: true,
+            lengthChange: false,
+            pageLength: 8,
+            orderClasses: false,
+            stripeClasses: [],
+            info: true,
+            "ordering": false,
+            responsive: {
+                details: {
+                    type: 'column',
+                    target: 'tr'
+                }
+            },
+            columnDefs: [
+                { className: 'control', orderable: false, targets: 0 } // Makes 1st column only for expansion
+            ]
+        });
+
+        updateTimestamps();
+
+    });
+
+
+
+    $(document).ready(function () {
+        $('#networkOverlay').hide();
+        // getting agent url if present will continue else will be redirected to dashboard
+        $.ajax({
+            url: '@Url.Action("AgentUrl", "Template")',
+            type: 'Get',
+            error: ajaxErrorHandler,
+            success: function (response) {
+                if (!response.success) {
+                    swal({
+                        title: 'Info',
+                        text: response.message,
+                        type: 'info',
+                        icon: 'info',
+                    }, function (isConfirm) {
+                        window.location.href = '@Url.Action("Index", "Dashboard")';
+                    });
+                } else {
+
+                }
+            },
+        });
+    });
+
+    // function TemplateDetails(corelationId) {
+    //     var form = document.createElement('form');
+    //     form.method = 'POST';
+    //     form.action = '@Url.Action("TemplateDetailsMyList", "BulkSign")';
+
+    //     var hiddenField = document.createElement('input');
+    //     hiddenField.type = 'hidden';
+    //     hiddenField.name = 'CorelationId';
+    //     hiddenField.value = corelationId;
+
+    //     form.appendChild(hiddenField);
+
+    //     document.body.appendChild(form);
+    //     form.submit();
+    // }
+
+
+    function handleBulkSigningStatus(correlationId) {
+
+        document.getElementById("navigationNetworkOverlay").style.display = "block";
+        window.location.href = '@Url.Action("BulkSigningStatus", "BulkSign")' + `?correlationId=${correlationId}`;
+    }
+    //handle function on click of view button
+    function TemplateDetails(corelationId) {
+
+        document.getElementById("navigationNetworkOverlay").style.display = "block";
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("TemplateDetailsMyList", "BulkSign")',
+            data: { CorelationId: corelationId },
+            success: function (response) {
+                if (response.success) {
+
+                   // Handle success - redirect or display files
+                    window.location.href = response.redirectUrl; // Assuming you return a URL to redirect
+                } else {
+                    document.getElementById("navigationNetworkOverlay").style.display = "none";
+
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: response.message,
+                    });
+                }
+            },
+            error: ajaxErrorHandler
+        });
+    }
+
+    // Overlay function for showing loader
+    function showOverlay(matchedEsealData, matchedSignData) {
+        if (matchedEsealData == null && matchedSignData !== null) {
+            $('#overlay8').css('display', 'flex');
+        } else if (matchedEsealData !== null && matchedSignData === null) {
+            $('#overlay6').css('display', 'flex');
+
+        } else if (matchedEsealData !== null && matchedSignData !== null) {
+            $('#overlay7').css('display', 'flex');
+
+        } else {
+            $('#overlay8').css('display', 'flex');
+
+        }
+    }
+    // Overlay function for hiding loader
+    function hideOverlay(matchedEsealData, matchedSignData) {
+        if (matchedEsealData == null && matchedSignData !== null) {
+            $('#overlay8').hide();
+        } else if (matchedEsealData !== null && matchedSignData === null) {
+            $('#overlay6').hide();
+
+        } else if (matchedEsealData !== null && matchedSignData !== null) {
+            $('#overlay7').hide();
+        } else {
+            $('#overlay8').hide();
+
+        }
+
+    }
+    // function to handle sign  button onclick
+    async function PerformBulkSign(CorelationId, signCordinates, esealcorddata) {
+        if (bulksignPermisson !== 'False') {
+            if (esealcorddata !== null && esealcorddata!=='') {
+                var responseFlag = true;
+
+                try {
+                    const response = await $.ajax({
+                        url: '@Url.Action("GetOrganizationStatus", "Documents")',
+                        type: 'GET',
+                        dataType: 'json',
+                        data: { loginorgUid: loginOrgId }
+                    });
+
+                    if (!response.success) {
+                        document.getElementById('overlay9').style.display = 'none';
+                        swal({
+                            type: 'info',
+                            title: 'Info',
+                            text: 'You cannot perform the eSeal operation, please contact your organization.',
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = '@Url.Action("Index", "BulkSign")?viewName=' + viewName;
+                            }
+                        });
+                        responseFlag = false;
+                    } else {
+                        var delegation_req_data = {
+                            id: loginorgUid,
+                            suid: loginSuid,
+                            email: loginEmail,
+                        };
+
+                        // Await the response from delegation check
+                        var delegation_response = await handle_delegation_orgid_suid_selfloginuser(delegation_req_data);
+
+                        if (delegation_response != undefined && delegation_response.listdata.length > 0) {
+                          
+                            swal({
+                                type: 'info',
+                                title: 'Info',
+                                text: "Signing cannot be performed because there is an active signature delegation",
+                            });
+                            return false; // Stop further execution
+                        } else {
+                            responseFlag = true;
+                            PerformBulkSigning(CorelationId, signCordinates, esealcorddata);
+                        }
+                    }
+                } catch (error) {
+                    ajaxErrorHandler(error);
+                }
+            } else {
+                var delegation_req_data = {
+                    id: loginorgUid,
+                    suid: loginSuid,
+                    email: loginEmail,
+                };
+
+                // Await the response from delegation check
+                var delegation_response = await handle_delegation_orgid_suid_selfloginuser(delegation_req_data);
+
+                if (delegation_response != undefined && delegation_response.listdata.length > 0) {
+                  
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: "Signing cannot be performed because there is an active signature delegation",
+                    });
+                    return false; // Stop further execution
+                } else {
+                    var correlationId = CorelationId;
+                    PerformBulkSigning(correlationId, signCordinates, esealcorddata);
+                }
+            }
+        } else {
+            swal({
+                title: "Info",
+                text: "You don't have Bulk Sign permission",
+                type: "info",
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    window.location.href = '@Url.Action("Index", "BulkSign")?viewName=' + viewName;
+                }
+            });
+        }
+    }
+
+    async function handle_delegation_orgid_suid_selfloginuser(delegation_req_data) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("GetDelegationbyorgidsuid", "Documents")',
+                data: {
+                    organizationId: delegation_req_data.id,
+                    suid: delegation_req_data.suid
+                },
+                beforeSend: function () {
+                    $('#overlay').show();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                },
+                success: function (response) {
+                    if (response.success === true) {
+                        var result_list = response.result;
+                        var swal_list = [];
+                        var list_data = [];
+
+                        for (var i = 0; i < result_list.length; i++) {
+                            var obj_data = {
+                                email: result_list[i].delegateeEmail,
+                                suid: result_list[i].delegateeSuid,
+                            };
+                            swal_list.push(result_list[i].delegateeEmail);
+                            list_data.push(obj_data);
+                        }
+
+                        let response_data_obj = {
+                            swallist: swal_list,
+                            listdata: list_data,
+                            delegateeid: response.result[0]?.delegationId || '',
+                        };
+
+                        resolve(response_data_obj);
+                    } else {
+                        swal({
+                            title: "Error",
+                            text: response.message || "Unknown error occurred",
+                            type: "error",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = '@Url.Action("Index", "BulkSign")';
+                            }
+                        });
+                        resolve(false);
+                    }
+                },
+                error: function (error) {
+                    ajaxErrorHandler(error);
+                    resolve(false);
+                }
+            });
+        });
+    }
+
+
+    function PerformBulkSigning(correlationId, signcord, esealcord) {
+   
+        $.ajax({
+            url: '@Url.Action("PerformBulkSign", "BulkSign")',
+            method: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(correlationId),
+            beforeSend: function () {
+                showOverlay(esealcord, signcord);
+            },
+            complete: function () {
+                hideOverlay(esealcord, signcord);
+            },
+            success: function (response) {
+                if (response.success == false) {
+                    swal({
+                        type: 'info',
+                        title: "Server Message",
+                        text: response.message,
+                        showCancelButton: true,
+                        confirmButtonText: 'Retry',
+                        closeOnConfirm: true
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            PerformBulkSign(correlationId, signcord, esealcord);
+                        }
+
+
+                        else {
+                            // $.ajax({
+                            //     url: '/BulkSign/FailBulkSignRequest',
+                            //     method: 'POST',
+                            //     contentType: "application/json",
+                            //     data: JSON.stringify(correlationId),
+                            //     beforeSend: function () {
+                            //         $('#overlay').show();
+                            //     },
+                            //     complete: function () {
+                            //         $('#overlay').hide();
+                            //     },
+                            //     error: ajaxErrorHandler,
+                            //     success: function (response) {
+                            //         if (response.success == false) {
+
+                            //             swal({
+                            //                 type: 'success',
+                            //                 title: 'Info',
+                            //                 text: response.message,
+
+                            //             });
+                            //         }
+                            //         else {
+
+                            //             window.location.href = '@Url.Action("Index", "BulkSign")?viewName=' + "MyDocuments";
+
+
+                            //         }
+                            //     }
+                            // })
+                        }
+                    });
+                }
+                else {
+
+
+                    swal({
+                        title: "info",
+                        text: "Document Signing is initiated.",
+                        type: "info",
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.href = '@Url.Action("BulkSigningStatus", "BulkSign")' + '?correlationId=' + correlationId;
+
+                        }
+                    });
+
+                }
+            },
+            error: ajaxErrorHandler
+        });
+    }
+
+
+  
+    // function to handle sendrequest button onclick 
+    function SendRequest(CorelationId) {
+        var correlationId = CorelationId;
+        $.ajax({
+            url: '@Url.Action("SendRequest", "BulkSign")',
+            method: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(correlationId),
+            beforeSend: function () {
+                $('#overlay').show();
+            },
+            complete: function () {
+                $('#overlay').hide();
+            },
+            success: function (response) {
+                if (response.success == false) {
+                    swal({
+                        type: 'error',
+                        title: "Send Request",
+                        text: response.message,
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            //window.location.href = "/BulkSign/GetBulkSignList";
+                        }
+                    });
+
+                }
+                else {
+                    swal({
+                        type: 'success',
+                        title: "Send Request",
+                        text: "Successfully sent",
+                        showCancelButton: false,
+                        closeOnConfirm: true
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.href = '@Url.Action("Index", "BulkSign")' + '?viewName=' + encodeURIComponent(viewName);
+                        }
+                    });
+                }
+
+
+            },
+            error: ajaxErrorHandler
+        });
+    }
+
+
+</script>

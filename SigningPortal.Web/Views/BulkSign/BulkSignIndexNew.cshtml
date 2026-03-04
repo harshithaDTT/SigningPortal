@@ -1,0 +1,3104 @@
+﻿@model SigningPortal.Web.ViewModels.BulkSign.AllBulkSignTemplatesListViewModel
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "View";
+}
+@{
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var AccountType = User.FindFirst("AccountType").Value;
+    var OrganizationUid = "";
+    var bulksign = User.IsInRole("bulkSign");
+    if (AccountType != "Self")
+    {
+
+        OrganizationUid = User.FindFirst("OrganizationUid").Value;
+    }
+}
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+
+<style>
+    .simple-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 16px;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+        .simple-card:hover {
+            transform: translateY(-2px);
+        }
+
+    .simple-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .simple-left {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+    }
+
+    .simple-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: #10b981;
+        color: white;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .simple-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .simple-sub {
+        font-size: 14px;
+        color: #111827;
+        margin-top: 0.25rem;
+    }
+
+    .simple-right {
+        text-align: right;
+    }
+
+    .simple-status {
+        background: #f3f4f6;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    .bottompart {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 12px;
+        margin-top: 2px;
+    }
+
+    /* LEFT SIDE */
+    .bottom-left {
+        display: flex;
+        align-items: center;
+        gap: 20px; /* space between Eseal & Created */
+    }
+
+    .eseal-row,
+    .created-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .eseal-row {
+        margin-top: 0.25rem;
+    }
+
+    .created-row {
+        margin-top: 0.55rem;
+    }
+
+    .label {
+        font-size: 14px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .simple-status {
+        font-size: 13px;
+    }
+
+    /* RIGHT SIDE */
+    .simple-actions {
+        display: flex;
+        gap: 16px;
+    }
+
+        .simple-actions button {
+            background: none;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #6b7280;
+        }
+
+            .simple-actions button:hover {
+                background-color: rgba(59, 130, 246, 0.08); /* very light blue */
+                color: #2563eb; /* blue text */
+                transform: translateY(-2px);
+                padding: 3px 6px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            }
+
+        .simple-actions i {
+            font-size: 11px;
+        }
+
+
+    .action-dropdown {
+        position: relative;
+    }
+
+    .action-btn {
+        padding: 9px 9px;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 13px;
+        font-family: 'Inter';
+        cursor: pointer;
+        background-color: white !important;
+        border: 1px solid #009057;
+        color: #009057;
+    }
+
+        .action-btn:hover {
+            background-color: #009057 !important;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        top: 110%;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        min-width: 100px;
+        display: none;
+        z-index: 100;
+    }
+
+    .dropdown-item {
+        width: 100%;
+        padding: 6px 11px;
+        background: none;
+        border: none;
+        text-align: left;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .dropdown-item:hover {
+            background: #f3f4f6;
+        }
+
+    .dropdown-menu {
+        display: none;
+    }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+    /* wrapper */
+    .delegation-list {
+        width: 100%;
+    }
+
+    /* card */
+    .dg-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 18px 22px;
+        margin-bottom: 16px;
+        font-family: "Segoe UI", sans-serif;
+    }
+
+        .dg-card:hover {
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
+        }
+
+    /* top row */
+    .dg-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    /* user */
+    .dg-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 380px;
+        width: 580px;
+    }
+
+    .dg-avatar {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 0.65rem;
+        background-color: #009057 !important;
+        border: 1px solid #009057;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Inter';
+    }
+
+    .dg-name {
+        font-weight: 600;
+        color: #111827;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 16px !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .dg-email {
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    /* column */
+    .dg-col-transcation {
+        min-width: 140px;
+        width: 250px;
+    }
+
+    .dg-col-status {
+        min-width: 95px;
+        width: 95px;
+    }
+
+
+    .dg-label {
+        font-size: 14px;
+        text-align: left;
+        margin-bottom: 4px;
+        font-weight: 400;
+        color: #7c8797;
+        font-family: 'Inter';
+    }
+
+    .dg-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #111827;
+        letter-spacing: 0.65px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .truncate-text {
+        display: inline-block;
+        max-width: 250px; /* adjust */
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        cursor: pointer;
+    }
+
+    /* status */
+    .dg-status {
+        background: #e7f8ef;
+        color: #16a34a;
+        font-size: 13px;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-weight: 500;
+    }
+
+    /* action */
+    .dg-action-btn {
+        border: 1px solid #86d6b6;
+        background: #ffffff;
+        color: #0ea66b;
+        padding: 8px 14px;
+        border-radius: 0.25rem;
+        font-size: 13px;
+        cursor: pointer;
+        font-family: 'Inter';
+    }
+
+        .dg-action-btn:hover {
+            background: #0ea66b;
+            color: #ffffff;
+        }
+
+    /* bottom */
+    .dg-legal {
+        margin-top: 14px;
+        font-size: 13px;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .list-data {
+        font-family: sans-serif;
+        font-weight: 500;
+        font-size: 14px;
+        color: #919aa3 !important;
+    }
+
+    .signeremail {
+        font-family: sans-serif;
+        font-weight: 500;
+        font-size: 14px;
+        color: #919aa3 !important;
+    }
+
+    .disabled-blur {
+        opacity: 0.5;
+    }
+    /* -------- Card Container -------- */
+    .list-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 20px;
+        width: 100%;
+        max-width: 520px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: 0.2s ease;
+        border: 1px solid #eee;
+    }
+
+        /* Hover effect */
+        .list-card:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+
+    /* -------- Header Section -------- */
+    .list-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 18px;
+    }
+
+    .list-icon {
+        width: 48px;
+        height: 48px;
+        background: #009057;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 22px;
+    }
+
+    /* New wrapper */
+    .list-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%; /* key: takes remaining space */
+    }
+
+    /* Title */
+    .list-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #1A1A1A;
+    }
+
+    /* Optional: keep status from wrapping */
+    .list-title-row .status-badge {
+        white-space: nowrap;
+    }
+
+    @@media (max-width: 576px) {
+        .list-title-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+    }
+
+
+    .dg-status.completed {
+        background: #d1f4e0;
+        color: #198754;
+    }
+
+    .dg-status.in-progress {
+        background: #fbeeba;
+        color: #fb8604;
+    }
+
+    .dg-status.draft {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .dg-status.pending {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .dg-status-completed {
+        background: #d1f4e0;
+        color: #198754;
+    }
+
+    .dg-status-in-progress {
+        background: #fbeeba;
+        color: #fb8604;
+    }
+
+    .dg-status-draft {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .dg-status-pending {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+    /* Status */
+    .Draftlist-status {
+        margin: 3px 0 0 0;
+        display: inline-block;
+        padding: 5px 13px;
+        background: #E8F0FE;
+        color: #1A73E8;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .Inprogresslist-status {
+        margin: 3px 0 0 0;
+        display: inline-block;
+        padding: 5px 13px;
+        background-color: #fef3c7;
+        color: #f57c00;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .Completedlist-status {
+        margin: 3px 0 0 0;
+        display: inline-block;
+        padding: 5px 13px;
+        background-color: rgb(209 250 229 / var(--tw-bg-opacity, 1));
+        border-color: rgb(110 231 183 / var(--tw-border-opacity, 1));
+        color: #4caf50;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    /* -------- Body Text -------- */
+    .list-details,
+    .list-date {
+        margin: 5px 0;
+        color: #555;
+        font-size: 14px;
+    }
+
+    /* -------- Footer Buttons -------- */
+    .list-footer {
+        margin-top: 18px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .view-btn,
+    .sign-btn,
+    .send-btn {
+        width: 48%;
+        padding: 10px 0;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        background: #F4F6F8;
+        transition: 0.2s;
+    }
+
+        .view-btn:hover,
+        .sign-btn:hover,
+        .send-btn:hover {
+            background: #E4E8EB;
+        }
+
+        .sign-btn i {
+            margin-right: 5px;
+        }
+
+        .send-btn i {
+            margin-right: 5px;
+        }
+
+    /* Base Container */
+    .bulk-container {
+        padding: 30px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Header */
+    .bulk-header .bulk-icon {
+        background: #0077c8;
+        color: #fff;
+        padding: 12px;
+        font-size: 20px;
+        border-radius: 10px;
+    }
+
+    .bulk-title {
+        font-size: 34px;
+        font-weight: 700;
+        margin: 0;
+        color: #1a1a1a;
+    }
+
+    .bulk-subtitle {
+        margin: 0;
+        font-size: 15px;
+        color: #64748b;
+    }
+
+    .btn-new-template,
+    .btn-bulk-sign {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(90deg, #7e22ce, #4f46e5 );
+        color: #fff;
+        border: none;
+        font-size: 15px;
+        min-height: 44px;
+        font-weight: 500;
+        padding: 0.625rem 1rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+        .btn-new-template:hover,
+        .btn-bulk-sign:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+
+    .btn-new-template {
+        color: #0ea66b;
+        background: #F6F7FB;
+        border: 1px solid #0ea66b;
+    }
+
+        .btn-new-template:hover {
+            background: #0ea66b;
+            color: #fff;
+            border: none;
+        }
+
+    .btn-bulk-sign {
+        background: #0ea66b;
+    }
+
+
+
+
+    /* Search Card */
+    .bulk-search-card {
+        background: #fff;
+        padding: 19px 19px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+        border-width: 1px;
+        border-color: var(--border);
+        margin-top: 25px;
+    }
+
+    .bulk-search {
+        width: 100%;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        padding: 4px 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+    }
+
+        .bulk-search input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+
+    /* Tabs */
+    .bulk-tabs {
+        margin-top: 25px;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+        border: 1px solid #d7d7d7; /* 👈 border here */
+    }
+
+    .tab-item {
+        padding: 12px 20px;
+        text-align: center;
+        font-size: .875rem;
+        cursor: pointer;
+        color: #414b58;
+        font-weight: 500;
+        transition: all 0.25s ease;
+        border-right: 1px solid #eaeaea;
+    }
+
+        .tab-item:last-child {
+            border-right: none;
+        }
+
+        .tab-item.active {
+            background: #f2f2f3;
+            color: black;
+            font-weight: 600;
+            border: none; /* 👈 remove active border */
+        }
+
+        .tab-item.active {
+            background: #f2f2f3;
+            box-shadow: inset 0 0 0 1px #d7d7d7;
+        }
+
+    .nolist {
+        --tw-text-opacity: 1;
+        color: rgb(209 213 219 / var(--tw-text-opacity, 1));
+        width: 5rem;
+        height: 5rem;
+        padding-top: 5rem;
+        padding-bottom: 5rem;
+    }
+
+
+    .list-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .template-card {
+        width: 100%;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+        position: relative;
+        border: 1px solid #eee;
+    }
+
+    .template-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .template-icon {
+        width: 48px;
+        height: 48px;
+        background: #009057;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 22px;
+    }
+
+    .template-info {
+        flex: 1;
+        margin-left: 15px;
+    }
+
+    .template-title {
+        margin: 0;
+        font-size: 20px;
+        color: #0f172a;
+        font-weight: 600;
+    }
+
+    .template-subtitle {
+        margin: 0;
+        margin-top: 2px;
+        font-size: 14px;
+        color: gray;
+    }
+
+    .template-menu {
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .template-body {
+        margin-top: 20px;
+        margin-bottom: 15px;
+    }
+
+    .template-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 15px;
+        color: #334155;
+    }
+
+    .positions-badge {
+        background: #eeeeee;
+        color: #052096;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+    .eseal-badge {
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+    .applied {
+        background: #e0f7ff;
+        color: #0284c7;
+    }
+
+    .not-applied {
+        background: #fbeeba;
+        color: #fb8604;
+    }
+
+
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+    .transcation-badge {
+        background: #eeeeee;
+        color: #052096;
+    }
+
+    .active-badge {
+        background: #d1fae5;
+        color: #059669;
+    }
+
+    .inactive-badge {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+
+    .templates-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+
+    .template-menu {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .menu-icon {
+        font-size: 18px;
+        color: #444;
+    }
+
+    .template-dropdown {
+        position: absolute;
+        top: 25px;
+        right: 0;
+        width: 150px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        padding: 8px 0;
+        z-index: 999;
+    }
+
+        .template-dropdown .dropdown-item {
+            padding: 8px 14px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+            .template-dropdown .dropdown-item:hover {
+                background: #f5f5f5;
+            }
+
+        .template-dropdown .delete {
+            color: #dc2626;
+        }
+
+    @@media(max-width: 1200px) {
+        .templates-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media(max-width: 768px) {
+        .templates-grid {
+            grid-template-columns: repeat(1, 1fr);
+        }
+    }
+
+    .template-created {
+        margin-top: 15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 14px;
+        color: #64748b;
+    }
+
+    .template-footer {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+
+
+    /* ---------------------------------------------------------
+                                                                   RESPONSIVE DESIGN
+                                                                ----------------------------------------------------------*/
+
+    /* Tablets - buttons stack */
+    @@media (max-width: 992px) {
+        .bulk-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+            .bulk-header .d-flex.gap-3 {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+        .btn-new-template,
+        .btn-bulk-sign {
+            width: auto;
+        }
+    }
+
+    /* Tabs → 2 per row */
+    @@media (max-width: 768px) {
+        .tab-item {
+            border-right: 1px solid #eaeaea !important;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .bulk-tabs .col-3 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
+
+    @@media (min-width: 577px) and (max-width: 768px) {
+        .dg-col-transcation {
+            min-width: 140px;
+            width: 180px;
+        }
+
+        .dg-col-status {
+            min-width: 95px;
+            width: 95px;
+        }
+    }
+
+    @@media (min-width: 992px) and (max-width: 1365px) {
+        .dg-user {
+            min-width: 380px;
+            width: 380px;
+        }
+
+        .dg-col-transcation {
+            min-width: 140px;
+            width: 180px;
+        }
+
+        .dg-col-status {
+            min-width: 95px;
+            width: 95px;
+        }
+
+        .dg-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        /* Value style */
+        .dg-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    @@media (min-width: 1366px) {
+        .dg-user {
+            min-width: 380px;
+            width: 544px;
+        }
+
+        .dg-col-transcation {
+            min-width: 140px;
+            width: 150px;
+        }
+
+        .dg-col-status {
+            min-width: 95px;
+            width: 95px;
+        }
+
+        .dg-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .dg-value {
+            width: 100%;
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    }
+
+    /* Mobile - Tabs stack full-width */
+    @@media (max-width: 576px) {
+
+        .bulk-container {
+            padding: 20px;
+        }
+
+        .bulk-title {
+            font-size: 28px;
+        }
+
+        .bulk-header {
+            text-align: left;
+        }
+
+        .bulk-tabs .col-3 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        .tab-item {
+            border-right: none !important;
+            border-bottom: 1px solid #eaeaea;
+        }
+    }
+
+    .delegation-search-card {
+        background: #fff;
+        border-radius: 12px !important;
+        padding: 20px 25px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+        border-width: 1px;
+        border-color: var(--border);
+        margin-top: 25px;
+    }
+    /* Search box */
+    @@media (max-width: 480px) {
+        .delegation-search-card {
+            padding: 14px;
+        }
+
+        .action-dropdown {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+        }
+    }
+
+    /* ---------- SHIMMER BASE ---------- */
+    .shimmer {
+        position: relative;
+        overflow: hidden;
+        background: #f0f0f0;
+        border-radius: 6px;
+    }
+
+        .shimmer::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient( 90deg, transparent, rgba(255, 255, 255, 0.6), transparent );
+            animation: shimmer 1.4s infinite;
+        }
+
+    @@keyframes shimmer {
+        100% {
+            left: 100%;
+        }
+    }
+
+    /* ---------- SHIMMER CARD ---------- */
+    .dg-card.shimmer-card {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .shimmer-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+    }
+
+    .shimmer-line {
+        height: 12px;
+        margin-top: 8px;
+        border-radius: 4px;
+    }
+
+        .shimmer-line.sm {
+            width: 80px;
+        }
+
+        .shimmer-line.md {
+            width: 140px;
+        }
+
+        .shimmer-line.lg {
+            width: 200px;
+        }
+
+    .shimmer-col {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .dg-email,
+    .dg-value {
+        white-space: nowrap;
+    }
+
+    @@media (max-width: 576px) {
+        /* Stack label above value */
+        .dg-col {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        /* Label style */
+        .dg-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        /* Value style */
+        .dg-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            white-space: nowrap;
+        }
+        /* Status badge alignment */
+        .dg-status {
+            align-self: flex-start;
+        }
+        /* Action button full width */
+        .action-dropdown {
+            width: 100%;
+        }
+
+        .action-btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    @@media (max-width: 992px) {
+        .dg-user {
+            width: 100%;
+        }
+
+        .dg-col {
+            flex: 1 1 45%;
+            min-width: unset;
+            text-align: left !important;
+        }
+
+        .action-dropdown {
+            display: flex;
+            justify-content: flex-end;
+        }
+    }
+
+    .dg-top {
+        flex-wrap: wrap;
+    }
+
+    .sender-badge {
+        color: #1f2937;
+        border-radius: 4px;
+        padding: 2px 6px;
+        margin-left: 5px;
+        font-size: 12px;
+        font-weight: 600 !important;
+    }
+
+    .sent-by {
+        display: flex;
+        align-items: center;
+        font-family: Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+        font-weight: 400;
+        font-size: 14px;
+        color: #4b5563;
+    }
+
+    .onhoverclass:hover {
+        transform: scale(1.0125); /* slight zoom */
+        box-shadow: 0 8px 18px rgba(0,0,0,0.15) !important;
+    }
+    /* ================= TEMPLATE GRID ================= */
+
+    .tpl-grid-wrap {
+        width: 100%;
+    }
+
+    .tpl-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+    }
+
+    /* tablet */
+    @@media(max-width:1200px) {
+        .tpl-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+    }
+
+    /* mobile */
+    @@media(max-width:768px) {
+        .tpl-grid {
+            grid-template-columns: repeat(1,1fr);
+        }
+    }
+
+    /* ================= TEMPLATE CARD ================= */
+
+    .tpl-card {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        overflow: hidden;
+        transition: all .25s ease;
+        animation: tplFadeUp .5s ease forwards;
+        opacity: 0;
+    }
+
+        .tpl-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 10px 22px rgba(0,0,0,0.15);
+        }
+
+    /* top blue strip */
+    .tpl-top-bar {
+        height: 6px;
+    }
+
+    /* ================= HEADER ================= */
+
+    .tpl-header {
+        display: flex;
+        gap: 8px;
+        padding: 18px 18px 10px;
+        align-items: flex-start;
+    }
+
+    .tpl-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #0ea66b;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 600;
+        box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    }
+
+    .tpl-icon {
+        flex-shrink: 0; /* 👈 VERY IMPORTANT */
+    }
+
+    .template-menu {
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .template-menu {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .tpl-title-wrap {
+        flex: 1;
+        min-width: 0; /* 👈 REQUIRED for ellipsis inside flex */
+    }
+
+    .tpl-title,
+    .tpl-sub {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        max-width: 100%;
+    }
+
+    .tpl-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tpl-label {
+        font-size: 15px;
+        color: #334155;
+    }
+
+    .tpl-sub {
+        font-size: 14px;
+        color: #64748b;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* menu */
+    .tpl-menu {
+        cursor: pointer;
+        font-size: 18px;
+        color: #475569;
+    }
+
+    /* ================= BODY ================= */
+
+    .tpl-body {
+        padding: 6px 18px 12px;
+    }
+
+    .tpl-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 14px;
+        color: #334155;
+    }
+
+    .tpl-badge {
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    /* positions */
+    .tpl-pos-notapplied {
+        background: #eef2ff;
+        color: #3730a3;
+    }
+
+    .tpl-pos-applied {
+        background: #d1f4e0;
+        color: #198754;
+    }
+    /* status */
+    .tpl-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .tpl-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* ================= CREATED ================= */
+
+    .tpl-created {
+        border-top: 1px solid #e5e7eb;
+        padding: 10px 18px;
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    /* ================= FOOTER ================= */
+
+    .tpl-footer {
+        padding: 14px 18px 18px;
+    }
+
+    .email-pill {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(90deg, #e4f5ee, #f9fffd);
+        padding: 10px 10px;
+        border-radius: 12px;
+        color: #0f172a;
+        border-radius: 12px;
+        color: #0f172a;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .email-icon {
+        font-size: 14px;
+        color: #0aa06e;
+        flex-shrink: 0;
+    }
+
+    .email-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .tpl-create-card {
+        border: 2px dashed #dbe4ff;
+        background: #f9fbff;
+        cursor: pointer;
+        transition: .25s ease;
+    }
+
+        .tpl-create-card:hover {
+            background: #eef4ff;
+            border-color: #6c7cff;
+        }
+
+    .tpl-create-inner {
+        height: 100%;
+        min-height: 210px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 24px;
+    }
+
+    .tpl-plus-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #e8edff;
+        color: #5b6cff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin-bottom: 14px;
+    }
+
+    .tpl-create-title {
+        font-weight: 600;
+        font-size: 15px;
+        color: #1f2937;
+    }
+
+    .tpl-create-sub {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+
+    @@media(max-width:576px) {
+        .email-pill {
+            font-size: 14px;
+            padding: 10px 12px;
+        }
+
+        .email-icon {
+            font-size: 18px;
+        }
+    }
+
+    .tpl-btn {
+        width: 100%;
+        background: #0ea66b;
+        border: none;
+        color: #fff;
+        font-size: 14px;
+        padding: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: .2s;
+    }
+
+        .tpl-btn:hover {
+            opacity: .9;
+            transform: translateY(-2px);
+        }
+
+    /* ================= ANIMATION ================= */
+
+    @@keyframes tplFadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .tpl-grid-wrap .is-template-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+
+    @@media (max-width:1200px) {
+        .tpl-grid-wrap .is-template-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width:768px) {
+        .tpl-grid-wrap .is-template-grid {
+            grid-template-columns: repeat(1, 1fr);
+        }
+    }
+    /* ---------- TEMPLATE SHIMMER CARD (GRID) ---------- */
+    .tpl-shimmer-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 16px;
+        height: 210px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    /* header row */
+    .tpl-shimmer-header {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .tpl-shimmer-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+
+    .tpl-shimmer-title {
+        height: 14px;
+        width: 70%;
+        border-radius: 6px;
+    }
+
+    .tpl-shimmer-sub {
+        height: 12px;
+        width: 45%;
+        border-radius: 6px;
+        margin-top: 6px;
+    }
+
+    /* body rows */
+    .tpl-shimmer-row {
+        height: 12px;
+        width: 100%;
+        border-radius: 6px;
+    }
+
+        .tpl-shimmer-row.sm {
+            width: 60%;
+        }
+
+        .tpl-shimmer-row.md {
+            width: 80%;
+        }
+
+    #showMoreBtn {
+        color: #0ea66b;
+        background: #F6F7FB;
+        border: 1px solid #0ea66b;
+    }
+
+        #showMoreBtn:hover {
+            background: #0ea66b;
+            color: #fff;
+            border: none;
+        }
+</style>
+
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+    @Html.AntiForgeryToken()
+    <!-- Header -->
+    <div class="bulk-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+
+            <div>
+                <h2 class="bulk-title">Bulk Sign</h2>
+                <p class="bulk-subtitle">Create templates and sign multiple documents at once</p>
+            </div>
+        </div>
+
+        <div class="d-flex gap-3">
+            <a asp-controller="Template" asp-action="CreateTemplate" class="btn-new-template rounded-3 py-2 fw-semibold" style="text-decoration:none">
+                <i class="fa-solid fa-plus me-2"></i> New Template
+            </a>
+
+            <button class="btn-bulk-sign rounded-3 py-2 fw-semibold" onclick="performBulkSignPage()">
+                <i class="fa-solid fa-plus me-2"></i> Bulk Sign
+            </button>
+        </div>
+    </div>
+
+    <!-- Search Box -->
+    <div class="bg-white border rounded-3 mb-4 shadow-sm bulk-search-card">
+        <div class="bulk-search rounded-3">
+            <i class="fa fa-search"></i>
+            <input type="text" id="templateSearch" placeholder="Search templates or email or transactions…" />
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bulk-tabs rounded-3 row g-0">
+        <div class="col-3 tab-item active" data-type="templates">
+            <i class="fa-solid fa-layer-group me-1"></i> Templates
+        </div>
+
+        <div class="col-3 tab-item" data-type="mylist">
+            <i class="fa-solid fa-file-lines me-1"></i> My List
+        </div>
+
+        <div class="col-3 tab-item" data-type="sent">
+            <i class="fa-solid fa-paper-plane me-1"></i> Sent
+        </div>
+
+        <div class="col-3 tab-item" data-type="received">
+            <i class="fa-solid fa-envelope me-1"></i> Received
+        </div>
+    </div>
+    <!-- No Data Message -->
+    <div id="noDataMessageTemplate" style="display:none;">
+        <div class="text-center py-5"
+             style="border-radius: 12px; background:#f9fafb; margin-top:20px;height:24rem;">
+
+            <!-- Icon Circle -->
+            <div style="
+            width:80px;
+            height:80px;
+            margin:0 auto 20px auto;
+            background:#eef1f5;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">
+                <i class="fa-regular fa-file-lines"
+                   style="font-size:32px; color:#6b7280;"></i>
+            </div>
+
+            <!-- Main Title -->
+            <h4 style="font-weight:600; color:#1f2937; margin-bottom:8px;">
+                No Bulk Sign Templates Found
+            </h4>
+
+            <!-- Subtitle -->
+            <p style="color:#6b7280; font-size:15px; margin:0;">
+                Upload documents and create your first Template to begin bulk signing.
+            </p>
+
+        </div>
+    </div>
+    <div id="noDataMessageDraft" style="display:none;">
+        <div class="text-center py-5"
+             style="border-radius: 12px; background:#f9fafb; margin-top:20px;height:24rem;">
+
+            <!-- Icon Circle -->
+            <div style="
+            width:80px;
+            height:80px;
+            margin:0 auto 20px auto;
+            background:#eef1f5;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">
+                <i class="fa-regular fa-file-lines"
+                   style="font-size:32px; color:#6b7280;"></i>
+            </div>
+
+            <!-- Main Title -->
+            <h4 style="font-weight:600; color:#1f2937; margin-bottom:8px;">
+                No Bulk Sign Transactions Found
+            </h4>
+
+            <!-- Subtitle -->
+            <p style="color:#6b7280; font-size:15px; margin:0;">
+                Upload documents and create your first transaction to begin bulk signing.
+            </p>
+
+        </div>
+    </div>
+    <div id="noDataMessageSent" style="display:none;">
+        <div class="text-center py-5"
+             style="border-radius: 12px; background:#f9fafb; margin-top:20px;height:24rem;">
+
+            <!-- Icon Circle -->
+            <div style="
+            width:80px;
+            height:80px;
+            margin:0 auto 20px auto;
+            background:#eef1f5;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">
+                <i class="fa-regular fa-file-lines"
+                   style="font-size:32px; color:#6b7280;"></i>
+            </div>
+
+            <!-- Main Title -->
+            <h4 style="font-weight:600; color:#1f2937; margin-bottom:8px;">
+                No Sent Transactions Found
+            </h4>
+
+            <!-- Subtitle -->
+            <p style="color:#6b7280; font-size:15px; margin:0;">
+                Create and send a bulk-sign transaction to request signatures from others.
+            </p>
+
+        </div>
+    </div>
+    <div id="noDataMessageReceived" style="display:none;">
+        <div class="text-center py-5"
+             style="border-radius: 12px; background:#f9fafb; margin-top:20px;height:24rem;">
+
+            <!-- Icon Circle -->
+            <div style="
+            width:80px;
+            height:80px;
+            margin:0 auto 20px auto;
+            background:#eef1f5;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">
+                <i class="fa-regular fa-file-lines"
+                   style="font-size:32px; color:#6b7280;"></i>
+            </div>
+
+            <!-- Main Title -->
+            <h4 style="font-weight:600; color:#1f2937; margin-bottom:8px;">
+                No Received Transactions Found
+            </h4>
+
+            <!-- Subtitle -->
+            <p style="color:#6b7280; font-size:15px; margin:0;">
+                No received bulk-sign transcations requiring your signature.
+            </p>
+
+        </div>
+    </div>
+    <div id="templatecontainercard" class="bg-white border mb-4 shadow-sm delegation-search-card">
+        <div class="tpl-grid-wrap">
+            <div id="templatesContainer"></div>
+        </div>
+        <div class="text-end mt-3">
+            <button id="showMoreBtn" class="btn btn-outline-primary d-none">Show More</button>
+            <button id="showLessBtn" class="btn btn-outline-secondary d-none">Show Less</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let globalData = [];         // stores active dataset
+    let currentIndex = 0;        // pagination index
+    const PAGE_SIZE = 5;         // show 6 items
+    let filteredData = [];
+
+    let activeListType = "";     // templates | mylist | sent | received
+    var viewName = '@(ViewBag.ViewName ?? "templates")';
+
+    var loginOrgId = '@OrganizationUid';
+    var loginorgUid = '@OrganizationUid';
+    var loginSuid = '@Suid';
+    var loginEmail = '@userEmail';
+
+    var bulksignPermisson = '@bulksign';
+
+    // initial render (templates)
+
+
+    // Tab click handler
+    $(document).on("click", ".tab-item", function () {
+        $(".tab-item").removeClass("active");
+        $(this).addClass("active");
+
+        let tabType = $(this).attr("data-type"); // make sure data-type exists (see HTML fix)
+        renderItems(tabType);
+    });
+    $(document).ready(function () {
+        var viewName = '@(ViewBag.ViewName ?? "templates")';
+
+        // Remove active from all
+        $(".tab-item").removeClass("active");
+
+        // Find matching tab & activate
+        var $activeTab = $('.tab-item[data-type="' + viewName + '"]');
+
+        if ($activeTab.length) {
+            $activeTab.addClass("active");
+            renderItems(viewName);
+        } else {
+            // fallback
+            $('.tab-item[data-type="templates"]').addClass("active");
+            renderItems("templates");
+        }
+    });
+
+    // renderItems chooses dataset and renders
+    function renderItems(type) {
+        $("#templatesContainer").show();
+        $("#templatecontainercard").show();
+        $("#templatesContainer").empty();
+        $("#noDataMessageDraft").hide();
+        $("#noDataMessageSent").hide();
+        $("#noDataMessageReceived").hide();
+        let html = "";
+
+        if (type === "templates") {
+
+            getTemplatelist();
+        }
+        else if (type === "mylist") {
+            getBulksignmylist();
+
+        }
+        else if (type === "sent") {
+            getBulksignsentlist();
+
+        }
+        else if (type === "received") {
+            getBulksignreceivedlist();
+        }
+
+
+    }
+
+    // dropdown logic (safer)
+    $(document).on("click", ".menu-icon", function (e) {
+        e.stopPropagation();
+        // close other dropdowns
+        $(".template-dropdown").addClass("d-none");
+        // open the dropdown in the same .template-menu
+        $(this).closest(".template-menu").find(".template-dropdown").toggleClass("d-none");
+    });
+
+    // don't close when clicking inside dropdown
+    $(document).on("click", ".template-dropdown", function (e) {
+        e.stopPropagation();
+    });
+
+    // close on outside click
+    $(document).on("click", function () {
+        $(".template-dropdown").addClass("d-none");
+    });
+    $(document).on("keyup", "#templateSearch", function () {
+
+        let value = $(this).val().toLowerCase().trim();
+
+        // 🔁 RESET SEARCH
+        if (value === "") {
+            filteredData = [...globalData];
+            resetPagination();
+            hideAllNoDataMessages();
+            return;
+        }
+
+        // 🔍 FILTER FULL DATASET
+        filteredData = globalData.filter(item => {
+
+            if (activeListType === "templates") {
+                return (
+                    (item.templateName || "").toLowerCase().includes(value) ||
+                    (item.documentName || "").toLowerCase().includes(value) ||
+                    (item.emailList?.[0] || "").toLowerCase().includes(value)
+                );
+            }
+
+            return (
+                (item.templateName || "").toLowerCase().includes(value) ||
+                (item.transaction || "").toLowerCase().includes(value) ||
+                (item.signerEmail || item.ownerEmail || "").toLowerCase().includes(value)
+            );
+        });
+        console.log(filteredData);
+
+        if (filteredData.length === 0) {
+            showNoData(activeListType);
+        } else {
+            hideAllNoDataMessages();
+        }
+        resetPagination();
+
+    });
+
+    function resetPagination() {
+        $("#templatesContainer").empty();
+        currentIndex = 0;
+        loadMoreItems();
+    }
+
+    function togglePaginationButtons() {
+
+        // ❌ No pagination needed at all
+        if (filteredData.length <= PAGE_SIZE) {
+            $("#showMoreBtn").addClass("d-none");
+            $("#showLessBtn").addClass("d-none");
+            return;
+        }
+
+        // ✅ More items exist
+        if (currentIndex >= filteredData.length) {
+            $("#showMoreBtn").addClass("d-none");
+            $("#showLessBtn").removeClass("d-none");
+        } else {
+            $("#showMoreBtn").removeClass("d-none");
+            $("#showLessBtn").addClass("d-none");
+        }
+    }
+
+
+    function hideAllNoDataMessages() {
+        $("#noDataMessageTemplate, #noDataMessageDraft, #noDataMessageSent, #noDataMessageReceived").hide();
+    }
+
+    function showNoData(type) {
+        hideAllNoDataMessages();
+        $("#templatesContainer").hide();
+        $("#templatecontainercard").hide();
+        $("#showMoreBtn, #showLessBtn").addClass("d-none");
+
+        if (type === "templates") $("#noDataMessageTemplate").show();
+        if (type === "mylist") $("#noDataMessageDraft").show();
+        if (type === "sent") $("#noDataMessageSent").show();
+        if (type === "received") $("#noDataMessageReceived").show();
+    }
+
+    function handleEditTemplate(templateId) {
+        document.getElementById("networkOverlay").style.display = "block";
+        window.location.href = '@Url.Action("GetTemplateDetails", "Template")' + `?templateId=${templateId}`;
+
+    }
+    function handlePreview(templateId) {
+        document.getElementById("networkOverlay").style.display = "block";
+        window.location.href = '@Url.Action("Preview", "Template")' + `?templateId=${templateId}`;
+
+    }
+    function showLessItems() {
+        $("#templatesContainer").empty();
+        currentIndex = 0;
+        loadMoreItems();
+
+        if (globalData.length > PAGE_SIZE) {
+            $("#showMoreBtn").removeClass("d-none");
+        }
+
+        $("#showLessBtn").addClass("d-none");
+    }
+    function formatDateToDDMMYYYY(dateString) {
+        if (!dateString) return "";
+
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+        const year = date.getFullYear();
+
+        return `${day}/${month}/${year}`;
+    }
+
+    function convertToLocalTime(serverTime) {
+        // Parse the server-sent time (with offset) into a Date object
+        const date = new Date(serverTime);
+
+        // Convert to user's local time
+        const localTime = date.toLocaleString("en-US", { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+
+        return localTime;
+    }
+    function updateTimestamps() {
+        document.querySelectorAll(".convert-time").forEach(function (element) {
+            const serverTime = element.getAttribute("data-timestamp");
+            if (serverTime) {
+                const localTime = convertToLocalTime(serverTime);
+                element.textContent = formatDateToDDMMYYYY(localTime);
+
+            }
+        });
+    }
+    function loadMoreItems() {
+
+        let endIndex = Math.min(currentIndex + PAGE_SIZE, filteredData.length);
+        let items = filteredData.slice(currentIndex, endIndex);
+        console.log(items);
+        const $container = $("#templatesContainer");
+        $container.show();
+        $("#templatecontainercard").show();
+        $("#showMoreBtn, #showLessBtn").removeClass("d-none");
+
+        $container.find(".tpl-create-card").remove();
+
+        items.forEach((item, i) => {
+            let cardHtml =
+                activeListType === "templates"
+                    ? generateTemplateCard(item, currentIndex + i)
+                    : generateCardHtml(item);
+
+            $container.append(cardHtml);
+        });
+
+        if (activeListType === "templates") {
+            $container.prepend(generateCreateTemplateCard());
+        }
+
+        updateTimestamps();
+        currentIndex = endIndex;
+
+        togglePaginationButtons();
+    }
+
+
+    function cropFileNames(full) {
+
+        // Adjust crop lengths based on screen width
+        let start, end;
+
+        const width = window.innerWidth;
+
+        if (width >= 1300) {
+            start = 15;
+            end = 15;
+        } else if (width >= 768) {
+            start = 7;
+            end = 7;
+        }
+        else if (width >= 460) {
+            start = 10;
+            end = 10;
+        }
+        else { // Small screens (mobiles)
+            start = 8;
+            end = 8;
+        }
+
+        if (full && full.length > start + end) {
+            return full.slice(0, start) + '...' + full.slice(-end);
+        } else {
+            return full
+        }
+
+
+
+    }
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.actions-dropdown')) {
+            document.querySelectorAll('.actions-menu').forEach(m => m.style.display = 'none');
+        }
+    });
+    function toggleActions(btn) {
+        document.querySelectorAll('.actions-menu').forEach(m => {
+            if (m !== btn.nextElementSibling) m.style.display = 'none';
+        });
+
+        const menu = btn.nextElementSibling;
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+
+
+    function generateCreateTemplateCard() {
+        return `
+                    <div class="tpl-card tpl-create-card" id="emptycard">
+
+                        <div class="tpl-create-inner">
+                            <div class="tpl-plus-circle">
+                                <i class="fa-solid fa-plus"></i>
+                            </div>
+
+                            <div class="tpl-create-title">Create Template</div>
+                            <div class="tpl-create-sub">
+                                Start by adding a new signing template for reuse.
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+    }
+
+
+    function renderPaginatedList(data, listType) {
+        activeListType = listType;
+        globalData = data;
+        filteredData = [...data]; // 🔥 IMPORTANT
+        currentIndex = 0;
+
+        $("#templatesContainer").empty().show();
+        $("#templatecontainercard").show();
+
+        if (listType === "templates") {
+            $("#templatesContainer").addClass("is-template-grid");
+        } else {
+            $("#templatesContainer").removeClass("is-template-grid");
+        }
+
+        hideAllNoDataMessages();
+
+        if (filteredData.length === 0) {
+
+            showNoData(listType);
+            return;
+        }
+
+        loadMoreItems();
+
+        togglePaginationButtons();
+    }
+
+
+    $(document).on("click", "#showMoreBtn", loadMoreItems);
+    $(document).on("click", "#showLessBtn", showLessItems);
+
+    function renderTemplatesList(data) {
+        // generateDelegationCards(dummyData);
+
+        renderPaginatedList(data, "templates");
+    }
+
+    function renderBulksignMyList(data) {
+        renderPaginatedList(data, "mylist");
+    }
+
+    function renderBulksignSentList(data) {
+
+        renderPaginatedList(data, "sent");
+    }
+
+    function renderBulksignReceivedList(data) {
+        renderPaginatedList(data, "received");
+    }
+    function showTemplateShimmer(count = 6) {
+
+        const wrapper = document.getElementById("templatesContainer");
+        wrapper.innerHTML = "";
+
+        // keep grid layout
+        wrapper.classList.add("is-template-grid");
+
+        for (let i = 0; i < count; i++) {
+
+            const card = document.createElement("div");
+            card.className = "tpl-shimmer-card shadow-sm";
+
+            card.innerHTML = `
+                        <div class="tpl-shimmer-header">
+                            <div class="shimmer tpl-shimmer-icon"></div>
+                            <div style="flex:1;min-width:0">
+                                <div class="shimmer tpl-shimmer-title"></div>
+                                <div class="shimmer tpl-shimmer-sub"></div>
+                            </div>
+                        </div>
+
+                        <div class="shimmer tpl-shimmer-row md"></div>
+                        <div class="shimmer tpl-shimmer-row sm"></div>
+                        <div class="shimmer tpl-shimmer-row md"></div>
+                        <div class="shimmer tpl-shimmer-row sm"></div>
+                    `;
+
+            wrapper.appendChild(card);
+        }
+    }
+
+    function showShimmer(count = 4) {
+        const wrapper = document.getElementById("templatesContainer");
+        wrapper.innerHTML = "";
+        wrapper.classList.remove("is-template-grid");
+
+        for (let i = 0; i < count; i++) {
+            const shimmerCard = document.createElement("div");
+            shimmerCard.className = "dg-card shimmer-card shadow-sm";
+
+            shimmerCard.innerHTML = `
+                                                        <div class="dg-top">
+
+                                                            <div class="dg-user">
+                                                                <div class="shimmer shimmer-avatar"></div>
+                                                                <div>
+                                                                    <div class="shimmer shimmer-line md"></div>
+                                                                    <div class="shimmer shimmer-line sm"></div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="dg-col shimmer-col">
+                                                                <div class="shimmer shimmer-line sm"></div>
+                                                                <div class="shimmer shimmer-line md"></div>
+                                                            </div>
+
+                                                            <div class="dg-col shimmer-col">
+                                                                <div class="shimmer shimmer-line sm"></div>
+                                                                <div class="shimmer shimmer-line md"></div>
+                                                            </div>
+
+                                                            <div class="dg-col shimmer-col">
+                                                                <div class="shimmer shimmer-line sm"></div>
+                                                                <div class="shimmer shimmer-line sm"></div>
+                                                            </div>
+
+                                                        </div>
+                                                    `;
+
+            wrapper.appendChild(shimmerCard);
+        }
+    }
+
+
+    function getTemplatelist() {
+        showTemplateShimmer(6);
+
+        $.ajax({
+            url: '@Url.Action("Templateslist", "Template")',
+            type: "GET",
+            success: function (response) {
+
+                if (!response.success) {
+                    console.error(response.message);
+                    return;
+                }
+
+                // Extract returned data
+                let templatesdata = response.result.templateList;
+
+                console.log("Templates Data:", templatesdata);
+
+                // Now render UI
+                renderTemplatesList(templatesdata);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching data:", error);
+            }
+        });
+    }
+
+    function getBulksignmylist() {
+        showShimmer();
+        $.ajax({
+            url: '@Url.Action("Draftlist", "BulkSign")',
+            type: "GET",
+            success: function (response) {
+
+                if (!response.success) {
+                    console.error(response.message);
+                    return;
+                }
+
+                // Extract returned data
+                let myList = response.data.draftDocuments;
+
+                console.log("MyList Draft Data:", myList);
+
+                // Now render UI
+                renderBulksignMyList(myList);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching data:", error);
+            }
+        });
+    }
+
+
+    function getBulksignsentlist() {
+        showShimmer();
+        $.ajax({
+            url: '@Url.Action("Sentlist", "BulkSign")',
+            type: "GET",
+            success: function (response) {
+
+                if (!response.success) {
+                    console.error(response.message);
+                    return;
+                }
+
+                // Extract returned data
+                let sentList = response.data.sentDocuments;
+
+                console.log("SentList Data:", sentList);
+
+                // Now render UI
+                renderBulksignSentList(sentList);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching data:", error);
+            }
+        });
+    }
+    function getBulksignreceivedlist() {
+        showShimmer();
+        $.ajax({
+            url: '@Url.Action("Receivedlist", "BulkSign")',
+            type: "GET",
+            success: function (response) {
+
+                if (!response.success) {
+                    console.error(response.message);
+                    return;
+                }
+
+                // Extract returned data
+                let receivedList = response.data.receivedDocuments;
+
+                console.log("receivedList Data:", receivedList);
+
+                // Now render UI
+                renderBulksignReceivedList(receivedList);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching data:", error);
+            }
+        });
+    }
+
+
+
+    function generateCardHtml(item) {
+
+        let createdAt = item.createdAt || "-";
+        let status = (item.status || "").toLowerCase();
+        let signerEmail = item.signerEmail || item.ownerEmail || "-";
+        let templateName = cropFileNames(item.templateName) || "-";
+        let transcationName = cropFileNames(item.transaction) || "-";
+        let documentName = cropFileNames(item.documentName) || "-";
+        let avatarLetter = templateName.charAt(0).toUpperCase();
+        let esealText = item.esealAnnotations ? "Applied" : "Not Applied";
+
+        let viewBtn = "";
+        let signBtn = "";
+        let statusele = "";
+        let emailele = "";
+        if (status === "draft") {
+            statusele = `  <div class="simple-sub ">
+                                                <span class="simple-status">${status}</span>
+                                 </div>
+                         `;
+        } else if (status === "pending") {
+            statusele = `  <div class="simple-sub ">
+                                                    <span class="simple-status dg-status-pending">${status}</span>
+                                     </div>
+                             `;
+        } else if (status === "in progress") {
+            statusele = `  <div class="simple-sub ">
+                                                    <span class="simple-status dg-status-in-progress">${status}</span>
+                                     </div>
+                             `;
+        } else if (status === "completed") {
+            statusele = `  <div class="simple-sub ">
+                                                    <span class="simple-status dg-status-completed">${status}</span>
+                                     </div>
+                             `;
+        } else {
+            statusele = `  <div class="simple-sub">
+                                                <span class="simple-status">${status}</span>
+                                     </div>
+                             `;
+        }
+        /* ---------------- STATUS + ACTION LOGIC (UNCHANGED) ---------------- */
+
+        if (activeListType === "sent") {
+
+            emailele = `  <div class="simple-sub">
+
+                                       <span class="label">To:</span>&nbsp; ${signerEmail}
+                                </div>`
+            if (status === "draft") {
+                signBtn = `
+                                        <button onclick="SendRequest('${item.corelationId}')">
+                                                <i class="fa-solid fa-paper-plane me-1"></i> Send
+                                        </button>`;
+                viewBtn = `
+                                        <button onclick="TemplateDetailsSentList('${item.corelationId}')">
+                                            <i class="fa fa-eye"></i> View
+                                        </button>`;
+
+            }
+            else if (status === "pending") {
+                signBtn = `
+                                        <button class="disabled-blur">
+                                                <i class="fa-solid fa-paper-plane me-1"></i> Send
+                                        </button>`;
+                viewBtn = `
+                                        <button onclick="TemplateDetailsSentList('${item.corelationId}')">
+                                            <i class="fa fa-eye"></i> View
+                                        </button>`;
+
+            } else if (status === "in progress" || status === "completed") {
+                signBtn = `
+                                            <button class="disabled-blur">
+                                                    <i class="fa-solid fa-paper-plane me-1"></i> Send
+                                            </button>`;
+                viewBtn = `
+                                            <button onclick="handleBulkSigningStatus('${item.corelationId}')">
+                                            <i class="fa fa-eye"></i> View
+                                        </button>`;
+
+            }
+        }
+
+        else if (activeListType === "mylist") {
+
+            emailele = `  <div class="simple-sub">
+
+                                           <span class="label">Email:</span>&nbsp; ${signerEmail}
+                                    </div>`
+            if (status === "draft" || status === "pending") {
+                signBtn = `
+                                        <button
+                                            data-correlation-id="${item.corelationId}"
+                                            data-sign='${encodeURIComponent(JSON.stringify(item.signatureAnnotations))}'
+                                            data-eseal='${encodeURIComponent(JSON.stringify(item.esealAnnotations))}'
+                                            onclick="handleBulkSignClick(this)">
+                                            <i class="fa fa-pencil"></i> Sign
+                                        </button>`;
+                viewBtn = `
+                                        <button onclick="TemplateDetailsMyList('${item.corelationId}')">
+                                            <i class="fa fa-eye"></i> View
+                                        </button>`;
+
+            } else {
+                signBtn = `
+                                        <button class="disabled-blur">
+                                            <i class="fa fa-pencil"></i> Sign
+                                        </button>`;
+                viewBtn = `
+                                            <button onclick="handleBulkSigningStatus('${item.corelationId}')">
+                                            <i class="fa fa-eye"></i> View
+                                        </button>`;
+
+            }
+        }
+
+        else { // received
+
+            emailele = `  <div class="simple-sub">
+
+                                           <span class="label">From:</span>&nbsp; ${signerEmail}
+                                    </div>`
+            if (status === "draft" || status === "pending") {
+                signBtn = `
+                                        <button
+                                            data-correlation-id="${item.corelationId}"
+                                            data-sign='${encodeURIComponent(JSON.stringify(item.signatureAnnotations))}'
+                                            data-eseal='${encodeURIComponent(JSON.stringify(item.esealAnnotations))}'
+                                            onclick="handleBulkSignClick(this)">
+                                            <i class="fa fa-pencil"></i> Sign
+                                        </button>`;
+                viewBtn = `
+                                        <button onclick="TemplateDetailsReceivedList('${item.corelationId}')">
+                                            <i class="fa fa-eye"></i> View
+                                        </button>`;
+
+            } else {
+                signBtn = `
+                                        <button class="disabled-blur">
+                                            <i class="fa fa-pencil"></i> Sign
+                                        </button>`;
+                viewBtn = `
+                                                <button onclick="handleBulkSigningStatus('${item.corelationId}')">
+                                            <i class="fa fa-eye"></i> View
+                                        </button>`;
+
+            }
+        }
+
+        /* ---------------- NEW CARD UI ---------------- */
+
+        return `
+                                    <div class="simple-card onhoverclass" style="box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;">
+
+                                    <!-- TOP -->
+                                    <div class="simple-card-top">
+
+                                        <div class="simple-left">
+                                            <div class="simple-avatar">${avatarLetter}</div>
+
+                                            <div>
+                                                <div class="simple-title">${templateName}</div>
+                                                        <div class="simple-sub">
+                                                        <span class="label">Transcation Name:</span>
+                                                        <span>
+                                                        ${transcationName}</span>
+                                                        </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="simple-right">
+
+                                             ${statusele}
+                                                   <div class="created-row">
+                                                            <span class="label">Created:</span>
+                                                                <span class="convert-time" data-timestamp="${createdAt}" style="font-size: 13px;font-weight: 500;">
+                                                                ${createdAt}
+                                                            </span>
+                                                        </div>
+
+
+                                        </div>
+
+                                    </div>
+
+                                    <!-- BOTTOM -->
+                                    <div class="bottompart">
+
+                                        <div class="bottom-left">
+
+                                                ${emailele}
+                                                    <div class="eseal-row d-none">
+                                                        <span class="label">Eseal:</span>
+                                                        <span class="simple-status">${esealText}</span>
+                                                    </div>
+
+                                        </div>
+
+                                        <div class="simple-actions">
+                                            ${viewBtn}
+                                            ${signBtn}
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            `;
+    }
+
+
+    $(document).on("click", ".action-btn", function (e) {
+        e.stopPropagation();
+
+        // Close other open dropdowns
+        $(".dropdown-menu").not($(this).next()).removeClass("show");
+
+        // Toggle current dropdown
+        $(this).next(".dropdown-menu").toggleClass("show");
+    });
+
+    // Close dropdown when clicking outside
+    $(document).on("click", function () {
+        $(".dropdown-menu").removeClass("show");
+    });
+
+
+
+    function generateTemplateCard(item, index) {
+
+        let createdAt = item.createdAt || "-";
+        let templateName = cropFileNames(item.templateName) || "-";
+        let avatarLetter = templateName.charAt(0).toUpperCase();
+        let signerEmail = item.emailList?.[0] || "-";
+        let positions = item.signaturePositions || item.positions || 0;
+        let status = item.isActive ? "Active" : "Inactive";
+        let esealText = item.esealAnnotations ? "Applied" : "Not Applied";
+        let esealclass = item.esealAnnotations ? "tpl-pos-applied" : "tpl-pos-notapplied";
+        let statusClass = item.isActive ? "tpl-active" : "tpl-inactive";
+
+        return `
+                                <div class="tpl-card" style="animation-delay:${index * 80}ms">
+
+                                    <div class="tpl-top-bar"></div>
+
+                                    <div class="tpl-header">
+                                        <div class="tpl-icon">${avatarLetter}</div>
+
+                                            <div class="tpl-title-wrap">
+                                                <div class="tpl-label">Template Name</div>
+
+                                                <div class="tpl-title" title="${templateName}">
+                                                    ${templateName}
+                                                </div>
+                                            </div>
+
+
+                                        <div class="template-menu">
+                                        <i class="fa-solid fa-ellipsis-vertical menu-icon"></i>
+                                        <div class="template-dropdown d-none">
+                                                <div class="dropdown-item preview-template-btn" data-templateid="${item._id}"><i class="fa-regular fa-eye"></i> Preview</div>
+                                                <div class="dropdown-item edit-template-btn" data-templateid="${item._id}"><i class="fa-regular fa-pen-to-square"></i> Edit</div>
+                                                <div class="dropdown-item use-template-btn" data-templateid="${item._id}"><i class="fa-regular fa-copy"></i> Use Template</div>
+                                        </div>
+                                    </div>
+                                    </div>
+
+                                    <div class="tpl-body">
+
+                                        <div class="tpl-row">
+                                            <span>Eseal</span>
+                                                <span class="tpl-badge ${esealclass}">${esealText}</span>
+                                        </div>
+
+                                        <div class="tpl-row">
+                                             <span>Created</span>
+                                                     <span class="tpl-badge convert-time" data-timestamp="${createdAt}" >${createdAt}</span>
+                                        </div>
+
+
+
+                                    </div>
+
+                                         <div class="tpl-body">
+                                           <div class="email-pill">
+                                                    <span class="email-icon material-symbols-outlined"><i class='far fa-envelope'></i></span>
+                                                    <span class="email-text">${signerEmail}</span>
+                                            </div>
+                                            </div>
+
+
+                                </div>
+                            `;
+    }
+
+
+    // dropdown logic (safer)
+    $(document).on("click", ".menu-icon", function (e) {
+        e.stopPropagation();
+        // close other dropdowns
+        $(".template-dropdown").addClass("d-none");
+        // open the dropdown in the same .template-menu
+        $(this).closest(".template-menu").find(".template-dropdown").toggleClass("d-none");
+    });
+
+    // don't close when clicking inside dropdown
+    $(document).on("click", ".template-dropdown", function (e) {
+        e.stopPropagation();
+    });
+
+    // close on outside click
+    $(document).on("click", function () {
+        $(".template-dropdown").addClass("d-none");
+    });
+
+    $(document).on("click", ".use-template-btn", function () {
+        let templateId = $(this).data("templateid");
+        if (!templateId) {
+            console.error("Template ID missing!");
+            return;
+        }
+
+        window.location.href = `/BulkSign/UploadFilesNew?templateId=${templateId}`;
+    });
+    $(document).on("click", ".edit-template-btn", function () {
+        let templateId = $(this).data("templateid");
+        if (!templateId) {
+            console.error("Template ID missing!");
+            return;
+        }
+
+        handleEditTemplate(templateId);
+    });
+    $(document).on("click", ".preview-template-btn", function () {
+        let templateId = $(this).data("templateid");
+        if (!templateId) {
+            console.error("Template ID missing!");
+            return;
+        }
+
+        handlePreview(templateId);
+    });
+    $(document).on("click", "#emptycard", function () {
+
+        window.location.href = '@Url.Action("CreateTemplate", "Template")';
+
+    });
+    function performBulkSignPage() {
+        window.location.href = '@Url.Action("UploadFilesNew", "BulkSign")';
+    }
+    function handleBulkSigningStatus(correlationId) {
+
+        document.getElementById("networkOverlay").style.display = "block";
+        window.location.href = '@Url.Action("BulkSigningStatus", "BulkSign")' + `?correlationId=${correlationId}`;
+    }
+    function TemplateDetailsReceivedList(corelationId) {
+
+        document.getElementById("networkOverlay").style.display = "block";
+        $.ajax({
+            type: 'POST',
+            headers: {
+
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+            },
+            url: '@Url.Action("TemplateDetailsReceivedList", "BulkSign")',
+            data: { CorelationId: corelationId },
+            success: function (response) {
+                if (response.success) {
+
+                    // Handle success - redirect or display files
+                    window.location.href = response.redirectUrl; // Assuming you return a URL to redirect
+                } else {
+                    document.getElementById("networkOverlay").style.display = "none";
+
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: response.message,
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                ajaxErrorHandler(xhr, status, error);
+                resolve({ success: false, message: 'Error while getting template details' });
+            },
+        });
+    }
+    //handle function on click of view button
+    function TemplateDetailsSentList(corelationId) {
+
+        document.getElementById("networkOverlay").style.display = "block";
+        $.ajax({
+            type: 'POST',
+            headers: {
+
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+            },
+            url: '@Url.Action("TemplateDetailsSentList", "BulkSign")',
+            data: { CorelationId: corelationId },
+            success: function (response) {
+                if (response.success) {
+
+                    // Handle success - redirect or display files
+                    window.location.href = response.redirectUrl; // Assuming you return a URL to redirect
+                } else {
+                    document.getElementById("networkOverlay").style.display = "none";
+
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: response.message,
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                ajaxErrorHandler(xhr, status, error);
+                resolve({ success: false, message: 'Error while getting template details' });
+            },
+        });
+    }
+    function TemplateDetailsMyList(corelationId) {
+
+        document.getElementById("networkOverlay").style.display = "block";
+        $.ajax({
+            type: 'POST',
+            headers: {
+
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+            },
+            url: '@Url.Action("TemplateDetailsMyList", "BulkSign")',
+            data: { CorelationId: corelationId },
+            success: function (response) {
+                if (response.success) {
+
+                    // Handle success - redirect or display files
+                    window.location.href = response.redirectUrl; // Assuming you return a URL to redirect
+                } else {
+                    document.getElementById("networkOverlay").style.display = "none";
+
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: response.message,
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                ajaxErrorHandler(xhr, status, error);
+                resolve({ success: false, message: 'Error while getting template details' });
+            },
+        });
+    }
+    // Overlay function for showing loader
+    function showOverlay(matchedEsealData, matchedSignData) {
+        if (matchedEsealData == null && matchedSignData !== null) {
+            $('#overlay8').css('display', 'flex');
+        } else if (matchedEsealData !== null && matchedSignData === null) {
+            $('#overlay6').css('display', 'flex');
+
+        } else if (matchedEsealData !== null && matchedSignData !== null) {
+            $('#overlay7').css('display', 'flex');
+
+        } else {
+            $('#overlay8').css('display', 'flex');
+
+        }
+    }
+    // Overlay function for hiding loader
+    function hideOverlay(matchedEsealData, matchedSignData) {
+        if (matchedEsealData == null && matchedSignData !== null) {
+            $('#overlay8').hide();
+        } else if (matchedEsealData !== null && matchedSignData === null) {
+            $('#overlay6').hide();
+
+        } else if (matchedEsealData !== null && matchedSignData !== null) {
+            $('#overlay7').hide();
+        } else {
+            $('#overlay8').hide();
+
+        }
+
+    }
+    function handleBulkSignClick(btn) {
+        const correlationId = btn.dataset.correlationId;
+
+        const signCoordinates = btn.dataset.sign
+            ? JSON.parse(decodeURIComponent(btn.dataset.sign))
+            : null;
+
+        const esealCoordinates = btn.dataset.eseal
+            ? JSON.parse(decodeURIComponent(btn.dataset.eseal))
+            : null;
+
+        PerformBulkSign(correlationId, signCoordinates, esealCoordinates);
+    }
+
+    // function to handle sign  button onclick
+    async function PerformBulkSign(CorelationId, signCordinates, esealcorddata) {
+        document.getElementById('overlay6').style.display = 'flex';
+        if (bulksignPermisson !== 'False') {
+            if (esealcorddata !== null && esealcorddata !== '') {
+                var responseFlag = true;
+
+                try {
+                    const response = await $.ajax({
+                        url: '@Url.Action("GetOrganizationStatus", "Documents")',
+                        type: 'GET',
+                        dataType: 'json',
+                        data: { loginorgUid: loginOrgId }
+                    });
+
+                    if (!response.success) {
+                        document.getElementById('overlay6').style.display = 'none';
+                        swal({
+                            type: 'info',
+                            title: 'Info',
+                            text: 'You cannot perform the eSeal operation, please contact your organization.',
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = '@Url.Action("Index", "BulkSign")?viewName=' + viewName;
+                            }
+                        });
+                        responseFlag = false;
+                    } else {
+                        var delegation_req_data = {
+                            id: loginorgUid,
+                            suid: loginSuid,
+                            email: loginEmail,
+                        };
+
+                        // Await the response from delegation check
+                        var delegation_response = await handle_delegation_orgid_suid_selfloginuser(delegation_req_data);
+
+                        if (delegation_response != undefined && delegation_response.listdata.length > 0) {
+                            document.getElementById('overlay6').style.display = 'none';
+                            swal({
+                                type: 'info',
+                                title: 'Info',
+                                text: "Signing cannot be performed because there is an active signature delegation",
+                            });
+                            return false; // Stop further execution
+                        } else {
+                            responseFlag = true;
+                            PerformBulkSigning(CorelationId, signCordinates, esealcorddata);
+                        }
+                    }
+                } catch (error) {
+                    document.getElementById('overlay6').style.display = 'none';
+                    ajaxErrorHandler(error);
+                }
+            } else {
+                var delegation_req_data = {
+                    id: loginorgUid,
+                    suid: loginSuid,
+                    email: loginEmail,
+                };
+
+                // Await the response from delegation check
+                var delegation_response = await handle_delegation_orgid_suid_selfloginuser(delegation_req_data);
+
+                if (delegation_response != undefined && delegation_response.listdata.length > 0) {
+
+                    swal({
+                        type: 'info',
+                        title: 'Info',
+                        text: "Signing cannot be performed because there is an active signature delegation",
+                    });
+                    return false; // Stop further execution
+                } else {
+                    var correlationId = CorelationId;
+                    PerformBulkSigning(correlationId, signCordinates, esealcorddata);
+                }
+            }
+        } else {
+            swal({
+                title: "Info",
+                text: "You don't have Bulk Sign permission",
+                type: "info",
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    window.location.href = '@Url.Action("Index", "BulkSign")?viewName=' + viewName;
+                }
+            });
+        }
+    }
+
+    async function handle_delegation_orgid_suid_selfloginuser(delegation_req_data) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("GetDelegationbyorgidsuid", "Documents")',
+                data: {
+                    organizationId: delegation_req_data.id,
+                    suid: delegation_req_data.suid
+                },
+                beforeSend: function () {
+                    $('#overlay').show();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                },
+                success: function (response) {
+                    if (response.success === true) {
+                        var result_list = response.result;
+                        var swal_list = [];
+                        var list_data = [];
+
+                        for (var i = 0; i < result_list.length; i++) {
+                            var obj_data = {
+                                email: result_list[i].delegateeEmail,
+                                suid: result_list[i].delegateeSuid,
+                            };
+                            swal_list.push(result_list[i].delegateeEmail);
+                            list_data.push(obj_data);
+                        }
+
+                        let response_data_obj = {
+                            swallist: swal_list,
+                            listdata: list_data,
+                            delegateeid: response.result[0]?.delegationId || '',
+                        };
+
+                        resolve(response_data_obj);
+                    } else {
+                        swal({
+                            title: "Error",
+                            text: response.message || "Unknown error occurred",
+                            type: "error",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = '@Url.Action("Index", "BulkSign")';
+                            }
+                        });
+                        resolve(false);
+                    }
+                },
+                error: function (error) {
+                    ajaxErrorHandler(error);
+                    resolve(false);
+                }
+            });
+        });
+    }
+
+
+    function PerformBulkSigning(correlationId, signcord, esealcord) {
+
+        $.ajax({
+            url: '@Url.Action("PerformBulkSign", "BulkSign")',
+            method: 'POST',
+            headers: {
+
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+            },
+            contentType: "application/json",
+            data: JSON.stringify(correlationId),
+            beforeSend: function () {
+                showOverlay(esealcord, signcord);
+            },
+            complete: function () {
+                hideOverlay(esealcord, signcord);
+            },
+            success: function (response) {
+                document.getElementById('overlay6').style.display = 'none';
+                if (response.success == false) {
+                    swal({
+                        type: 'info',
+                        title: "Server Message",
+                        text: response.message,
+                        showCancelButton: true,
+                        confirmButtonText: 'Retry',
+                        closeOnConfirm: true
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            PerformBulkSign(correlationId, signcord, esealcord);
+                        }
+                    });
+                }
+                else {
+                    document.getElementById('overlay6').style.display = 'none';
+
+                    swal({
+                        title: "info",
+                        text: "Document Signing is initiated.",
+                        type: "info",
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.href = '@Url.Action("BulkSigningStatus", "BulkSign")' + '?correlationId=' + correlationId;
+
+                        }
+                    });
+
+                }
+            },
+            error: ajaxErrorHandler
+        });
+    }
+
+
+
+    // function to handle sendrequest button onclick
+    function SendRequest(CorelationId) {
+        var correlationId = CorelationId;
+        $.ajax({
+            url: '@Url.Action("SendRequest", "BulkSign")',
+            method: 'POST',
+            headers: {
+
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+            },
+            contentType: "application/json",
+            data: JSON.stringify(correlationId),
+            beforeSend: function () {
+                $('#overlay').show();
+            },
+            complete: function () {
+                $('#overlay').hide();
+            },
+            success: function (response) {
+                if (response.success == false) {
+                    swal({
+                        type: 'error',
+                        title: "Send Request",
+                        text: response.message,
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            //window.location.href = "/BulkSign/GetBulkSignList";
+                        }
+                    });
+
+                }
+                else {
+                    swal({
+                        type: 'success',
+                        title: "Send Request",
+                        text: "Successfully sent",
+                        showCancelButton: false,
+                        closeOnConfirm: true
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            getBulksignsentlist();
+                        }
+                    });
+                }
+
+
+            },
+            error: ajaxErrorHandler
+        });
+    }
+
+</script>
+

@@ -1,0 +1,809 @@
+﻿@model SigningPortal.Core.Domain.Services.Communication.Authentication.AuthenticateUserResponse;
+@using Newtonsoft.Json;
+@{
+    Layout = null;
+    var name = Model.name;
+    var firstName = Model.firstName;
+    var lastName = Model.lastName;
+    var email = Model.email;
+    var accessToken = Model.accessToken;
+    var idp_token = Model.idp_token;
+    var suid = Model.suid;
+    var last_login = Model.last_login;
+    var allowAccountSelection = Model.allowAccountSelection;
+    var allowSelfAccountSelection = Model.allowSelfAccountSelection;
+    var organizationId = Model.orgnizationId;
+    var organizationName = Model.orgnizationName;
+    var mailList = Model.SelfEmails;
+    var serializedMailList = Newtonsoft.Json.JsonConvert.SerializeObject(Model.SelfEmails);
+    var serializedOrganizationList = Newtonsoft.Json.JsonConvert.SerializeObject(Model.OrgDetailsList);
+    var expires_in = Model.expires_in;
+
+}
+@inject IConfiguration Configuration
+@{
+    var currentStaging = Configuration["CurrentStaging"];
+
+}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@currentStaging</title>
+    <link rel="icon" type="image/x-icon" href="@Url.Content($"~/Images_change/{currentStaging}/favicon.png")" asp-append-version="true" />
+    <link rel="stylesheet" href="~/local-cdns/Shared/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <link href="~/local-cdns/Shared/fonts/manrope/manrope.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <style>
+        /* ===== PAGE LAYOUT ===== */
+
+        body {
+            background: #ffffff;
+            color: #1a202c;
+            margin: 0;
+        }
+
+        main {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .page-container {
+            width: 100%;
+            max-width: 1024px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        /* Wrapper */
+        .signing-title-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem; /* same as gap-3 */
+            text-align: center;
+            animation: fadeInUp 0.6s ease-out both;
+        }
+
+        /* Title */
+        .signing-title {
+            color: #1f2933; /* equivalent to text-high-contrast */
+            font-size: 2.25rem; /* text-4xl */
+            margin: 0rem 2rem 2rem 2rem;
+            font-weight: 600; /* font-black */
+            line-height: 1.25; /* leading-tight */
+            letter-spacing: -0.033em;
+        }
+
+        /* Responsive font size (md:text-5xl) */
+        @@media (min-width: 768px) {
+            .signing-title {
+                font-size: 2.25rem;
+            }
+        }
+
+        /* Dark mode support */
+        .dark .signing-title {
+            color: #ffffff;
+        }
+
+        /* Fade-in-up animation */
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== TITLE ===== */
+
+        .page-title {
+            text-align: center;
+            font-size: 44px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        /* ===== CARD GRID ===== */
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+        }
+
+        @@media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== COMMON CARD ===== */
+
+        .select-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+            .select-card.active {
+                transform: translateY(-6px);
+                box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            }
+
+        /* ===== CARD HEADER (ICON AREA) ===== */
+
+        .card-header {
+            height: 160px;
+            width: 100%;
+            padding-top: 24px;
+            display: flex;
+            border: none;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient( to bottom, rgba(33, 150, 243, 0.05), transparent );
+            transition: transform 0.5s ease;
+        }
+
+        .select-card.active .card-header {
+            transform: scale(1.05);
+        }
+
+
+        .card-header.green {
+            background: linear-gradient(to bottom, rgba(76,175,80,0.08), transparent);
+        }
+
+        .select-card.active .card-header.green {
+                background: linear-gradient(to bottom, #D7FFDF, #FFFFFF);
+        }
+        .card-header.blue {
+            background: linear-gradient(to bottom, rgba(33,150,243,0.08), transparent);
+        }
+        .select-card.active .card-header.blue {
+                background: linear-gradient(to bottom, #D7F6FF, #FFFFFF);
+        }
+
+        /* ===== CARD BODY ===== */
+
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 32px;
+            padding-top: 16px;
+        }
+
+
+            .card-body h3 {
+                font-size: 24px;
+                font-weight: 700;
+                margin-bottom: 8px;
+            }
+
+            .card-body p {
+                color: #525252;
+                font-size: 15px;
+            }
+
+        /* ===== BADGE ===== */
+
+        .badge-pill {
+            display: inline-block;
+            margin-top: 10px;
+            background: #f3f4f6;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* ===== BUTTONS ===== */
+
+        .btn {
+            width: 100%;
+            height: 48px;
+            border-radius: 14px;
+            font-weight: 400;
+            font-size: 17px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-green {
+            border: 1px solid #B5B5B5;
+            background: white;
+        }
+
+        .select-card.active .btn-green {
+            background: #0ea66b;
+            color: #ffffff;
+            border:none;
+        }
+
+        .btn-blue {
+            border: 1px solid #B5B5B5;
+            background: white;
+        }
+
+            .select-card.active .btn-blue {
+                background: #007bff;
+                color: white;
+                border:none;
+            }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .flip-card {
+            perspective: 1200px;
+        }
+
+        .flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease;
+        }
+
+        .flip-card.flipped .flip-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-front,
+        .flip-back {
+            backface-visibility: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
+        .flip-back {
+            position: absolute;
+            inset: 0;
+            transform: rotateY(180deg);
+            background: inherit;
+        }
+
+        .org-item {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .org-item:hover {
+                background: rgba(33,150,243,0.08) !important;
+                border-color: #2196F3;
+            }
+
+      
+
+        #flipToBack {
+            border: 1px solid #B5B5B5 !important;
+        }
+
+          
+
+        #flipToFront:hover {
+            color: white;
+            border: none;
+        }
+
+        .org-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .org-list::-webkit-scrollbar-thumb {
+            background: #c7d2fe;
+            border-radius: 6px;
+        }
+
+        /* PANEL */
+        .org-panel {
+            display: flex;
+            flex-direction: column;
+            padding: 28px;
+            border-radius: 22px;
+            height: 100%;
+            background: #f7fafc;
+        }
+
+
+        /* TITLE */
+        .org-title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 22px;
+            color: #0f172a;
+        }
+
+        /* LIST */
+        .org-list {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            gap: 14px;
+            overflow-y: auto;
+            max-height: 340px; /* adjust based on your card height */
+            padding-right: 4px;
+        }
+
+
+
+
+        /* ITEM CARD */
+        .org-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 7px 16px;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid #dbeafe;
+            cursor: pointer;
+            margin-bottom: 0.35rem;
+            transition: all 0.2s ease;
+        }
+
+            .org-card:hover {
+                border-color: #3b82f6;
+                box-shadow: 0 6px 14px rgba(59,130,246,0.15);
+            }
+
+        /* LEFT ICON */
+        .org-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: #eef4ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1999EC;
+            flex-shrink: 0;
+        }
+
+        /* NAME */
+        .org-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+            flex: 1;
+        }
+
+        /* RIGHT ARROW */
+        .org-arrow {
+            color: #94a3b8;
+            font-size: 22px;
+        }
+
+        /* BACK BUTTON */
+        .org-back-btn {
+            margin-top: auto;
+            height: 46px;
+            border-radius: 14px;
+            border: 1px solid #cbd5f5;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .org-back-btn {
+            position: sticky;
+            bottom: 0;
+            background: #f7fafc;
+        }
+
+            .org-back-btn:hover {
+                background: #e0ecff;
+            }
+
+        /* MOBILE */
+        @@media (max-width: 576px) {
+            .org-panel {
+                padding: 20px;
+            }
+
+            .org-title {
+                font-size: 18px;
+            }
+
+            .org-card {
+                padding: 12px;
+            }
+        }
+
+        .flip-card {
+            perspective: 1200px;
+            height: 404px; /* IMPORTANT */
+        }
+
+        .flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease;
+        }
+
+        .flip-front,
+        .flip-back {
+            backface-visibility: hidden;
+            width: 100%;
+            height: 100%; /* IMPORTANT */
+        }
+
+        .flip-back {
+            position: absolute;
+            inset: 0;
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .org-back {
+            display: flex;
+            flex-direction: column;
+            padding: 28px;
+            background: linear-gradient( to bottom, rgba(33,150,243,0.05), transparent );
+        }
+
+        /* Optional dark mode support */
+        .dark .org-back {
+            background: linear-gradient( to bottom, rgba(33,150,243,0.10), transparent );
+        }
+
+        #orgList {
+            flex: 1; /* take remaining height */
+            overflow-y: auto; /* ENABLE SCROLL */
+            padding-right: 6px;
+            margin-bottom: revert;
+            margin: 0rem 2rem 1rem 0rem;
+        }
+
+            #orgList::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            #orgList::-webkit-scrollbar-thumb {
+                background: #c7d2fe;
+                border-radius: 6px;
+            }
+
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-high-contrast dark:text-white flex flex-col min-h-screen font-display antialiased">
+    <input type="hidden" id="SelfMailsInput" value='@serializedMailList'>
+    <input type="hidden" id="OrganizationListInput" value='@serializedOrganizationList'>
+
+    <main>
+        <div class="page-container">
+            @Html.AntiForgeryToken()
+            <div class="w-full max-w-[1024px] flex flex-col gap-10">
+                <div class="signing-title-wrapper">
+                    <h1 class="signing-title">
+                        Choose Your Signing Account.
+                    </h1>
+                </div>
+
+                <div class="card-grid">
+                    <div class="select-card active" id="selfcard">
+
+                        <div class="card-header green">
+                            <svg class="h-32 w-32 drop-shadow-lg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:9rem;">
+                                <defs>
+                                    <linearGradient id="personGradient" x1="0%" x2="100%" y1="0%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#4CAF50; stop-opacity:0.9"></stop>
+                                        <stop offset="100%" style="stop-color:#81C784; stop-opacity:0.7"></stop>
+                                    </linearGradient>
+                                </defs>
+                                <circle cx="100" cy="100" fill="#4CAF50" fill-opacity="0.1" r="80"></circle>
+                                <circle class="animate-pulse" cx="100" cy="100" fill="#4CAF50" fill-opacity="0.05" r="65" style="animation-duration: 3s;"></circle>
+                                <g transform="translate(100, 100)">
+                                    <circle cx="0" cy="-30" fill="url(#personGradient)" r="25"></circle>
+                                    <path d="M-45 50 Q -45 5 0 5 Q 45 5 45 50 L 45 60 L -45 60 Z" fill="url(#personGradient)"></path>
+                                </g>
+                                <rect fill="#ffffff" height="28" rx="4" stroke="#4CAF50" stroke-width="2" width="40" x="130" y="50"></rect>
+                                <rect fill="#4CAF50" height="2" rx="1" width="15" x="135" y="58"></rect>
+                                <rect fill="#4CAF50" height="2" rx="1" width="25" x="135" y="64"></rect>
+                            </svg>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="text-center">
+                                <h3 class="text-text-high-contrast dark:text-white text-2xl font-bold leading-tight mb-2">Sign as an Individual</h3>
+                                <p class="text-text-medium-contrast dark:text-gray-400 text-base">
+                                    Continue with your personal legal identity.
+                                    <br />
+                                    <span class="block mt-2 text-sm bg-gray-100 dark:bg-gray-800 py-1 px-3 rounded-full inline-block text-text-high-contrast dark:text-gray-200">
+                                        @Model.firstName
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="mt-4">
+                                <button id="proceed-self" class="btn btn-green">
+
+                                    <span>Continue as @Model.firstName</span>
+                                    <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="select-card flip-card" id="orgcard">
+                        <div class="flip-inner">
+
+                            <!-- FRONT -->
+                            <div class="flip-front">
+
+                                <!-- ICON -->
+                                <div class="card-header blue">
+
+                                    <svg class="h-32 w-32 drop-shadow-lg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:9rem;">
+                                        <defs>
+                                            <linearGradient id="orgGradient" x1="0%" x2="100%" y1="0%" y2="100%">
+                                                <stop offset="0%" style="stop-color:#2196F3; stop-opacity:0.9"></stop>
+                                                <stop offset="100%" style="stop-color:#64B5F6; stop-opacity:0.7"></stop>
+                                            </linearGradient>
+                                        </defs>
+                                        <rect fill="#2196F3" fill-opacity="0.05" height="120" rx="20" transform="rotate(45 100 100)" width="120" x="40" y="40"></rect>
+                                        <g transform="translate(100, 110)">
+                                            <rect fill="url(#orgGradient)" height="70" rx="2" width="30" x="-15" y="-50"></rect>
+                                            <rect fill="url(#orgGradient)" height="50" opacity="0.8" rx="2" width="25" x="-45" y="-30"></rect>
+                                            <rect fill="url(#orgGradient)" height="50" opacity="0.8" rx="2" width="25" x="20" y="-30"></rect>
+                                            <path d="M-60 20 L 60 20 L 60 30 L -60 30 Z" fill="#2196F3"></path>
+                                        </g>
+                                        <circle cx="50" cy="80" fill="#2196F3" opacity="0.6" r="5"></circle>
+                                        <circle cx="150" cy="80" fill="#2196F3" opacity="0.6" r="5"></circle>
+                                        <circle cx="100" cy="30" fill="#2196F3" opacity="0.6" r="5"></circle>
+                                        <path d="M50 80 L 85 60" opacity="0.4" stroke="#2196F3" stroke-width="1.5"></path>
+                                        <path d="M150 80 L 115 60" opacity="0.4" stroke="#2196F3" stroke-width="1.5"></path>
+                                    </svg>
+
+                                </div>
+
+                                <div class="card-body">
+
+                                    <div class="text-center">
+                                        <h3 class="text-2xl font-bold mb-2">Sign for Organization</h3>
+                                        <p class="text-text-medium-contrast">
+                                            Act on behalf of a company or legal organization.
+                                            <br />
+                                            <span class="block mt-2 text-sm bg-gray-100 dark:bg-gray-800 py-1 px-3 rounded-full inline-block">
+                                                @Model.OrgDetailsList.Count  Linked Organizations
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="mt-4">
+                                        <button id="flipToBack" class="btn btn-blue">
+
+                                            Select Organization
+                                            <span class="material-symbols-outlined">domain</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BACK -->
+                            <div class="flip-back org-back" style="background: linear-gradient(135deg, #ECFDF5 0%, #DBEAFE 100%);">
+                                <div class="text-xl font-bold mb-4 text-center" style="font-size: 1.25rem;">Select Organization</div>
+
+                                <ul id="orgList" class="space-y-3"></ul>
+
+                                <button id="flipToFront"
+                                        class="btn btn-blue">
+                                    <span class="material-symbols-outlined">arrow_back</span>
+                                    Back
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+</body>
+<link rel="stylesheet"
+      href="~/local-cdns/Shared/fontawesome/6.5.1/css/all.min.css" />
+
+<script src="~/local-cdns/Shared/jquery/3.5.1/jquery.min.js"></script>
+<script src="~/local-cdns/Shared/popper/1.16.0/popper.min.js"></script>
+<script src="~/local-cdns/Shared/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="~/local-cdns/Shared/sweetalert/1.1.3/sweetalert.css" />
+<script src="~/lib/sweetalert/dist/sweetalert.min.js" asp-append-version="true"></script>
+<script>
+
+
+    var name = "@name";
+    var firstName = "@firstName";
+    var lastName = "@lastName";
+    var email = "@email";
+    var accessToken = "@accessToken";
+    var idp_token = "@idp_token";
+    var suid = "@suid";
+    var last_login = "@last_login";
+    var allowAccountSelection = "@allowAccountSelection";
+    var allowSelfAccountSelection = "@allowSelfAccountSelection";
+    var organizationId = "@organizationId";
+    var organizationName = "@organizationName";
+    var mailList = [];
+    var organizationList = [];
+    var expires_in = "@expires_in";
+    var Emails = document.getElementById('SelfMailsInput');
+    var emaildataList = JSON.parse(Emails.value);
+    let orgRendered = false;
+    const selfCard = document.getElementById("selfcard");
+    const orgCard = document.getElementById("orgcard");
+
+    mailList = emaildataList;
+    var OrganizationsInput = document.getElementById('OrganizationListInput');
+    var organizationdataList = JSON.parse(OrganizationsInput.value);
+    organizationList = organizationdataList;
+    function renderOrganizations() {
+        var list = $('#orgList');
+        list.empty();
+
+        organizationList.forEach(function (org) {
+
+            list.append(`
+                            <div class="org-card"
+                                 data-id="${org.OrganizationUid}"
+                                 data-name="${org.OrganizationName}">
+
+                                <div class="org-icon">
+                                    <span class="material-symbols-outlined">apartment</span>
+                                </div>
+
+                                <div class="org-name">
+                                    ${org.OrganizationName}
+                                </div>
+
+                                <span class="material-symbols-outlined org-arrow">chevron_right</span>
+                            </div>
+                        `);
+        });
+    }
+
+
+    // $('#orgList').on('click', '.org-item', function () {
+
+    //     $('.org-item').removeClass('ring-2 ring-secondary-accent');
+    //     $(this).addClass('ring-2 ring-secondary-accent');
+
+    //     var orgId = $(this).data('id');
+    //     var orgName = $(this).data('name');
+
+    //     sendModelToController(orgId, orgName);
+    // });
+    $(document).on('click', '.org-card', function () {
+        var orgId = $(this).data('id');
+        var orgName = $(this).data('name');
+
+        sendModelToController(orgId, orgName);
+    });
+
+    function sendModelToController(orgId, orgName) {
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        
+        var model = {
+            "Name": name,
+            "FirstName": firstName,
+            "LastName": lastName,
+            "Email": email,
+            "AccessToken": accessToken,
+            "IdpToken": idp_token,
+            "Suid": suid,
+            "LastLogin": last_login,
+            "AllowAccountSelection": allowAccountSelection,
+            "AllowSelfAccountSelection": allowSelfAccountSelection,
+            "OrganizationId": orgId,
+            "OrganizationName": orgName,
+            "OrgDetailsList": organizationList,
+            "SelfEmails": mailList,
+            "expires_in": expires_in
+        };
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("CreateSession", "Login")',
+            data: JSON.stringify(model),
+            headers: {
+                'RequestVerificationToken': token
+            },
+            contentType: 'application/json',
+            dataType: 'json',
+
+            success: function (response) {
+                if (response.success == true) {
+                    window.location.href = '@Url.Action("Index", "Dashboard")';
+                }
+
+            },
+            error: function (xhr, status, error) {
+
+            }
+        });
+    }
+    var button = document.getElementById("proceed-self");
+
+
+    button.addEventListener("click", function () {
+
+        if ((allowAccountSelection === "True") && (allowSelfAccountSelection === "False")) {
+
+            swal({
+                type: 'info',
+                title: 'Info',
+                text: `self-login privileges are not available.`
+
+            });
+            return;
+        } else {
+
+            sendModelToController("", "");
+
+        }
+
+    });
+    document.getElementById('flipToBack').addEventListener('click', function () {
+        this.closest('.flip-card').classList.add('flipped');
+
+        if (!orgRendered) {
+            renderOrganizations();
+            orgRendered = true;
+        }
+    });
+
+
+    document.getElementById('flipToFront').addEventListener('click', function () {
+        this.closest('.flip-card').classList.remove('flipped');
+    });
+
+
+    selfCard.addEventListener("mouseenter", () => {
+      selfCard.classList.add("active");
+      orgCard.classList.remove("active");
+    });
+
+    orgCard.addEventListener("mouseenter", () => {
+      orgCard.classList.add("active");
+      selfCard.classList.remove("active");
+    });
+</script>
+
+
+
+</html>
+
+
+
+

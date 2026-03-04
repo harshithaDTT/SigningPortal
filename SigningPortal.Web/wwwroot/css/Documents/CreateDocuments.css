@@ -1,0 +1,1270 @@
+﻿@keyframes blink {
+    0% {
+        box-shadow: 0 0 0px #009f4d;
+    }
+
+    50% {
+        box-shadow: 0 0 12px #009f4d;
+    }
+
+    100% {
+        box-shadow: 0 0 0px #009f4d;
+    }
+}
+
+.blinking {
+    animation: blink 1s infinite;
+}
+
+.slow-shake {
+    --fa-animation-duration: 2s;
+}
+
+.col-form-label {
+    font-weight: 500 !important;
+    font-size: 15px !important;
+}
+
+form label {
+    font-size: 14px !important;
+}
+
+.dropzone p {
+    color: #4950576b !important;
+    font-size: 18px !important;
+}
+
+.settings-form-elements {
+    background-color: #acc43d; /* Green background color */
+}
+
+.modal-body {
+    position: relative;
+    padding: 15px;
+    max-width: 468px;
+}
+
+#SIGNATURE {
+    background: #fff;
+    border: 1px solid #acc43d;
+    border-radius: 10px;
+    padding: 0 !important;
+    width: 135%;
+    height: 88%;
+    font-size: 15px;
+    /* font-weight: 400; */
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, "\30D2\30E9\30AE\30CE\89D2\30B4 Pro W3", Hiragino Kaku Gothic Pro, "\30E1\30A4\30EA\30AA", Meiryo, "\FF2D\FF33 \FF30\30B4\30B7\30C3\30AF", Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+}
+
+#INITIAL {
+    background: #fff;
+    border: 1px solid #acc43d;
+    border-radius: 10px;
+    padding: 0 !important;
+    width: 135%;
+    height: 88%;
+    font-size: 15px;
+    /* font-weight: 400; */
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, "\30D2\30E9\30AE\30CE\89D2\30B4 Pro W3", Hiragino Kaku Gothic Pro, "\30E1\30A4\30EA\30AA", Meiryo, "\FF2D\FF33 \FF30\30B4\30B7\30C3\30AF", Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+}
+
+#ESEAL {
+    background: #fff;
+    border: 1px solid #acc43d;
+    border-radius: 10px;
+    padding: 0 !important;
+    width: 135%;
+    height: 88%;
+    font-size: 15px;
+    /* font-weight: 400; */
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, "\30D2\30E9\30AE\30CE\89D2\30B4 Pro W3", Hiragino Kaku Gothic Pro, "\30E1\30A4\30EA\30AA", Meiryo, "\FF2D\FF33 \FF30\30B4\30B7\30C3\30AF", Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+}
+
+#QRCODE {
+    background: #fff;
+    border: 1px solid #acc43d;
+    border-radius: 10px;
+    padding: 0 !important;
+    width: 135%;
+    height: 88%;
+    font-size: 15px;
+    /* font-weight: 400; */
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, "\30D2\30E9\30AE\30CE\89D2\30B4 Pro W3", Hiragino Kaku Gothic Pro, "\30E1\30A4\30EA\30AA", Meiryo, "\FF2D\FF33 \FF30\30B4\30B7\30C3\30AF", Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+}
+
+
+
+.errorMessage {
+    display: block;
+    margin-top: 5px; /* Adjust as needed */
+    font-size: 10px;
+}
+
+.disabled-blur {
+    opacity: 0.5; /* Adjust the blur radius as needed */
+    /* Optional: Change the cursor to indicate disabled state */
+}
+
+.email-input-container {
+    position: relative;
+}
+
+    .email-input-container .text-danger {
+        display: block;
+        position: absolute;
+        bottom: -21px;
+        left: 0;
+        font-size: 10px;
+        width: 342px;
+    }
+
+.card-content {
+    overflow-y: auto; 
+}
+
+#custom-alert {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    max-width: 650px;
+    border-radius: 5px;
+}
+
+    #custom-alert #alert-message {
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+
+    #custom-alert #ok-button {
+        background-color: #acc33e;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+        #custom-alert #ok-button:hover {
+            background-color: #99b32c;
+        }
+
+.recipient1 {
+    list-style: none;
+    font-size: 0px;
+    overflow-y: auto;
+    padding-left: 0px !important;
+}
+
+    .recipient1 li {
+        padding-left: 0px !important;
+        display: -webkit-box;
+        font-size: initial;
+        width: 100% !important;
+        padding-top: 6px;
+        height: 54px;
+        margin-left: 0% !important;
+    }
+
+.recipient1 {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+}
+
+    .recipient1::-webkit-scrollbar {
+        width: 0px; /* Set the width of the scrollbar */
+        background: transparent; /* Make the scrollbar background transparent */
+    }
+
+    .recipient1::-webkit-scrollbar-thumb {
+        background: transparent; /* Make the scrollbar thumb transparent */
+    }
+
+    .recipient1::-webkit-scrollbar-track {
+        background: transparent; /* Make the scrollbar track transparent */
+    }
+
+#watermark-field {
+    display: block;
+    margin: 20px auto;
+    padding: 10px;
+    border: 1px solid darkgray;
+    border-radius: 6px;
+    /*width: calc(100% - 40px);*/ /* Adjusted to fit nicely within the container */
+    height: fit-content;
+    width: 112% !important;
+    max-width: 400px;
+}
+
+.Button-Box1 {
+    padding: 0 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: -1%;
+    justify-content: flex-start; /* Ensures the buttons are aligned to the start */
+}
+
+    .Button-Box1 button {
+        margin: 0 1.5%;
+    }
+
+    .Button-Box1 #back {
+        margin-left: auto; /* Pushes the Back button to the right */
+    }
+
+.selctloader {
+    display: flex;
+    align-items: center;
+}
+
+.removeAlternateEmail, .removeAlternateEmail:hover {
+    color: white;
+    background-color: #dc143c !important;
+}
+
+.del, .del:hover {
+    background-color: #dc143c !important;
+}
+
+.drag-ghost {
+    width: 120px;
+    height: 60px;
+    background-color: #d8d7d78a;
+    border: 2px dashed thick;
+    border-color: #44aad1;
+    display: none;
+    color: #44aad1;
+    position: absolute;
+    font-size: 12px;
+    text-align: center;
+}
+
+.cancel {
+    background-color: rgb(244, 67, 54) !important
+}
+
+.submit-button-googledrive {
+    background-color: #fff !important;
+    border: none;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 6px;
+}
+
+div.col-md-1.margin input[type="number"] {
+    -moz-appearance: textfield;
+    /* Removes arrows in Firefox for this specific input */
+}
+/* Hide spinner controls */
+div.col-sm-6 input[type="number"]::-webkit-inner-spin-button,
+div.col-sm-6 input[type="number"]::-webkit-outer-spin-button {
+    display: none; /* Chrome, Safari, Edge */
+}
+
+div.col-sm-6 input[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
+    -webkit-appearance: textfield;
+}
+
+
+.custom-check-box {
+    appearance: none; /* Reset native styling */
+    -moz-appearance: none; /* Firefox-specific reset */
+    -webkit-appearance: none; /* Chrome/Safari reset */
+    width: 18px;
+    height: 19px;
+    margin-left: 0.12rem !important;
+    margin-top: -13px;
+    border: 2px solid darkgray; /* Add border to mimic checkbox */
+    border-radius: 4px; /* Make the corners rounded */
+    background-color: #fff; /* Set background color */
+    cursor: pointer; /* Change cursor on hover */
+}
+
+@media screen and (max-width:576px) {
+    .custom-check-box {
+        width: 15px;
+        height: 15px;
+        border-radius: 3px;
+    }
+}
+
+.custom-check-box:checked {
+    background-color: #007bff; /* Example checked color */
+    border-color: #007bff;
+}
+
+    .custom-check-box:checked::after {
+        content: '\2713'; /* Unicode for a checkmark */
+        color: #fff; /* White tick mark */
+        font-size: 16px; /* Adjust size for a larger tick */
+        font-weight: 700; /* Bold tick mark */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* Center the tick mark */
+    }
+
+.custom-check-box:focus {
+    outline: 2px solid #80bdff; /* Optional focus styling */
+    outline-offset: 2px;
+}
+
+.custom-check-box:focus {
+    outline: 2px solid #80bdff; /* Optional focus styling */
+    outline-offset: 2px;
+}
+
+
+
+/* For screens smaller than 768px (like mobile devices) */
+@media (max-width: 768px) {
+
+    .orderId {
+        width: 35px !important;
+        width: 29px;
+        background-color: grey;
+        text-align: center;
+    }
+
+    .recp .col-md-1,
+    .recp .col-md-2,
+    .recp .col-md-3 {
+        width: 100%;
+        margin-bottom: 10px;
+        /* Add space between fields */
+    }
+    /* Adjust button and dropdown alignment */
+    .recp .settingsButtonLi,
+    .recp .esealcheck,
+    .recp .initialcheck,
+    .recp .margin {
+        text-align: center;
+    }
+
+    .recp .form-control,
+    .recp .organizationDropdownSelect {
+        width: 100% !important;
+        /* Full width input fields */
+    }
+    /* Fix loader alignment */
+    .recp .selctloader {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* Center the loader */
+    }
+
+    .recp .loader {
+        margin-left: 10px;
+        /* Ensure loader does not overlap the dropdown */
+    }
+    /* Adjust button sizing and placement */
+    .recp .btn {
+        margin-bottom: 5px;
+        /* Add space between buttons */
+    }
+}
+
+/* For screens smaller than 576px (extra small screens) */
+@media (max-width: 576px) {
+
+    .orderId {
+        width: 35px !important;
+        width: 29px;
+        background-color: grey;
+        text-align: center;
+    }
+
+
+    .recp .organizationDropdownSelect {
+        width: 173px !important;
+        /* Ensure full width input fields */
+    }
+
+    .recp .form-control .orderId {
+        width: 35px !important;
+        width: 29px;
+        background-color: grey;
+        text-align: center;
+    }
+
+    #savebackbutton {
+        margin-right: 0px;
+        margin-left: -27px;
+    }
+
+    #setwatermarkid {
+        margin-left: 0px;
+    }
+
+    .recp .form-control .orderId {
+        width: 29px !important;
+        background-color: grey;
+        text-align: center;
+    }
+
+    .recp .btn {
+        width: 100% !important;
+        font-size: 10px !important;
+        /* Reduce font size */
+    }
+    /* Align checkbox labels and inputs */
+    .recp .esealcheck,
+    .recp .initialcheck {
+        justify-content: center;
+        text-align: center;
+        /* Center checkboxes */
+    }
+    /* Ensure loader stays aligned on small screens */
+    .recp .selctloader {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* Center the loader with the dropdown */
+    }
+
+    .recp .loader {
+        margin-left: 10px;
+        /* Ensure spacing between dropdown and loader */
+    }
+
+
+    .recp .margin {
+        text-align: justify;
+    }
+}
+
+/* Ensure that the layout doesn't distort in large screens */
+.recp {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    /* Space out the columns evenly */
+    gap: 10px;
+}
+
+    .recp .col-md-1,
+    .recp .col-md-2,
+    .recp .col-md-3 {
+        flex: 1 1 20%;
+        /* Flexible width based on screen size */
+    }
+
+    .recp .col-md-1 {
+        flex: 1 1 10%;
+        /* Make the 'Order' column smaller */
+    }
+
+    .recp .col-md-3 {
+        flex: 1 1 30%;
+        /* Adjust the width for email and dropdown */
+    }
+
+    .recp .col-md-2 {
+        flex: 1 1 25%;
+        /* Make sure buttons and checkboxes have enough space */
+    }
+
+    .recp .settingsButtonLi,
+    .recp .esealcheck,
+    .recp .initialcheck {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .recp .selctloader {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    /* Prevent distortion of the UI */
+    .recp .email,
+    .recp .organizationDropdownSelect,
+    .recp .btn {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .recp .form-control,
+    .recp .organizationDropdownSelect {
+        width: 100%;
+        /* Full width for input fields */
+    }
+
+    /* Updated for consistent input and dropdown widths */
+    .recp .email,
+    .recp .organizationDropdownSelect {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box; /* Include padding and borders in the width */
+        flex: 1 1 auto; /* Flexible layout for responsiveness */
+        min-width: 0; /* Prevent overflow */
+        overflow: hidden; /* Prevent content from altering layout */
+        white-space: nowrap; /* Avoid text wrapping */
+    }
+
+        .recp .email input,
+        .recp .organizationDropdownSelect select {
+            width: 100%;
+            padding: 10px; /* Uniform padding */
+            font-size: 14px; /* Uniform font size */
+            box-sizing: border-box; /* Include padding and borders in width */
+        }
+
+    /* Ensure Eseal and Initial checkboxes stay on the same line */
+    .recp .esealcheck,
+    .recp .initialcheck {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        /* Prevent line breaks */
+        justify-content: flex-start;
+        /* Align to the left */
+    }
+
+    .recp .col-md-12 > .row {
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    .recp .esealcheck label,
+    .recp .initialcheck label {
+        margin-right: 5px;
+        /* Add a small space between the label and checkbox */
+    }
+
+/* Make sure the checkboxes don't wrap to the next line on larger screens */
+@media (min-width: 768px) {
+
+    .recp .esealcheck,
+    .recp .initialcheck {
+        width: auto;
+        display: inline-flex;
+        /* Ensures both checkboxes remain on the same line */
+        margin-right: 10px;
+        /* Adjust if needed */
+    }
+}
+
+
+
+
+
+/* For smaller screens, still ensure proper alignment */
+@media (max-width: 768px) {
+    #preapredoc {
+        flex-direction: column;
+        column-gap: 2%;
+    }
+
+    #setwatermarkid {
+        margin-left: 0px;
+    }
+
+    .orderId {
+        width: 35px !important;
+        width: 29px;
+        background-color: #e9ecef;
+        text-align: center;
+        border: 1px solid #ccc;
+        color: #555555b3;
+        border-radius: 4px;
+    }
+
+
+    .recp .esealcheck,
+    .recp .initialcheck {
+        width: 100%;
+        /* Full width on small screens */
+        justify-content: center;
+        /* Center elements in smaller screen */
+    }
+
+
+
+    #moreSettings {
+        margin-top: 2rem;
+    }
+
+    #recplist {
+        margin-top: 2rem;
+    }
+}
+
+#driveIntegration {
+    margin-top: 2%;
+    margin-left: 0.1%;
+}
+
+#moreSettings {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 0rem !important;
+}
+
+@media (max-width: 575px) {
+    #fieldsRecpRpw {
+        display: none !important;
+    }
+
+    .row.recp.more-options-open {
+        margin-bottom: 100px; /* Adjust height to match dropdown height */
+    }
+
+    #setwatermarkid {
+        margin-left: 0px;
+    }
+
+    .orderId {
+        width: 25px !important;
+        width: 29px;
+        background-color: #e9ecef;
+        text-align: center;
+        border: 1px solid #ccc;
+        color: #555555b3;
+        border-radius: 4px;
+    }
+
+    #emailList {
+        display: none !important;
+    }
+
+    #sidebarCollapse1 {
+        display: block !important;
+    }
+
+    #sidebarCollapsefield {
+        display: none !important;
+    }
+
+    #sidebarCollapse2 {
+        display: block !important;
+    }
+
+    #sidebarCollapseSignatories {
+        display: none !important;
+    }
+
+    .box {
+        margin-bottom: 5px;
+        width: 100%;
+        margin-left: -27px;
+    }
+
+    #savebackbutton {
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+
+    #fields {
+        margin-left: 0px;
+    }
+
+    #signatoriesfieldbox {
+        margin-left: 0px;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 767px) {
+    #fieldsRecpRpw {
+        display: none !important;
+    }
+
+    #watermark-field {
+        margin-left: 2px;
+    }
+
+    .modal-content {
+        width: 75%;
+    }
+
+    .row.recp.more-options-open {
+        margin-bottom: 100px; /* Adjust height to match dropdown height */
+    }
+
+    .orderId {
+        width: 35px !important;
+        width: 29px;
+        background-color: #e9ecef;
+        text-align: center;
+        border: 1px solid #ccc;
+        color: #555555b3;
+        border-radius: 4px;
+    }
+
+    #setwatermarkid {
+        margin-left: 0px;
+    }
+
+    #emailList {
+        display: none !important;
+    }
+
+    #sidebarCollapse1 {
+        display: block !important;
+    }
+
+    #sidebarCollapsefield {
+        display: none !important;
+    }
+
+    #sidebarCollapse2 {
+        display: block !important;
+    }
+
+    #sidebarCollapseSignatories {
+        display: none !important;
+    }
+
+
+    .box {
+        margin-bottom: 5px;
+        width: 100%;
+        margin-left: -27px;
+    }
+
+    #fields {
+        margin-left: 0px;
+    }
+
+    #signatoriesfieldbox {
+        margin-left: 0px;
+    }
+
+    #savebackbutton {
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+}
+
+.edit-icon {
+    position: absolute;
+    top: -20px !important;
+    right: -20px !important;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+    .edit-icon:hover {
+        cursor: pointer !important;
+    }
+
+.delete-icon {
+    position: absolute;
+    top: -17px;
+    right: -17px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.draggable:hover .edit-icon,
+.draggable:active .edit-icon,
+.draggable:focus .edit-icon,
+.draggable.active .edit-icon {
+    opacity: 1 !important;
+    cursor: pointer !important;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .draggable:focus-within .edit-icon,
+    .draggable:focus .edit-icon {
+        opacity: 1 !important;
+        cursor: pointer !important;
+    }
+}
+
+
+.draggable {
+    position: absolute;
+    padding: 0.48%;
+    cursor: move;
+    background: rgba(0, 0, 0, 0);
+}
+
+@media (max-width:767px) {
+    #viewerui {
+        display: block;
+    }
+
+    .recp .settingsButtonLi,
+    .recp .esealcheck,
+    .recp .initialcheck {
+        display: flex;
+        justify-content: left;
+        align-items: left;
+    }
+
+    .btn {
+        padding: 2px 4px !important;
+    }
+}
+
+
+@media (min-width: 768px) {
+    #fieldsRecpRpw {
+        display: flex !important;
+    }
+
+    #viewerui {
+        display: flex;
+    }
+
+    .orderId {
+        width: 35px !important;
+        width: 29px;
+        background-color: #e9ecef;
+        text-align: center;
+        border: 1px solid #ccc;
+        color: #555555b3;
+        border-radius: 4px;
+    }
+
+    #emailList {
+        display: block !important;
+    }
+
+    #watermark-field {
+        margin-left: 0px;
+    }
+
+    #setwatermarkid {
+        margin-left: 0px;
+    }
+
+    @media screen and (min-width:992px) {
+        #watermark-field {
+            margin-left: -20px;
+        }
+
+        #setwatermarkid {
+            margin-left: -17px;
+        }
+    }
+
+
+    #sidebarCollapse1 {
+        display: none !important;
+    }
+
+    #sidebarCollapsefield {
+        display: block !important;
+    }
+
+    #sidebarCollapse2 {
+        display: none !important;
+    }
+
+    #sidebarCollapseSignatories {
+        display: block !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width:1024px) {
+    #savebackbutton {
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+
+    #QRCODEData {
+        margin-left: 34px;
+    }
+}
+
+@media (min-width :1025px) {
+    #savebackbutton {
+        margin-left: -27px;
+    }
+}
+
+@media (min-width: 768px) {
+    .recp.desktop-version {
+        display: block;
+    }
+
+    .recp.mobile-version {
+        display: none;
+    }
+
+    #AllSignatoriesRequiredspan {
+        font-size: 15px;
+        white-space: nowrap;
+    }
+
+    #DiasbleOrderspan {
+        font-size: 15px;
+        white-space: nowrap;
+    }
+
+    .email-input1 {
+        width: 271px;
+    }
+
+    #watermark-field {
+        width: 112.2% !important;
+    }
+}
+
+@media (max-width:480px) {
+    .modal-content {
+        width: 84% !important;
+    }
+
+    .doc-signing-status-modal-content {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .recp.desktop-version {
+        display: none;
+    }
+
+    .recp.mobile-version {
+        display: block;
+    }
+
+    #AllSignatoriesRequiredspan {
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    #DiasbleOrderspan {
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    #watermark-field {
+        width: 99.2% !important;
+    }
+}
+
+.more-options-btn {
+    background: #acc43d;
+    color: white;
+}
+
+.modal-content {
+    width: 84%;
+}
+
+@media (max-width:767px) {
+    #mobileEmailInput {
+        width: 67.33% !important;
+    }
+}
+
+@media screen and (min-width:992px) {
+
+    .pl-lg-3, .px-lg-3 {
+        padding-left: 2rem !important;
+    }
+}
+
+.resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 10px;
+    background-color: #4A90E2;
+    z-index: 1000;
+}
+
+
+
+.bottom-right {
+    bottom: 0px;
+    right: 0px;
+    cursor: nw-resize;
+}
+
+.top-right {
+    top: 0px;
+    right: 0px;
+    cursor: ne-resize;
+}
+
+.bottom-left {
+    bottom: 0px;
+    left: 0px;
+    cursor: ne-resize;
+}
+
+.top-left {
+    top: 0px;
+    left: 0px;
+    cursor: nw-resize;
+}
+
+.lds-spinner div:after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 3px;
+    left: 37px;
+    width: 6px;
+    height: 18px;
+    border-radius: 20%;
+    background: #ACC43D;
+}
+
+@keyframes blinkRedGlow {
+    0%, 100% {
+        box-shadow: 0 0 15px 4px #dc8c94;
+    }
+
+    50% {
+        box-shadow: 0 0 0px 0px #dc8c94;
+    }
+}
+
+@keyframes blinkGreenGlow {
+    0%, 100% {
+        box-shadow: 0 0 15px 4px #a5b724;
+    }
+
+    50% {
+        box-shadow: 0 0 0px 0px #a5b724;
+    }
+}
+
+.swal-modal-new {
+    width: 40%;
+}
+
+.doc-signing-status {
+    width: 45%;
+}
+
+#stepper-message {
+    width: 60%;
+    font-size: 17px;
+}
+
+.common-heading-color {
+    font-size: 20px;
+}
+
+.uploaded-file-img {
+    width: 138px;
+    height: 138px;
+}
+
+#removefile {
+    margin: 4px 11px;
+}
+
+.fields-heading {
+    font-size: 1.25rem !important;
+}
+
+#SigningModalheading {
+    font-size: 25px;
+}
+
+@media screen and (max-width:992px) {
+    .swal-modal-new {
+        width: 46%;
+    }
+
+    .doc-signing-status {
+        width: 60%;
+    }
+
+    #stepper-message {
+        width: 70%;
+    }
+}
+
+@media screen and (max-width:768px) {
+    .swal-modal-new {
+        width: 70%;
+    }
+
+    .doc-signing-status {
+        width: 60%;
+    }
+
+    #stepper-message {
+        width: 75%;
+    }
+}
+
+@media screen and (max-width:576px) {
+    .swal-content1 {
+        padding-left: 1% !important;
+    }
+
+    .swal-modal-new {
+        width: 95%;
+    }
+
+    .doc-signing-status {
+        width: 95%;
+    }
+
+    #stepper-message {
+        width: 85%;
+    }
+
+    .dropzone {
+        padding: 8px;
+    }
+
+        .dropzone p {
+            padding-bottom: 0px;
+            margin: 0px;
+            font-size: 16px !important;
+        }
+
+    .common-heading-color {
+        font-size: 18px;
+    }
+
+    .submit-button {
+        padding: 4px 10px;
+        font-size: 15px;
+    }
+
+    .uploaded-file-img {
+        width: 90px;
+        height: 90px;
+    }
+
+    #removefile {
+        margin: 4px 6px;
+    }
+
+    .c-main {
+        padding: 0px !important;
+    }
+
+    .fields-heading {
+        font-size: 1.1rem !important;
+    }
+
+    #EditFields_Modal {
+        padding-left: 30px;
+    }
+
+    #SigningModalheading {
+        font-size: 18px;
+    }
+
+    #stepper-message {
+        font-size: 17px;
+    }
+}
+
+#pdf-container {
+    width: 100%;
+}
+
+@media screen and (min-width:992px) {
+    #pdf-container {
+        width: 90%;
+    }
+}
+
+@media screen and (min-width:1200px) {
+    #pdf-container {
+        width: 80%;
+    }
+}
+
+@media screen and (min-width:1500px) {
+    #pdf-container {
+        width: 83%;
+    }
+}
+
+.pdf-page {
+    background-color: white;
+    margin-bottom: 20px;
+}
+
+
+
+#fieldsdivtag {
+    width: 100%;
+}
+
+.pdfViewContainer {
+    width: 100%;
+}
+
+@media screen and (min-width:576px) {
+    .pdfViewContainer {
+        width: 90%;
+    }
+}
+
+@media screen and (min-width:992px) {
+
+    #fieldsdivtag {
+        width: 30%;
+        height: 100%;
+    }
+
+    .pdfViewContainer {
+        width: 90%;
+    }
+}
+
+@media screen and (min-width:1300px) {
+    #fieldsdivtag {
+        width: 20%;
+        height: 100%;
+    }
+
+    .pdfViewContainer {
+        width: 80%;
+    }
+}
+
+.box {
+    width: 100%;
+    margin-left: 0px;
+}
+
+@media screen and (min-width:992px) {
+    .box {
+        width: 116%;
+        margin-left: -27px;
+    }
+}
+
+@media screen and (max-width:576px) {
+    .pdf-page {
+        border: 1px solid #dedfe0;
+    }
+}
+
+.truncate-select {
+    width: 100%;
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide overflowed text */
+    text-overflow: ellipsis; /* Show ... */
+}
+
+    /* Some browsers need this for option elements */
+    .truncate-select option {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }

@@ -1,0 +1,761 @@
+﻿@model SigningPortal.Web.ViewModels.Templates.CreateTemplateViewModel
+@inject IConfiguration Configuration
+@using Newtonsoft.Json
+@using System.Security.Claims;
+
+@{
+	var signData = "data:image/png;base64," + Model.Templates.FirstOrDefault(x => x.Id == 1).SamplePreview;
+	var esealData = "data:image/png;base64," + Model.Templates.FirstOrDefault(x => x.Id == 5).SamplePreview;
+}
+@{
+	await Html.RenderPartialAsync("_AlertBox");
+}
+
+@{
+
+	var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+	var AccountType = User.FindFirst("AccountType").Value;
+	var OrganizationName = "";
+	var OrganizationUid = "";
+	if (AccountType != "Self")
+	{
+		OrganizationName = User.FindFirst("OrganizationName").Value;
+		OrganizationUid = User.FindFirst("OrganizationUid").Value;
+	}
+}
+
+
+<style>
+
+	.resize-handle {
+		position: absolute;
+		width: 10px;
+		height: 10px;
+		border-radius: 10px;
+		background-color: #4A90E2;
+		z-index: 1000;
+	}
+
+
+
+	.bottom-right {
+		bottom: -3px;
+		right: -3px;
+		cursor: nw-resize;
+	}
+
+	.top-right {
+		top: -3px;
+		right: -3px;
+		cursor: ne-resize;
+	}
+
+	.bottom-left {
+		bottom: -3px;
+		left: -3px;
+		cursor: ne-resize;
+	}
+
+	.top-left {
+		top: -3px;
+		left: -3px;
+		cursor: nw-resize;
+	}
+
+
+	.edit-icon {
+		position: absolute;
+		top: -17px;
+		right: -17px;
+		cursor: pointer;
+		opacity: 0;
+		transition: opacity 0.3s;
+	}
+
+	.draggable:hover .edit-icon {
+		opacity: 1;
+	}
+
+
+
+
+	#SIGNATURE {
+		background: #fff;
+		border: 1px solid #acc43d;
+		border-radius: 10px;
+		padding: 0 !important;
+		width: 135%;
+		height: 88%;
+		font-size: 15px;
+		/* font-weight: 400; */
+		font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, "\30D2\30E9\30AE\30CE\89D2\30B4 Pro W3", Hiragino Kaku Gothic Pro, "\30E1\30A4\30EA\30AA", Meiryo, "\FF2D\FF33 \FF30\30B4\30B7\30C3\30AF", Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+	}
+
+	#ESEAL {
+		background: #fff;
+		border: 1px solid #acc43d;
+		border-radius: 10px;
+		padding: 0 !important;
+		width: 135%;
+		height: 88%;
+		font-size: 15px;
+		/* font-weight: 400; */
+		font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, "\30D2\30E9\30AE\30CE\89D2\30B4 Pro W3", Hiragino Kaku Gothic Pro, "\30E1\30A4\30EA\30AA", Meiryo, "\FF2D\FF33 \FF30\30B4\30B7\30C3\30AF", Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+	}
+
+	.col-form-label {
+		font-weight: 500;
+		font-size: 18px;
+	}
+
+	.uploaded-file img {
+		max-width: 100%;
+		height: 138px;
+		width: 138px;
+		border: ridge;
+	}
+
+	#custom-alert {
+		position: absolute;
+		top: 10%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		background-color: #fff;
+		border: 1px solid #ccc;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+		z-index: 9999;
+		max-width: 650px;
+		border-radius: 5px;
+	}
+
+		#custom-alert #alert-message {
+			font-size: 15px;
+			margin-bottom: 10px;
+		}
+
+		#custom-alert #ok-button {
+			background-color: #acc33e;
+			color: #fff;
+			border: none;
+			padding: 10px 20px;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+
+			#custom-alert #ok-button:hover {
+				background-color: #99b32c;
+			}
+
+	/* .form-group {
+						margin-bottom: 20px;
+					} */
+
+	.dropzone {
+		border: 2px dashed #eee;
+		border-radius: 5px;
+		padding: 20px;
+		display: flex;
+		text-align: center;
+		cursor: pointer;
+		margin-bottom: 20px;
+		height: 110px;
+		color: #bdbdbd;
+		align-content: center;
+	}
+
+		.dropzone p {
+			margin: 0;
+			font-size: 17px;
+			color: #6c757d;
+			align-content: center;
+		}
+
+	#thumbnail img {
+		height: 138px;
+		width: 138px;
+		/*border: 1px solid #ced4da;
+				border-radius: 5px;*/
+	}
+
+	.fade-background {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.1); /* Adjust opacity as needed */
+		/* z-index: 1000;  Ensure it's above other content */
+		display: none; /* Initially hidden */
+	}
+	/* .selfithumbnail: {
+						width: '32px', height:'32px', display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius:'50%', border:'transparent',
+					} */
+
+	/*  .MuiDialog-scrollPaper {
+						overflow: hidden;
+						position: relative;
+					}
+
+						.MuiDialog-scrollPaper:before {
+							content: "";
+							position: fixed;
+							top: 0;
+							right: 0;
+							bottom: 0;
+							left: 0;
+							z-index: 1040;
+							background-color: rgba(0, 0, 0, 0.5);
+						} */
+	.card-content {
+		overflow-y: auto; /* Add overflow-y to enable vertical scrolling if needed */
+		/* max-height: 645px; /* Add max-height to limit the height of the card content */
+	}
+
+	.toolcontainer2 {
+		position: absolute;
+		bottom: 50%;
+		right: 104%;
+	}
+
+	@@media screen and (max-width:991px) {
+		.toolcontainer2 {
+			top: 100%;
+			left: 0;
+			right: auto;
+			bottom: auto;
+		}
+	}
+
+	.table-container {
+		width: 100%;
+		overflow-x: auto;
+	}
+
+	.table-container {
+		background-color: white;
+		border-radius: 10px;
+		overflow: hidden;
+		margin-bottom: 24px;
+		/* padding-top: 11px; */
+		padding-left: 0px !important;
+		padding-right: 37px;
+		margin-top: -18px;
+		/* padding-bottom: 33px; */
+	}
+
+	.drag-ghost {
+		width: 120px;
+		height: 60px;
+		background-color: #d8d7d78a;
+		border: 2px dashed thick;
+		border-color: #44aad1;
+		display: none;
+		color: #44aad1;
+		position: absolute;
+		font-size: 12px;
+		text-align: center;
+	}
+
+	@@-moz-document url-prefix() {
+		.container {
+			margin-top: 23px !important;
+		}
+	}
+
+
+	#sidebarCollapse1 {
+		display: block !important;
+	}
+
+	#sidebarCollapsefield {
+		display: none !important;
+	}
+
+	#sidebarCollapse2 {
+		display: block !important;
+	}
+
+	#sidebarCollapseSignatories {
+		display: none !important;
+	}
+
+	#fieldsRecpRpw {
+		display: none !important;
+		;
+	}
+
+	#emailList {
+		display: none !important;
+	}
+
+	@@media screen and (min-width:992px) {
+		#sidebarCollapse1 {
+			display: none !important;
+		}
+
+		#sidebarCollapsefield {
+			display: block !important;
+		}
+
+		#sidebarCollapse2 {
+			display: none !important;
+		}
+
+		#sidebarCollapseSignatories {
+			display: block !important;
+		}
+
+		#fieldsRecpRpw {
+			display: flex !important;
+		}
+
+		#emailList {
+			display: block !important;
+		}
+	}
+
+	.pdfViewContainer {
+		width: 100%;
+	}
+
+	@@media screen and (min-width:992px) {
+		.pdfViewContainer {
+			width: 70%;
+		}
+
+		.pl-lg-3, .px-lg-3 {
+			padding-left: 2rem !important;
+		}
+	}
+	@@media screen and (min-width:1300px) {
+    #fieldsdivtag {
+        width: 20%;
+        height: 100%;
+    }
+
+    .pdfViewContainer {
+        width: 80%;
+    }
+}
+@@media screen and (min-width:992px) {
+
+    #fieldsdivtag {
+        width: 30%;
+        height: 100%;
+    }
+
+    .pdfViewContainer {
+        width: 90%;
+    }
+}
+@@media screen and (min-width:576px) {
+    .pdfViewContainer {
+        width: 90%;
+    }
+}
+
+#pdf-container {
+    width: 100%;
+}
+
+@@media screen and (min-width:992px) {
+    #pdf-container {
+        width: 90%;
+    }
+}
+
+@@media screen and (min-width:1200px) {
+    #pdf-container {
+        width: 80%;
+    }
+}
+
+@@media screen and (min-width:1500px) {
+    #pdf-container {
+        width: 83%;
+    }
+}
+
+.pdf-page {
+    background-color: white;
+    margin-bottom: 20px;
+}
+@@media screen and (max-width:576px) {
+    .pdf-page {
+        border: 1px solid #dedfe0;
+    }
+}
+</style>
+
+<script src="~/local-cdns/Shared/pdfjs/3.11.174/pdf.min.js"></script>
+
+<div class="row" style="height:100%;">
+	<div class="col-md-12 " style="height:100%;">
+		<div class="card c-main" style="height:100%;">
+			<div class="card-content" style="scrollbar-width:none;">
+				@* <div class="card-body"> *@
+				<div class="card-body background-image" id="create">
+					<div class="container-fluid">
+						<div class="fade show">
+							<div class="row">
+								<div class="col-12 col-md-12 col-lg-6">
+									<span class="common-heading-color" style="font-size: 20px; ">Prepare document for Configuration</span>
+								</div>
+								<div class="col-12 col-md-12 col-lg-6 d-flex justify-content-start justify-content-md-start justify-content-lg-end" style="padding-right: 10px; display: flex; justify-content: flex-end;">
+									<b>NOTE: </b> (*) Mark fields are mandatory.
+								</div>
+							</div>
+							<br />
+							<div class="row">
+
+								<div class="col-12  col-lg-6">
+									<label asp-for="File" class="col-12 col-form-label">Upload Document:<span style="color: red;">*</span></label>
+									<div role="button" tabindex="0" class="dropzone col-12 mb-0" id="dropzone">
+										<div style="overflow:hidden;width: 0px; height: 0px;">
+											<input asp-for="File" type="file" accept=".pdf,.docx,.xlsx" autocomplete="off" tabindex="-1">
+										</div>
+
+										<p>Drag 'n' drop file here (PDF,DOCX,XLSX), or click to select</p>
+									</div>
+									<br>
+									<div class="row classshide" id="thumbnail" style="margin-left:8px;">
+										<div class="col-md-3">
+											<img src='@Url.Content("~/img/icon/document-signature.png")' asp-append-version="true">
+											<br><button id="removefile" class="submit-button" type="button" style="margin: 4px 10px;">Remove</button>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-12  col-lg-6">
+
+									<div class="form-group row">
+										<label asp-for="TemplateName" class="col-sm-5 col-form-label">Template Name:</label>
+										<div class="col-sm-6">
+											<input asp-for="TemplateName" class="form-control" placeholder="Template Name" />
+											<span asp-validation-for="TemplateName" class="text-danger"></span>
+										</div>
+
+										<label asp-for="DocumentName" class="col-sm-5 col-form-label">Document Name:<span style="color: red;">*</span></label>
+										<div class="col-sm-6">
+											<input asp-for="DocumentName" class="form-control" readonly="" placeholder="Document Name" />
+											<span asp-validation-for="DocumentName" class="text-danger"></span>
+										</div>
+
+										<label class="col-sm-12 col-form-label">BulkSign Signatories:<span style="color: red;">*</span></label>
+										<br />
+										<br />
+
+										@if (Model.bulkSignerEmails == null || Model.BulkSignerEmails.bulkSignerList.Count == 0)
+										{
+											@*  <div style="overflow-y: scroll; width: 530px; height: 100px; border: 2px solid rgb(204, 204, 204); margin-left: 3%;" class="container">
+										No Email Found
+										</div> *@
+											<div class="table-container">
+												<div class="text-center">
+													<div class="card-body">
+														<div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);"> No Emails Available</div>
+													</div>
+												</div>
+											</div>
+										}
+										else
+										{
+											<div style="overflow-y: scroll; width: 530px; max-height: 160px; border: 2px solid rgb(204, 204, 204); margin-left: 3%;" class="container">
+												@foreach (var email in Model.BulkSignerEmails.bulkSignerList)
+												{
+													<input type="checkbox" class="select-checkbox" data-email="@email" value="@email" &nbsp />  @email <br />
+												}
+											</div>
+										}
+									</div>
+
+								</div>
+							</div>
+							<br />
+							<div class="row d-flex align-items-center">
+								<div class="col-12 order-1 order-sm-0 col-sm-6 col-lg-6 d-flex justify-content-start ">
+									<button type="button" variant="outlined" id="Continue" class="submit-button" style="width:165px;height:42px;padding-top:5px; margin-top: 2px;">Continue</button>
+								</div>
+								<div class="col-12 col-sm-6 col-lg-6 d-flex justify-content-start justify-content-sm-end ">
+
+									<button id="advancesettingsbutton" type="button" variant="outlined" class="submit-button" style="font-size:16px;width:165px;padding-top:5px; margin-top: 2px;">Advance Settings</button>
+
+								</div>
+							</div>
+
+							<div id="recplist">
+
+								<div class="row">
+									<div class="col-md-4" style="visibility: hidden;"><label><span>Selected Email</span></label></div>
+
+									<div class="col-md-1" style="margin:0px;  visibility: hidden;"><label><span>Eseal</span></label></div>
+
+									<div class="col-md-1" style="margin:0px;  visibility: hidden;"><label><span>QrCode</span></label></div>
+								</div>
+								<div class="row recp" id="0">
+									<div class="col-md-12">
+										<div class="row">
+											<div class="col-md-4 margin" style="visibility: hidden;">
+												<input class="form-control email" type="text" data-val="true" data-val-regex="Please enter valid email" data-val-required="The Email field is required." id="RecpientList_0__Email" name="RecpientList[0].Email" value="" autocomplete="off">
+												<span class="text-danger classshide">Please enter valid E-Mail address</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+						</div>
+
+
+					</div>
+
+				</div>
+
+
+				@* WebViewer part *@
+				<div class="card-body background-image classshide p-0" id="viwer" style="overflow-x:hidden;">
+
+					<div class="row mr-0 ml-0" style="display: flex;height:83vh">
+
+						
+						<div id="viewerdivtag" class="pdfViewContainer mt-1 mt-lg-0 h-100 col-12 col-sm-12 col-lg-8 col-xl-9 p-0" style="border: 1px solid #ccc; flex: 2;padding:0;">
+							<div id="scrollContainer" style="overflow-y: auto; display: flex; justify-content: center; height: 100%; border-top: 1px solid #ccc; background: #f4f6f9; box-shadow: inset 0 1px 4px rgba(0,0,0,0.1);">
+								<div id="pdf-container" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); border-radius: 4px;"></div>
+							</div>
+						</div>
+						<div class="h-100 pl-2" style="max-width:25%;width:25%;">
+
+							<div id="fields" class="box ml-0" style="width:100%;">
+								<h3 id="sidebarCollapsefield" class="fields-heading">Fields</h3>
+								<h3 id="sidebarCollapse1" class="fields-heading">
+									Fields &nbsp;<i class="fa fa-angle-double-down"></i>
+								</h3>
+								<div class="row" id="fieldsRecpRpw">
+
+									<div class="Button-Box">
+										<div class="draggable-buttons">
+											<button data_lable="Signature" id="SIGNATURE" text="Signature1">
+												Signature &nbsp;<i class="fa fa-pencil"></i>
+											</button>
+										</div>
+									</div>
+
+									<div class="Button-Box classshide" id="Eseal">
+										<div class="draggable-buttons">
+											<button id="ESEAL" data_lable="Signature" text="Eseal">
+												ESEAL &nbsp;<i class="fa fa-pencil"></i>
+											</button>
+										</div>
+									</div>
+
+
+								</div>
+							</div>
+							<div class="box ml-0 position-relative d-inline-block" style="width:100%;">
+								<h3 id="sidebarCollapseSignatories" class="fields-heading">Signatories</h3>
+								<h3 id="sidebarCollapse2" class="fields-heading">
+									Signatories &nbsp; <i class="fa fa-angle-double-down"></i>
+								</h3>
+								<ul class="recipient" id="emailList">
+								</ul>
+								<div class="toolcontainer2 d-none d-lg-block">
+									<div class="slider-container">
+										<div class="slider-turn">
+											<p class="fontcolortooltip">Select signatory to add form fields & Drag and Drop the annotations.</p>
+										</div>
+									</div>
+								</div>
+							</div>
+
+
+							<div class="row ml-0 mr-0" style="display:flex; justify-content:space-between">
+
+
+								<button class="submit-button classshide" id="Send">Send</button>
+								<button class="submit-button classshide" id="Save">Save</button>
+								<button class="submit-button" id="back">Back</button>
+
+
+							</div>
+							</br>
+
+						</div>
+					</div>
+				</div>
+
+				@* Custom Alert *@
+
+				<div id="custom-alert" style="display: none; background:red; color:white;margin-top:-25px;">
+					<div id="alert-message" style="display: inline-block; margin-left:10px"></div>
+					<button id="ok-button" style="display: inline-block; margin-left: 10px;  background:red">X</button>
+				</div>
+
+				@* Fade backgroud *@
+				<div id="fadeBackground" class="fade-background"></div>
+				@* </div> *@
+
+				@*  Modal for Advance Settings *@
+
+				<div class="d-flex justify-content-center">
+					<div class="MuiDialog-container MuiDialog-scrollPaper" id="settingsModal" tabindex="-1" role="none presentation" style="display:none; justify-content:center;align-items:center;height:100vh;position:absolute;height:100vh;width:90%;top:0;z-index:1050;margin-right:auto;margin-left:auto;">
+						<div class="MuiPaper-root MuiDialog-paper MuiDialog-paperScrollPaper MuiDialog-paperWidthSm MuiPaper-elevation24 MuiPaper-rounded" role="dialog">
+							<div class="modal-content" style="margin:auto;">
+								<div class="modal-body">
+									<div class="form-group row">
+										<label class="col-12 col-form-label"> Advance Settings &nbsp  </label>
+									</div>
+
+
+
+									<div class="form-group row">
+										<label class="col-7 col-sm-5 col-form-label" style="white-space:nowrap;">Eseal Document :</label>
+										<div class="col-5">
+											<div class="form-check">
+												<input type="checkbox" id="RecpientList_0__Eseal" name="RecpientList_0__Eseal" class="form-check-input" style="height:30px;width:15px">
+												<label for="RecpientList_0__Eseal" class="form-check-label"></label>
+											</div>
+										</div>
+									</div>
+
+									<div class="form-group row">
+										<label class="col-12 col-sm-5 col-form-label"> Signature Templates :</label>
+
+										<div class="col-10 col-sm-5 d-flex">
+											<select name="TemplateName" id="templateSelect" class="form-control" style="border-radius: 4px; padding: 9px; background-color: white; font-size: 14px;">
+												<option value="0">Choose Template</option>
+												@foreach (var item in Model.Templates.Where(x => x.Type.ToLower() == "sign"))
+												{
+													<option data-preview="@item.SamplePreview" value="@item.Id">@item.DisplayName</option>
+												}
+											</select>
+										</div>
+
+										<div class="col-2 col-md-2" style="display:none; " id="innerModel">
+
+											<img src='@Url.Content("~/img/icon/eyeicon.png")' style="max-width: 25px;" asp-append-version="true">
+
+										</div>
+									</div>
+
+									<div class="form-group row" id="esealTemplates" style="display:none">
+										<label class="col-12 col-sm-5 col-form-label" style="white-space:nowrap;"> Eseal Templates :</label>
+										<div class="col-10 col-sm-5 d-flex">
+											<select name="TemplateName" id="EsealtemplateSelect" class="form-control" style="border-radius: 4px; padding: 9px; background-color: white; font-size: 14px;">
+												<option value="0">Choose Template</option>
+												@foreach (var item in Model.Templates.Where(x => x.Type.ToLower() == "eseal"))
+												{
+													<option data-preview="@item.SamplePreview" value="@item.Id">@item.DisplayName</option>
+												}
+											</select>
+										</div>
+										<div class="col-2 col-md-2" style=" display:none; " id="EsealInnerModel">
+
+											<img src='@Url.Content("~/img/icon/eyeicon.png")' asp-append-version="true" style="max-width: 25px;height:25px;">
+
+										</div>
+									</div>
+
+									<div class="modal-footer" style="border-top: 1px solid #efefef;">
+										<button type="button" id="clearbutton" class="btn" style="background-color: #dc143c !important; color: white;">Clear</button>
+										<button type="button" id="OKbutton" class="btn" style="background-color: #acc33e; color: white;">OK</button>
+									</div>
+								</div>
+
+
+
+							</div>
+						</div>
+					</div>
+
+
+				</div>
+
+
+				@*Inner Modal Sign *@
+				<div class="MuiDialog-container MuiDialog-scrollPaper" id="settingsInnerModal" tabindex="-1" role="none presentation" style="display: none;justify-content:center;align-items:center;height:100vh;position:absolute;height:100vh;width:100%;left:0;top:0;margin-right:auto;margin-left:auto;z-index:1100;">
+					<div class="MuiPaper-root MuiDialog-paper MuiDialog-paperScrollPaper MuiDialog-paperWidthSm MuiPaper-elevation24 MuiPaper-rounded" role="dialog">
+						<div class="modal-content" style="border-radius: 3px;">
+							<div class="modal-body" style="position: relative;">
+								<div class="image-container d-flex justify-content-center mb-3" style="max-width: 300px;width:80%; margin: auto;">
+									<img id="signatureTemplatePreviewImage" asp-append-version="true" src="@signData" style="width: 100%;" />
+								</div>
+
+								<div class="MuiDialogActions-root MuiDialogActions-spacing d-flex justify-content-end">
+									<button class="btn" id="closebutton" style="background-color: #acc33e; color: white;">close</button>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+
+				@*Inner Modal ESeal *@
+				<div class="MuiDialog-container MuiDialog-scrollPaper" id="settingsInnerModalEseal" tabindex="-1" role="none presentation" style="display: none;justify-content:center;align-items:center;height:100vh;position:absolute;height:100vh;width:100%;left:0;top:0;margin-right:auto;margin-left:auto;z-index:1100;">
+					<div class="MuiPaper-root MuiDialog-paper MuiDialog-paperScrollPaper MuiDialog-paperWidthSm MuiPaper-elevation24 MuiPaper-rounded" role="dialog">
+						<div class="modal-content" style="border-radius: 3px;">
+							<div class="modal-body" style="position: relative;">
+								<div class="d-flex justify-content-center mb-3" style="max-width: 300px; width:80%; margin: auto;">
+									<img id="esealSignatureTemplatePreviewImage" asp-append-version="true" src="@esealData" style="inline-size: 110px; display: block; width:50%; margin: 0 auto;" />
+								</div>
+
+								<div class="MuiDialogActions-root MuiDialogActions-spacing d-flex justify-content-end">
+									<button class="btn" id="esealmodalpopup" style="background-color: #acc33e; color: white; ">close</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+		</div>
+	</div>
+	<input type="hidden" id="filebase64" name="filebase64" value="" />
+	<div class="modal fade" id="EditFields_Modal" tabindex="-1" role="dialog" aria-labelledby="digitalFormModalLabel" aria-hidden="false" data-backdrop="true" style="display:none;opacity: 1;background-color: rgba(0, 0, 0, 0.2);">
+		<div class="modal-dialog modal-dialog-centered" role="document" style="width:100%">
+			<div class="modal-content">
+				<div id="EditHeader" class="modal-header" style="border-bottom:white;"></div>
+				<div id="EditBody" class="modal-body" style="display:none;"></div>
+				<div id="EditFooter" class="modal-footer"></div>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+
+
+<script src="~/local-cdns/Shared/sweetalert2/11/sweetalert2.min.js"></script>
+
+<link rel="stylesheet" href="~/local-cdns/Shared/fontawesome/6.0.0-beta3/css/all.min.css">
+<script src="~/local-cdns/Shared/sweetalert2/11/sweetalert2.min.js"></script>
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+@section scripts {
+
+	<script>
+		var qrcodeimgdataval = '@Url.Content("~/img/qrcode.png")';
+		var GetFileConfigurationUrl = '@Url.Action("GetFileConfiguration", "Documents")';
+
+		var loginEmail = '@userEmail';
+		var loginorgUid = '@OrganizationUid';
+		var GetPreviewimagesUrl = '@Url.Action("GetPreviewimages", "Documents")';
+		var OrgDetailsByEmail = "@Url.Action("OrgDetailsByEmail", "Documents")";
+		var bulkSignerEsealEmails = @Html.Raw(JsonConvert.SerializeObject(@Model.bulkSignerEmails.bulkSignerEsealList));
+		var IndexLogin = '@Url.Action("Index", "Login")';
+		var IndexTemplate = '@Url.Action("Index", "Template")';
+		var SaveTemplate = "@Url.Action("SaveTemplate", "Template")";
+		var GetTemplatePreviewimages = '@Url.Action("GetTemplatePreviewimages", "Documents")';
+		var IndexDashboard = '@Url.Action("Index", "Dashboard")';
+		var TemplateAgentUrl = '@Url.Action("AgentUrl", "Template")';
+		var Templateverifyorg = '@Url.Action("VerifyOrganizationUserBySignatureTemplate", "Template")';
+		var isFileUploaded = false;
+	</script>
+	@if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+	{
+		<script src="~/js/Template/CreateTemplate.js" type="text/javascript" asp-append-version="true" defer></script>
+	}
+	else
+	{
+		<script src="~/dist/Template/CreateTemplate.min.js" type="text/javascript" asp-append-version="true" defer></script>
+	}
+}

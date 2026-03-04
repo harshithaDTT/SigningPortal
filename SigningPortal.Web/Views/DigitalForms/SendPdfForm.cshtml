@@ -1,0 +1,4095 @@
+﻿@using Newtonsoft.Json
+
+@model SigningPortal.Web.ViewModels.DigitalForms.FillFormData;
+
+@{
+    var signatoriesAvailable = Model.Model;
+
+    var rolesData = @Html.Raw(JsonConvert.SerializeObject(Model.Roles));
+
+}
+
+<style>
+
+    #toolbar {
+        display: flex;
+        flex-direction: row; 
+        align-items: center;
+        margin-top: 0px;
+        flex-wrap: wrap;
+        height: 65%;
+        column-gap: 15px;
+        margin-left: 5%;
+    }
+
+        #toolbar button {
+            margin: 5px 0; 
+            width: auto; 
+            min-width: 45%; 
+            height: 11%;
+            background-color: #acc43d38;
+            text-align: left;
+            padding-left: 5%;
+            font-size: 85%;
+            border: 1px solid #ccc; 
+            border-radius: 5px;
+            white-space: nowrap;
+            color: black;
+        }
+
+    .annotated input[type="text"] {
+        border: none;
+        background: black;
+        color: white;
+        width: 100px;
+        height: 30px;
+        padding: 5px;
+        box-sizing: border-box;
+        font-size: 16px;
+        text-align: center;
+    }
+
+
+    .input-field {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center; /* Center the text horizontally */
+        box-sizing: border-box; /* Ensure padding and border are included in the total width and height */
+        background-color: #d8d7d78a;
+        border: 2px solid black;
+    }
+
+
+        .input-field.has-value {
+            background-color: transparent; /* Change background color when typing */
+            color: #000; /* Change text color if needed */
+            outline: none; /* Remove default outline */
+            text-align: left;
+        }
+
+    
+    .editable-text {
+        min-height: 10px;
+        width: 100px;
+        cursor: text;
+    }
+
+    .draggable {
+        position: absolute;
+        padding: 0.48%;
+        cursor: move;
+        background: rgba(0, 0, 0, 0);
+    }
+
+    .resize-handle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: transparent;
+        z-index: 1000;
+    }
+
+        .resize-handle:hover {
+            background-color: black;
+        }
+
+
+    .bottom-right {
+        cursor: nwse-resize;
+        bottom: -5px;
+        right: -5px;
+    }
+
+    .edit-icon {
+        position: absolute;
+        top: -17px; /* Adjust as needed */
+        right: -17px; /* Adjust as needed */
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .draggable:hover .edit-icon {
+        opacity: 1;
+    }
+
+
+    #plain-text:hover {
+        background-color: #ACC43D; /* Green background on hover */
+        color: white;
+    }
+
+    #text-field:hover {
+        background-color: #ACC43D; /* Blue background on hover */
+        color: white;
+    }
+
+    #radio-button:hover {
+        background-color: #ACC43D; /* Yellow background on hover */
+        color: white;
+    }
+
+    #check-box:hover {
+        background-color: #ACC43D; /* Orange background on hover */
+        color: white;
+    }
+
+    #select:hover {
+        background-color: #ACC43D; /* Purple background on hover */
+        color: white;
+    }
+
+    #date:hover {
+        background-color: #ACC43D; /* Light yellow background on hover */
+        color: black;
+    }
+
+    
+
+    #imagefield:hover {
+        background-color: #ACC43D;
+        color: white;
+    }
+
+    #webfill:hover {
+        background-color: #ACC43D; /* Deep purple background on hover */
+        color: white;
+    }
+
+    #websave:hover {
+        background-color: #ACC43D; /* Deep purple background on hover */
+        color: white;
+    }
+
+    .image-container {
+        background-color: #d8d7d78a;
+        color: #636161;
+        border: 2px solid #000;
+        position: relative;
+        width: 150px;
+        height: 170px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .image-upload {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .uploaded-image {
+        display: none;
+        width: 100%;
+        height: 100%;
+        object-fit: fill; /* Stretch image to fit the container */
+    }
+
+    .placeholder-text {
+        font-size: 16px;
+        color: gray;
+    }
+
+    /* Cross symbol */
+    .remove-image-btn {
+        display: none;
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: rgba(255, 255, 255, 0.7);
+        color: red;
+        font-size: 20px;
+        border: none;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 50%;
+    }
+
+    /* Show cross symbol on hover only if the image is uploaded */
+    .image-container:hover .remove-image-btn.uploaded {
+        display: block;
+    }
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 25px;
+        top: 3px;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        width: 100%;
+        height: 100%;
+        transition: .4s;
+        border-radius: 4px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            top: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 5px;
+        }
+
+    input:checked + .slider {
+        background-color: #ACC43D;
+    }
+
+        input:checked + .slider:before {
+            /* -webkit-transform: translateX(26px);
+                -ms-transform: translateX(26px); */
+            transform: translateX(26px);
+        }
+    .pdf-page {
+        
+        position: relative;
+        display: inline-block;
+        margin: 1%;
+        border: 1px solid #ccc;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .annotated input[type="text"] {
+        border: none;
+        background: black;
+        color: white;
+        width: 100px;
+        height: 30px;
+        padding: 5px;
+        box-sizing: border-box;
+        font-size: 16px;
+        text-align: center;
+    }
+
+
+    .input-field {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-sizing: border-box;
+        background-color: #d8d7d78a;
+        border: 2px solid black;
+    }
+
+
+        .input-field.has-value {
+            align-items: unset;
+            justify-content: unset;
+            background-color: transparent;
+            color: #000;
+            outline: none;
+            text-align: left;
+        }
+
+
+
+    #fields-list {
+        margin-top: 20px;
+    }
+
+    .field-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+        .field-item input {
+            margin-right: 10px;
+            flex: 1;
+        }
+
+
+
+
+
+
+    .editable-text {
+        min-height: 10px;
+        width: 100px;
+        cursor: text;
+    }
+
+    .draggable {
+        position: absolute;
+        padding: 0.48%;
+        cursor: move;
+        background: rgba(0, 0, 0, 0);
+    }
+
+    .image-container {
+        background-color: #d8d7d78a;
+        color: #636161;
+        border: 2px solid #000;
+        position: relative;
+        width: 150px;
+        height: 170px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .image-upload {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .uploaded-image {
+        display: none;
+        width: 100%;
+        height: 100%;
+        object-fit: fill;
+    }
+
+    .placeholder-text {
+        font-size: 16px;
+        color: gray;
+    }
+
+    
+    .remove-image-btn {
+        display: none;
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: rgba(255, 255, 255, 0.7);
+        color: red;
+        font-size: 20px;
+        border: none;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 50%;
+    }
+
+    
+    .image-container:hover .remove-image-btn.uploaded {
+        display: block;
+    }
+
+    .container {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .qwer {
+        display: flex;
+        justify-content: space-between;
+        
+    }
+
+
+    .step-label {
+        position: absolute;
+        
+        width: 100px; /* Set the width based on your design */
+        text-align: center;
+        white-space: nowrap; /* Prevent text from wrapping */
+        font-size: 15px;
+    }
+
+    .container .steps {
+        display: flex;
+        width: 76%;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        margin: 8px 30px;
+    }
+
+    .steps .circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 44px;
+        width: 44px;
+        color: #999;
+        background: #e0e0e0;
+        /* border-radius: 50%; */
+        border: 3px solid #e0e0e0;
+        z-index: 1;
+        transition: all 300ms ease;
+        overflow: hidden;
+    }
+
+        .steps .circle img {
+            height: 56%;
+            width: 47%;
+        }
+
+        .steps .circle.active {
+            border-color: #acc43d;
+            color: #4070f4;
+            background-color: #acc43d;
+        }
+
+
+    .steps .progress-bar {
+        position: absolute;
+        top: 50%;
+        left: 3%;
+        transform: translateY(-50%);
+        height: 3px;
+        width: 94%;
+        background: #e0e0e0;
+        z-index: 0;
+    }
+
+    .progress-bar .indicator {
+        position: absolute;
+        height: 100%;
+        width: 0%;
+        background: #4070f4;
+        transition: all 300ms ease;
+    }
+
+    .backImage {
+        background-image: url('../img/dashboardBg.png');
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: 50%;
+        
+        background-color: rgba(255, 255, 255, 1);
+    }
+
+    .col-md-8, .col-md-4 {
+        transition: all 0.5s ease-in-out;
+    }
+
+    .loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 43%;
+    left: 47%;
+    transform: translate(-50%, -50%);
+}
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* ===== RESPONSIVE STYLES ===== */
+    @@media (max-width: 992px) {
+        .col-md-8, .col-md-4 {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .row.backImage {
+            flex-direction: column;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .card-body {
+            padding: 0.5rem !important;
+        }
+
+        .progress-line {
+            height: 2px;
+        }
+
+        .loader {
+            width: 40px;
+            height: 40px;
+            border-width: 6px;
+        }
+
+        h4, h5 {
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .loader {
+            width: 32px;
+            height: 32px;
+            border-width: 4px;
+            left: 45%;
+        }
+
+        h4, h5 {
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.4rem 0.6rem;
+            font-size: 0.8rem;
+        }
+
+        .card-body {
+            padding: 0.25rem !important;
+        }
+    }
+
+
+</style>
+
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+<link rel="stylesheet" href="~/local-cdns/Shared/fontawesome/6.0.0-beta3/css/all.min.css">
+
+<div class="row" style="height:86vh">
+	<div class="col-md-12" style="height:100%">
+		<div class="card" style="height:100%;padding:0">
+
+			<div class="card-body" style="padding-top:0;padding-bottom:0;height:100%">
+				<div class="row backImage" style="height:86%;">
+                    
+
+                    <div id="stepContent" class="col-md-8" style="height:100%;padding:0">
+                        <div id="configurations" style="height:100%;padding:2%;">
+                            <div  id="1" style="height:100%;background-color:white;box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);">
+                                <div class="row" style="height:12%">
+
+                                    <div class="col-md-1" style="padding-left:30px;padding-right:0;padding-top:4px">
+                                        <img src='@Url.Content("~/assets/images/ROLESConfiguration.png")' asp-append-version="true" width="37" height="37" alt="1">
+                                    </div>
+                                    <div class="col-md-11" style="display:flex;flex-direction:column;padding:1%;justify-content:center;">
+                                        <p style="text-align:left;margin:0;padding:0;font-size:75%">STEP 1</p>
+                                        <h3 class="common-heading-color" style="margin:0px; font-size: 100% !important;color:black">Signatories</h3>
+                                    </div>
+                                </div>
+                                <div style="padding-top:3%;padding-left:3%;padding-right:3%;height:11%;display:flex;flex-direction:row;justify-content:space-between">
+                                    <label class="form-check-label" style="align-items: center;">
+                                        
+                                        <span style="font-size: 15px;">Sequential Signing</span>
+                                        &nbsp;&nbsp;
+                                        <label class="switch">
+                                            <input type="checkbox" name="sequentialSign" id="sequentialSign" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </label>
+                                    
+                                </div>
+                                <div style="padding-top:3%;padding-left:3%;padding-right:3%;height:11%;display:flex;flex-direction:row;justify-content:space-between">
+                                    <div style="display:flex;flex-direction:row;width:50%">
+                                        <label for="input2" style="margin:0;font-size:15px;">Document Name</label>
+                                        &nbsp;&nbsp;
+                                        <input style="" type="text" id="docName" name="docName">
+
+                                    </div>
+                                    <div style="display:flex;flex-direction:row;width:29%">
+                                        <label for="input2" style="margin:0;font-size:15px;">Signing Duration (in days)</label>
+                                        &nbsp;&nbsp;
+                                        <input style="width:16%" type="number" id="signDays" name="signDays" value="5">
+
+                                    </div>
+                                </div>
+                                <div id="roles" style="height:65%;overflow-y:auto;scrollbar-width:none;padding:3%">
+                                    
+                                </div>
+                                <div style="height:12%;display:none">
+                                    <button onclick="createRolesGroup()" style="min-width:21%;height:60%;float:right;margin-right:5%;  white-space:nowrap; border-radius: 5px; border: none; background-color: #acc33e; color:white;">
+                                        + Add New Request
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="2" class="classshide" style="height:100%;background-color:white;box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);">
+                                <div class="row" style="height:12%">
+
+                                    <div class="col-md-1" style="padding-left:30px;padding-right:0;padding-top:4px">
+                                        <img src='@Url.Content("~/assets/images/ROLESConfiguration.png")' asp-append-version="true" width="37" height="37" alt="1">
+                                    </div>
+                                    <div class="col-md-11" style="display:flex;padding:1%;justify-content:center;">
+                                        <div style="width:60%">
+                                            <p style="text-align:left;margin:0;padding:0;font-size:75%">STEP 2</p>
+                                            <h3 class="common-heading-color" style="margin:0px; font-size: 100% !important;color:black">Fill Fields</h3>
+                                        </div>
+                                        <div style="width:40%;display:flex;justify-content:center;align-items:center">
+                                            <select style="width:75%" id="rolesForFields"></select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="rolesFields" style="height:88%;overflow-y:auto;scrollbar-width:none;padding:3%">
+                                    @* <div id="role1" style="height:100%;background-color:rgba(247,249,251,255);display:flex;flex-direction:row;flex-wrap:wrap;overflow-y:auto;padding:2%">
+                                        <h3 style="width:100%;text-align:left;color:black">Client</h3>
+                                    </div> *@
+                                    
+                                </div>
+                            </div>
+                            
+                            <div class="classshide" id="3" style="height:100%;background-color:white;box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);">
+                                <div class="row" style="height:12%">
+
+                                    <div class="col-md-1" style="padding-left:30px;padding-right:0;padding-top:4px">
+                                        <img src='@Url.Content("~/assets/images/ROLESConfiguration.png")' asp-append-version="true" width="37" height="37" alt="1">
+                                    </div>
+                                    <div class="col-md-9" style="display:flex;flex-direction:column;padding:1%;justify-content:center;margin-left:9%">
+                                        <p style="text-align:left;margin:0;padding:0;font-size:75%">STEP 3</p>
+                                        <h3 class="common-heading-color" style="margin:0px; font-size: 100% !important;color:black">Edit Fields</h3>
+                                    </div>
+                                </div>
+                                <div style="justify-content:center;height:84%;margin-top:4%;width:90%;margin-left:5%">
+
+                                
+                                <div  style="overflow-y:auto;margin:initial;border-top-left-radius:unset;width:100%;height:100%">
+
+
+                                    
+
+                                    <div class="col-sm-12" style="display:flex;align-items:center;">
+                                        <select name="Client" id="ClientSelect" class="btn-primary.dropdown-toggle" style="border-radius: 4px; padding: 6px; max-width: 100%; width:100%;">
+                                            <option>Select a role</option>
+
+                                        </select>
+                                    </div>
+                                    <div class="form-group row mx-0 mb-0">
+                                        <h5 class="col-sm-10 col-form-label" style="white-space:nowrap;color:unset">Standard Fields :</h5>
+                                    </div>
+                                    <div id="toolbar">
+                                        <button id="plain-text"><i class="fas fa-pencil-alt"></i>&nbsp;&nbsp;Text</button>
+                                        <button id="text-field"><i class="fa-solid fa-t"></i>&nbsp;&nbsp;Input Field</button>
+                                        <button id="radio-button"><i class="fas fa-dot-circle"></i>&nbsp;&nbsp;Radio Button</button>
+                                        <button id="check-box"><i class="fas fa-check-square"></i>&nbsp;&nbsp;Check Box</button>
+                                        <button id="select"><i class="fas fa-caret-square-down"></i>&nbsp;&nbsp;Select</button>
+                                        <button id="date"><i class="fas fa-calendar"></i>&nbsp;&nbsp;Date</button>
+                                        <button id="imagefield"><i class="fa fa-picture-o" aria-hidden="true"></i>&nbsp;&nbsp;Image</button>
+                                        <button id="webfill"><i class="fas fa-pencil-alt"></i>&nbsp;Fill Button</button>
+                                        <button id="websave"><i class="fas fa-paper-plane-o" aria-hidden="true"></i>&nbsp;Save Button</button>
+
+                                    </div>
+
+                                </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+					</div>
+
+                    <div id="pdfContainerMain" class="col-md-4" style="height:100%;padding:1%;background-color:rgba(226,230,234,255);">
+                        <div id="pdf-container" style="height:99%;overflow-y:auto;scrollbar-width:none;box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);text-align:center"></div>
+                    </div>
+                    </div>
+
+                
+
+                <div class="row" style="height:15%;background-color:white;box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2); ">
+                    <div class="container col-md-8">
+                        <div class="steps">
+                            <span class="circle active">
+                                <img src='@Url.Content("~/img/upload White.png")' asp-append-version="true" alt="1">
+                            </span>
+                            <span class="circle">
+                                <img src='@Url.Content("~/img/configuration white.png")' asp-append-version="true" alt="2">
+                            </span>
+                            <span class="circle">
+                                <img src='@Url.Content("~/img/annotation white.png")' asp-append-version="true" alt="3">
+                            </span>
+
+                            <div class="progress-bar">
+                                <span class="indicator"></span>
+                            </div>
+                        </div>
+
+
+                        <div class="qwer">
+                            <span class="step-label" style="left: 10%;">Signatories</span>
+                            <span class="step-label" style="left: 44%;">Fill Fields</span>
+                            <span class="step-label" style="left: 78%;">Edit Fields</span>
+
+                        </div>
+                    </div>
+                    <div class="col-md-4" style="display:flex;flex-direction:row;align-items:center;gap:9%;justify-content:center">
+                        <button id="prevButton" style="min-width:30%;height:50%;  white-space:nowrap; border-radius: 5px; border: none; background-color: #acc33e; color:white;">
+                            
+                            Previous
+                        </button>
+                        <button id="nextButton"  style="min-width:30%;height:50%;  white-space:nowrap; border-radius: 5px; border: none; background-color: #acc33e; color:white;">
+                            
+                            Next
+                        </button>
+                        <button id="sendButton" style="display:none;min-width:30%;height:50%;  white-space:nowrap; border-radius: 5px; border: none; background-color: #acc33e; color:white;">
+
+                            Send
+                        </button>
+                    </div>
+                </div>
+
+			</div>
+		</div>
+
+        
+	</div>
+    <input type="hidden" id="filebase64" name="filebase64" value="@Model.pdfblob" />
+    <input type="hidden" id="pdfschema" name="pdfschema" value="@Model.htmlschma" />
+    <input type="hidden" id="modelobject" name="modelobject" value="@Model.Model" />
+    <input type="hidden" id="modelrole" name="modelrole" value="@Model.Roles" />
+
+</div>
+<div class="modal fade" id="EditFields_Modal" tabindex="-1" role="dialog" aria-labelledby="digitalFormModalLabel" aria-hidden="false" data-backdrop="true" style="display:none;opacity: 1;background-color: rgba(0, 0, 0, 0.2);">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="width:100%">
+        <div class="modal-content">
+            <div id="EditHeader" class="modal-header"></div>
+            <div id="EditBody" class="modal-body"></div>
+            <div id="EditFooter" class="modal-footer" style="border-top: 1px solid #efefef;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var fieldnameslist = [];
+    const preFilledData = {};
+    var pdfAnnotations = [];
+    var annotations = [];
+    var scaleX = "";
+    var scaleY = "";
+    var signatureX = "";
+    var signatureY = "";
+    var signaturePage = "";
+    var esealX = "";
+    var esealY = "";
+    var esealPage = "";
+    let canvasHeight = "";
+    let canvasWidth = "";
+    var originalHeight = "";
+    var originalWidth = "";
+    var radioGroups = {};
+
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (!pdfjsLib) {
+        console.error('PDF.js library is not loaded.');
+    } else {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '@Url.Content("/local-cdns/Shared/pdfjs/2.10.377/pdf.worker.min.js")';
+    }
+	const pdfContainer = document.getElementById('pdf-container');
+
+    var data = document.getElementById('pdfschema').value;
+    var componentsdata = JSON.parse(data);
+
+	$(document).ready(function () {
+        
+        
+
+        
+        
+        // $('#digitalforms').addClass('active');
+        $('#FormsModel').addClass('active');
+        $('#FormTemplatesMenu').addClass('active');
+        $('#FormTemplatesMenu').css('border-right', '5px solid #ABBB21');
+        $('#FormRequestsMenu').css('border-right', 'none');
+        $('#formTemplates')[0].style.setProperty('background-color', '#d6d6d6', 'important');
+        $('#formTemplates')[0].style.setProperty('color', 'black', 'important');
+        $('#FormsListModel').addClass('show');
+
+        $("li#FormsModel a:first").attr('aria-expanded', 'true');
+        $("li#FormTemplatesMenu a:first").attr('aria-expanded', 'true');
+        const pdfBase64 = document.getElementById('filebase64').value;
+
+        const comps = document.getElementById('pdfschema').value;
+        const components = JSON.parse(comps);
+        const pdfArrayBuffer = base64ToArrayBuffer(pdfBase64);
+        pdfjsLib.getDocument({ data: pdfArrayBuffer }).promise.then(pdf => {
+            renderPDF(pdf, components);
+        }).catch(error => {
+            console.error('Error loading PDF:', error);
+        });
+        
+
+        
+        createRolesGroup();
+        fieldConfig(components);
+    });
+
+    function loadTemplate() {
+        const pdfBase64 = document.getElementById('filebase64').value;
+
+        
+        const pdfArrayBuffer = base64ToArrayBuffer(pdfBase64);
+        pdfjsLib.getDocument({ data: pdfArrayBuffer }).promise.then(pdf => {
+            renderPDF(pdf, componentsdata);
+        }).catch(error => {
+            console.error('Error loading PDF:', error);
+        });
+
+        const rightCol = document.getElementById('pdfContainerMain');
+        var loader = document.getElementById('pdfloader');
+        rightCol.removeChild(loader);
+    }
+    function base64ToArrayBuffer(base64) {
+        const binaryString = window.atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+
+    function renderPDF(pdf, annotations = []) {
+        pdfContainer.innerHTML = '';
+        const numPages = pdf.numPages;
+        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+            pdf.getPage(pageNum).then(page => {
+                const scale = 1.5;
+                const viewport = page.getViewport({ scale });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                canvas.style.width = '100%';
+
+                const pageContainer = document.createElement('div');
+                pageContainer.className = 'pdf-page';
+                pageContainer.style.position = 'relative';
+                pageContainer.appendChild(canvas);
+
+                pdfContainer.appendChild(pageContainer);
+
+                const firstCanvas = document.querySelector('canvas');
+                canvasWidth = firstCanvas.getBoundingClientRect().width;
+                canvasHeight = firstCanvas.getBoundingClientRect().height;
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                page.render(renderContext).promise.then(() => {
+                    const annotationLayer = document.createElement('div');
+                    annotationLayer.className = 'annotation-layer';
+                    annotationLayer.style.position = 'absolute';
+                    annotationLayer.style.top = '0';
+                    annotationLayer.style.left = '0';
+                    annotationLayer.style.width = '100%'
+                    annotationLayer.style.height = '100%'
+                    annotationLayer.style.pointerEvents = 'none';
+                    pageContainer.appendChild(annotationLayer);
+                    originalWidth = viewport.viewBox[2];
+                    originalHeight = viewport.viewBox[3];
+
+                    const pageAnnotations = annotations.filter(annotation => annotation.page === pageNum);
+                    if (pageAnnotations.length > 0) {
+                        pageAnnotations.forEach(annotation => {
+                            if (annotation.type !== 'Wsave' && annotation.type !== 'Wfill') {
+                                const element = createPreviousDraggableElement(annotation);
+                                annotationLayer.appendChild(element);
+                            }
+
+                        });
+                    }
+                });
+            });
+        }
+    }
+
+    function createPreviousDraggableElement(annotation) {
+        if (annotation.type === 'text') {
+            const element = document.createElement('div');
+            element.classList.add('draggable');
+            element.style.position = 'absolute';
+            element.style.pointerEvents = 'auto';
+            element.style.border = 'none';
+            element.style.padding = '0';
+
+            const content = document.createElement('div');
+            content.classList.add('draggable-content');
+
+            element.style.left = (((annotation.x + annotation.draggablepadding) / 100) * canvasWidth) + 'px';
+            element.style.top = (((annotation.y / 100) * canvasHeight) + ((annotation.draggablepadding / 100) * canvasWidth)) + 'px';
+            // element.style.top = (((annotation.y + annotation.draggablepadding) / 100) * canvasHeight) + 'px';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Please Enter ' + annotation.id;
+            input.classList.add('input-field');
+            input.id = annotation.id;
+            fieldnameslist.push(annotation.id);
+            input.value = annotation.content;
+            input.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+            input.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+            input.style.fontSize = ((annotation.fontsize / 100) * canvasWidth) + 'px';
+            input.style.color = annotation.fontcolor;
+            if (input.value) {
+                input.classList.add('has-value');
+            }
+
+            input.addEventListener('input', () => {
+                if (input.value) {
+                    input.classList.add('has-value');
+                } else {
+                    input.classList.remove('has-value');
+                }
+            });
+
+            input.addEventListener('blur', () => {
+                if (input.value) {
+                    input.classList.add('has-value');
+                } else {
+                    input.classList.remove('has-value');
+                }
+            });
+
+            content.appendChild(input);
+            element.appendChild(content);
+            return element;
+        }
+        else if (annotation.type === 'radio') {
+            const radiodiv = document.createElement('div');
+            annotation.buttons.forEach(button => {
+                const element = document.createElement('div');
+                element.classList.add('draggable');
+                element.style.position = 'absolute';
+                element.style.pointerEvents = 'auto';
+                element.style.border = 'none';
+                element.style.padding = '0';
+                const content = document.createElement('div');
+                content.classList.add('draggable-content');
+                // element.style.left = ((button.x / 100) * canvasWidth) + 'px';
+                // element.style.top = ((button.y / 100) * canvasHeight) + 'px';
+                element.style.left = (((button.x + button.draggablepadding) / 100) * canvasWidth) + 'px';
+                element.style.top = (((button.y / 100) * canvasHeight) + ((button.draggablepadding / 100) * canvasWidth)) + 'px';
+                // element.style.top = (((button.y + button.draggablepadding) / 100) * canvasHeight) + 'px';
+
+                const radioWrapper = document.createElement('div');
+                radioWrapper.classList.add('radio-wrapper');
+                radioWrapper.style.position = 'absolute';
+
+
+                radioWrapper.style.width = ((button.width / 100) * canvasWidth) + 'px';
+                radioWrapper.style.height = ((button.height / 100) * canvasHeight) + 'px';
+
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = annotation.name;
+                radio.value = button.value;
+                radio.id = button.id;
+                radio.classList.add('input-field');
+                radio.style.width = '100%';
+                radio.style.height = '100%';
+                radio.style.margin = '0';
+
+                radioWrapper.appendChild(radio);
+                content.appendChild(radioWrapper);
+                element.appendChild(content);
+                radiodiv.appendChild(element);
+            });
+            return radiodiv;
+        }
+        else if (annotation.type === 'checkbox') {
+            const element = document.createElement('div');
+            element.classList.add('draggable');
+            element.style.position = 'absolute';
+            element.style.pointerEvents = 'auto';
+            element.style.border = 'none';
+            element.style.padding = '0';
+            const content = document.createElement('div');
+            content.classList.add('draggable-content');
+
+
+            // element.style.left = ((annotation.x / 100) * canvasWidth) + 'px';
+            // element.style.top = ((annotation.y / 100) * canvasHeight) + 'px';
+            element.style.left = (((annotation.x + annotation.draggablepadding) / 100) * canvasWidth) + 'px';
+            element.style.top = (((annotation.y / 100) * canvasHeight) + ((annotation.draggablepadding / 100) * canvasWidth)) + 'px';
+            // element.style.top = (((annotation.y + annotation.draggablepadding) / 100) * canvasHeight) + 'px';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = annotation.id;
+            fieldnameslist.push(annotation.id);
+            checkbox.value = annotation.value;
+            checkbox.classList.add('input-field');
+            checkbox.style.width = annotation.width + 'px';
+            checkbox.style.height = annotation.height + 'px';
+            checkbox.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+            checkbox.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+            checkbox.style.margin = '8% 8% 8% 12.8%';
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    checkbox.classList.add('checked');
+                } else {
+                    checkbox.classList.remove('checked');
+                }
+            });
+
+            content.appendChild(checkbox);
+            element.appendChild(content);
+            return element;
+        }
+        else if (annotation.type === 'select') {
+            const element = document.createElement('div');
+            element.classList.add('draggable');
+            element.style.position = 'absolute';
+            element.style.pointerEvents = 'auto';
+            element.style.border = 'none';
+            element.style.padding = '0';
+            const content = document.createElement('div');
+            content.classList.add('draggable-content');
+
+            // element.style.left = ((annotation.x / 100) * canvasWidth) + 'px';
+            // element.style.top = ((annotation.y / 100) * canvasHeight) + 'px';
+            element.style.left = (((annotation.x + annotation.draggablepadding) / 100) * canvasWidth) + 'px';
+            element.style.top = (((annotation.y / 100) * canvasHeight) + ((annotation.draggablepadding / 100) * canvasWidth)) + 'px';
+            // element.style.top = (((annotation.y + annotation.draggablepadding) / 100) * canvasHeight) + 'px';
+
+            const select = document.createElement('select');
+            select.id = annotation.id;
+            fieldnameslist.push(annotation.id);
+            select.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+            select.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+            select.style.fontSize = ((annotation.fontsize / 100) * canvasWidth) + 'px';
+            select.style.border = '2px solid black';
+            select.classList.add('input-field');
+
+            const option = document.createElement('option');
+            option.value = "Select Option";
+            option.text = "Select Option";
+            option.style.color = '#636161';
+            select.appendChild(option);
+
+            annotation.options.forEach(optionText => {
+                const option = document.createElement('option');
+                option.value = optionText;
+                option.text = optionText;
+                option.style.color = annotation.fontcolor;
+                select.appendChild(option);
+            });
+
+            select.addEventListener('change', (event) => {
+
+                if (select.value === "Select Option") {
+                    select.classList.remove('has-value');
+                    select.style.color = '#636161';
+                    Array.from(event.target.options).map(option => {
+                        option.style.color = ((event.target.options)[1]).style.color;
+                        return null;
+                    });
+                    (select.options[0]).style.color = '#636161';
+                } else {
+                    select.classList.add('has-value');
+                    select.style.color = ((event.target.options)[1]).style.color;
+                    (select.options[0]).style.color = '#636161';
+                }
+            });
+
+            content.appendChild(select);
+            element.appendChild(content);
+            return element;
+        }
+        else if (annotation.type === 'date') {
+            const element = document.createElement('div');
+            element.classList.add('draggable');
+            element.style.position = 'absolute';
+            element.style.pointerEvents = 'auto';
+            element.style.border = 'none';
+            element.style.padding = '0';
+            const content = document.createElement('div');
+            content.classList.add('draggable-content');
+
+            // element.style.left = ((annotation.x / 100) * canvasWidth) + 'px';
+            // element.style.top = ((annotation.y / 100) * canvasHeight) + 'px';
+            element.style.left = (((annotation.x + annotation.draggablepadding) / 100) * canvasWidth) + 'px';
+            element.style.top = (((annotation.y / 100) * canvasHeight) + ((annotation.draggablepadding / 100) * canvasWidth)) + 'px';
+            // element.style.top = (((annotation.y + annotation.draggablepadding) / 100) * canvasHeight) + 'px';
+
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.placeholder = 'Date Field';
+            input.classList.add('input-field');
+            input.id = annotation.id;
+            fieldnameslist.push(annotation.id);
+            input.value = annotation.content;
+            input.style.color = '#636161';
+            input.setAttribute('data-flag', annotation.fontcolor);
+            input.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+            input.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+            input.style.fontSize = ((annotation.fontsize / 100) * canvasWidth) + 'px';
+
+            input.addEventListener('input', (event) => {
+                if (input.value) {
+                    input.classList.add('has-value');
+                    input.style.color = (event.target).getAttribute('data-flag');
+
+
+                } else {
+                    input.classList.remove('has-value');
+                    input.style.color = '#636161';
+
+                }
+            });
+
+            input.addEventListener('blur', () => {
+                if (input.value) {
+                    input.classList.add('has-value');
+
+                } else {
+                    input.classList.remove('has-value');
+
+                }
+            });
+
+            content.appendChild(input);
+            element.appendChild(content);
+            return element;
+        }
+        else if (annotation.type === 'plain-text') {
+            const element = document.createElement('div');
+            element.classList.add('draggable');
+            element.style.position = 'absolute';
+            element.style.pointerEvents = 'auto';
+            element.style.border = 'none';
+            element.style.padding = '0';
+            const content = document.createElement('div');
+            content.classList.add('draggable-content');
+
+            // element.style.left = ((annotation.x / 100) * canvasWidth) + 'px';
+            // element.style.top = ((annotation.y / 100) * canvasHeight) + 'px';
+            element.style.left = (((annotation.x + annotation.draggablepadding) / 100) * canvasWidth) + 'px';
+            element.style.top = (((annotation.y / 100) * canvasHeight) + ((annotation.draggablepadding / 100) * canvasWidth)) + 'px';
+            // element.style.top = (((annotation.y + annotation.draggablepadding) / 100) * canvasHeight) + 'px';
+
+            const editableTextContainer = document.createElement('div');
+
+            // editableTextContainer.classList.add('editable-text');
+            // editableTextContainer.setAttribute('contenteditable', 'true');
+
+
+            editableTextContainer.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+            editableTextContainer.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+            editableTextContainer.style.fontSize = ((annotation.fontsize / 100) * canvasWidth) + 'px';
+            editableTextContainer.style.color = annotation.fontcolor;
+            editableTextContainer.innerText = annotation.content;
+
+            editableTextContainer.addEventListener("focus", () => {
+                if (editableTextContainer.innerText == "Click to edit text") {
+                    editableTextContainer.innerText = ""; // Clear the content
+                }
+            });
+
+            // Add blur event listener to restore default text if left empty
+            editableTextContainer.addEventListener("blur", () => {
+                if (editableTextContainer.innerText.trim()  == "") {
+                    editableTextContainer.innerText = "Click to edit text"; // Restore default text
+                }
+            });
+
+            content.appendChild(editableTextContainer);
+            element.appendChild(content);
+            return element;
+        }
+        else if (annotation.type === "Signature") {
+            overlaysignflag = true;
+            const element = document.createElement('div');
+            element.classList.add('draggable');
+            element.style.position = 'absolute';
+            element.style.pointerEvents = 'auto';
+            element.style.border = 'none';
+            element.style.zIndex = '1000';
+            element.style.padding = '0';
+
+            const content = document.createElement('div');
+            content.classList.add('draggable-content');
+
+            element.style.left = ((annotation.x / 100) * canvasWidth) + 'px';
+            element.style.top = ((annotation.y / 100) * canvasHeight) + 'px';
+            const input = document.createElement('div');
+            input.style.border = "1px solid #44aad1";
+            input.id = "Signature";
+            fieldnameslist.push(annotation.type);
+
+
+            input.style.textAlign = 'center';
+
+            input.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+            input.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+
+            input.textContent = 'Signature';
+
+            input.style.backgroundColor = "#d8d7d78a";
+            input.style.color = "#44aad1";
+            input.style.fontSize = "40%";
+
+
+
+            content.appendChild(input);
+
+            element.appendChild(content);
+
+            return element;
+        }
+        else if (annotation.type === 'Eseal') {
+
+            overlayesealflag = true;
+            const element = document.createElement('div');
+            element.classList.add('draggable');
+            element.style.position = 'absolute';
+            element.style.pointerEvents = 'auto';
+            element.style.border = 'none';
+            element.style.zIndex = '1000';
+            element.style.padding = '0';
+
+            const content = document.createElement('div');
+            content.classList.add('draggable-content');
+
+            element.style.left = ((annotation.x / 100) * canvasWidth) + 'px';
+            element.style.top = ((annotation.y / 100) * canvasHeight) + 'px';
+
+            element.style.padding = '0';
+            const input = document.createElement('div');
+            input.style.border = "1px solid #44aad1";
+
+
+
+
+            input.style.textAlign = 'center';
+            input.style.padding = '30%';
+            input.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+            input.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+
+            input.textContent = 'Eseal';
+
+            input.style.backgroundColor = "#d8d7d78a";
+            input.style.color = "#44aad1";
+            input.style.fontSize = "40%";
+
+
+
+            input.id = 'Eseal';
+            fieldnameslist.push(annotation.type);
+            content.appendChild(input);
+
+            element.appendChild(content);
+
+            return element;
+        }
+        else if (annotation.type === 'Wsave') {
+            const element = document.createElement('div');
+            element.classList.add('draggable');
+            element.style.position = 'absolute';
+            element.style.pointerEvents = 'auto';
+            element.style.border = 'none';
+            element.style.zIndex = '1000';
+            element.style.padding = '0';
+
+            const content = document.createElement('div');
+            content.classList.add('draggable-content');
+
+            element.style.left = ((annotation.x / 100) * canvasWidth) + 'px';
+            element.style.top = ((annotation.y / 100) * canvasHeight) + 'px';
+
+            element.style.padding = '0';
+
+            var submitbutton = document.createElement("button");
+            submitbutton.textContent = "Submit";
+            submitbutton.id = "Wsave";
+            fieldnameslist.push(annotation.type);
+            submitbutton.style.textAlign = 'center';
+
+            submitbutton.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+            submitbutton.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+            submitbutton.style.color = "white";
+            submitbutton.style.backgroundColor = 'rgb(37 66 95)';
+            submitbutton.style.borderRadius = '5px';
+            submitbutton.style.fontSize = "77%";
+            submitbutton.onclick = function () {
+                saveAnnotations();
+            };
+            content.appendChild(submitbutton);
+
+            element.appendChild(content);
+
+            return element;
+        }
+        else if (annotation.type === 'Wfill') {
+            const element = document.createElement('div');
+            element.classList.add('draggable');
+            element.style.position = 'absolute';
+            element.style.pointerEvents = 'auto';
+            element.style.border = 'none';
+            element.style.zIndex = '1000';
+            element.style.padding = '0';
+
+            const content = document.createElement('div');
+            content.classList.add('draggable-content');
+
+            element.style.left = ((annotation.x / 100) * canvasWidth) + 'px';
+            element.style.top = ((annotation.y / 100) * canvasHeight) + 'px';
+
+            element.style.padding = '0';
+
+            var fillbutton = document.createElement("button");
+            fillbutton.textContent = "Auto Fill";
+            fillbutton.id = "Wfill";
+            fieldnameslist.push(annotation.type);
+            fillbutton.style.textAlign = 'center';
+
+            fillbutton.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+            fillbutton.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+            fillbutton.style.color = "white";
+            fillbutton.style.backgroundColor = 'rgb(37 66 95)';
+            fillbutton.style.borderRadius = '5px';
+            fillbutton.style.fontSize = "77%";
+            fillbutton.onclick = function () {
+                autofill();
+            };
+            content.appendChild(fillbutton);
+
+            element.appendChild(content);
+
+            return element;
+        }
+
+        else if (annotation.type === 'imagefield') {
+            const element = document.createElement('div');
+            element.classList.add('draggable');
+            element.style.position = 'absolute';
+            element.style.pointerEvents = 'auto';
+            element.style.border = 'none';
+            element.style.zIndex = '1000';
+            element.style.padding = '0';
+
+            const content = document.createElement('div');
+            content.classList.add('draggable-content');
+
+            element.style.left = ((annotation.x / 100) * canvasWidth) + 'px';
+            element.style.top = ((annotation.y / 100) * canvasHeight) + 'px';
+
+            element.style.padding = '0';
+
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'image-container';
+            imageContainer.style.width = ((annotation.width / 100) * canvasWidth) + 'px';
+            imageContainer.style.height = ((annotation.height / 100) * canvasHeight) + 'px';
+
+            const imageUpload = document.createElement('input');
+            imageUpload.setAttribute('type', 'file');
+            imageUpload.className = 'image-upload';
+            imageUpload.setAttribute('accept', 'image/*');
+
+            const uploadedImage = document.createElement('img');
+            uploadedImage.className = 'uploaded-image';
+            uploadedImage.setAttribute('alt', 'Uploaded Image');
+            uploadedImage.id = annotation.id;
+
+            // Create the placeholder text
+            const placeholderText = document.createElement('span');
+            placeholderText.className = 'placeholder-text';
+            placeholderText.innerText = 'Upload Image';
+            placeholderText.style.fontSize = '50%';
+
+            // Create the remove button
+            const removeImageBtn = document.createElement('button');
+            removeImageBtn.className = 'remove-image-btn';
+            removeImageBtn.innerHTML = '&times;';
+
+            // Append elements to the image container
+
+            imageContainer.appendChild(imageUpload);
+            imageContainer.appendChild(uploadedImage);
+            imageContainer.appendChild(placeholderText);
+            imageContainer.appendChild(removeImageBtn);
+            imageUpload.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        uploadedImage.src = e.target.result;
+                        uploadedImage.style.display = 'block';
+
+                        placeholderText.style.display = 'none';
+                        removeImageBtn.classList.add('uploaded');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+
+            removeImageBtn.addEventListener('click', function () {
+                // Hide the image
+                uploadedImage.src = '';
+                uploadedImage.style.display = 'none';
+
+                // Show the placeholder text again
+                placeholderText.style.display = 'block';
+
+                // Hide the remove button
+                removeImageBtn.classList.remove('uploaded');
+
+                // Clear the file input value
+                imageUpload.value = '';
+            });
+
+            content.appendChild(imageContainer);
+
+            element.appendChild(content);
+
+            return element;
+        }
+    }
+
+    function fieldConfig(schema) {
+      
+
+        
+        schema.forEach((element, index) => {
+
+            if (element.type == "text") {
+                const container = document.getElementById('role1');
+                const elementdiv = document.createElement('div');
+                elementdiv.style.minWidth = '47%';
+                elementdiv.style.height = '15%';
+                elementdiv.style.marginRight = '3%';
+                container.appendChild(elementdiv);
+
+                const label = document.createElement('label');
+                label.htmlFor = element.id;
+                label.textContent = element.id;
+                label.style.color = 'black';
+                label.style.fontSize = '15px';
+                label.style.width = '28%';
+
+                const label1 = document.createElement('label');
+                label1.textContent = ':'
+                label1.style.fontSize = '15px';
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = element.id;
+                preFilledData.id = "";
+                input.style.fontSize = '14px';
+                input.style.border = '1px solid black';
+                input.style.borderRadius = '5px';
+                input.style.width = '65%';
+                const space = document.createTextNode('\u00A0\u00A0\u00A0');
+
+                elementdiv.appendChild(label);
+                elementdiv.appendChild(label1);
+                elementdiv.appendChild(space);
+                elementdiv.appendChild(input);
+
+                input.addEventListener('input', function () {
+                    
+                    const pdfInput = document.querySelector('#pdf-container [id="' + element.id + '"]');
+                    if (pdfInput) {
+                        pdfInput.value = input.value;
+                        componentsdata[index].content = input.value;
+                        preFilledData.id = input.value;
+                    }
+                });
+
+            }
+            else if (element.type == "date") {
+                const container = document.getElementById('role1');
+                const elementdiv = document.createElement('div');
+                elementdiv.style.minWidth = '47%';
+                elementdiv.style.height = '15%';
+                elementdiv.style.marginRight = '3%';
+                container.appendChild(elementdiv);
+
+                const label = document.createElement('label');
+                label.htmlFor = element.id;
+                label.textContent = element.id;
+                label.style.color = 'black';
+                label.style.fontSize = '15px';
+                label.style.width = '28%';
+
+                const label1 = document.createElement('label');
+                label1.textContent = ':'
+                label1.style.fontSize = '15px';
+
+                const input = document.createElement('input');
+                input.type = 'date';
+                input.id = element.id;
+                preFilledData.id = "";
+                input.style.fontSize = '14px';
+                input.style.border = '1px solid black';
+                input.style.borderRadius = '5px';
+                input.style.width = '65%';
+                const space = document.createTextNode('\u00A0\u00A0\u00A0');
+
+                elementdiv.appendChild(label);
+                elementdiv.appendChild(label1);
+                elementdiv.appendChild(space);
+                elementdiv.appendChild(input);
+            }
+            else if (element.type == "select") {
+                const container = document.getElementById('role1');
+                const elementdiv = document.createElement('div');
+                elementdiv.style.minWidth = '47%';
+                elementdiv.style.height = '15%';
+                elementdiv.style.marginRight = '3%';
+                container.appendChild(elementdiv);
+
+                const label = document.createElement('label');
+                label.htmlFor = element.id;
+                label.textContent = element.id;
+                label.style.color = 'black';
+                label.style.fontSize = '15px';
+                label.style.width = '28%';
+
+                const label1 = document.createElement('label');
+                label1.textContent = ':'
+                label1.style.fontSize = '15px';
+
+                const input = document.createElement('select');
+
+                input.id = element.id;
+                preFilledData.id = "";
+                input.style.fontSize = '14px';
+                input.style.border = '1px solid black';
+                input.style.borderRadius = '5px';
+                input.style.width = '65%';
+
+                var optionElement = document.createElement('option');
+                optionElement.value = "Select Option";
+                optionElement.textContent = "Select Option";
+                input.appendChild(optionElement);
+
+                (element.options).forEach(optionText => {
+                    var optionElement = document.createElement('option');
+                    optionElement.value = optionText;
+                    optionElement.textContent = optionText;
+                    input.appendChild(optionElement);
+                });
+                const space = document.createTextNode('\u00A0\u00A0\u00A0');
+
+                elementdiv.appendChild(label);
+                elementdiv.appendChild(label1);
+                elementdiv.appendChild(space);
+                elementdiv.appendChild(input);
+
+
+            }
+        });
+        schema.forEach(element => {
+
+
+
+            if (element.type === "imagefield") {
+                const container = document.getElementById('role1');
+                const elementdiv = document.createElement('div');
+                elementdiv.style.width = '100%';
+                elementdiv.style.height = '15%';
+                elementdiv.style.marginRight = '3%';
+                container.appendChild(elementdiv);
+
+                const label = document.createElement('label');
+                label.htmlFor = element.id;
+                label.textContent = element.id;
+                label.style.color = 'black';
+                label.style.fontSize = '15px';
+                label.style.width = '14%';
+
+                const label1 = document.createElement('label');
+                label1.textContent = ':';
+                label1.style.fontSize = '15px';
+
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.id = element.id;
+                preFilledData.id = "";
+                fileInput.accept = 'image/*';
+                fileInput.style.fontSize = '14px';
+                fileInput.style.border = '1px solid black';
+                fileInput.style.borderRadius = '5px';
+                fileInput.style.width = '31%';
+
+                const deleteIcon = document.createElement('button');
+                deleteIcon.type = 'button';
+                deleteIcon.textContent = '🗑️';
+                deleteIcon.style.border = 'none';
+                deleteIcon.style.background = 'transparent';
+                deleteIcon.style.cursor = 'pointer';
+                deleteIcon.style.fontSize = '18px';
+                deleteIcon.style.marginLeft = '10px';
+                deleteIcon.style.display = 'none';
+
+                
+
+                // Add event listener to file input
+                fileInput.addEventListener('change', () => {
+                    if (fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        const reader = new FileReader();
+
+                        reader.onload = (e) => {
+                            
+                            deleteIcon.style.display = 'inline'; // Show delete button
+                            fileInput.style.width = '27%'; // Adjust file input width
+                        };
+
+                        reader.readAsDataURL(file); // Read the file as a data URL
+                    } else {
+                        
+                        deleteIcon.style.display = 'none';
+                    }
+                });
+
+                deleteIcon.onclick = () => {
+                    fileInput.value = '';
+                    
+                    deleteIcon.style.display = 'none'; // Hide delete button
+                    fileInput.style.width = '31%'; // Reset file input width
+                };
+
+                const space = document.createTextNode('\u00A0\u00A0\u00A0');
+
+                elementdiv.appendChild(label);
+                elementdiv.appendChild(label1);
+                elementdiv.appendChild(space);
+                elementdiv.appendChild(fileInput);
+                elementdiv.appendChild(deleteIcon);
+               
+            }
+
+
+
+        });
+    }
+
+    function createRolesGroup() {
+
+        const modelObject = document.getElementById('modelobject').value;
+        var rolesAvailable = (JSON.parse(modelObject)).roles;
+
+        const clientSelect = document.getElementById("ClientSelect");
+        const rolesFields = document.getElementById('rolesFields');
+        const rolesforFields = document.getElementById('rolesForFields');
+        
+        rolesAvailable.forEach((role,index) => {
+            const option = document.createElement("option");
+            const option1 = document.createElement("option");
+            option.value = role.name;
+            option1.value = role.name;
+            option.textContent = role.name;
+            option1.textContent = role.name;
+
+            if (index === 0) {
+                option.selected = true;
+                option1.selected = true;
+            }
+            clientSelect.appendChild(option); 
+            rolesforFields.appendChild(option1);
+
+            const roleDiv = document.createElement('div');
+            roleDiv.id = `role${index + 1}`; 
+            roleDiv.style.height = '100%';
+            roleDiv.style.backgroundColor = 'rgba(247,249,251,255)';
+            roleDiv.style.display = 'flex';
+            roleDiv.style.flexDirection = 'row';
+            roleDiv.style.flexWrap = 'wrap';
+            roleDiv.style.overflowY = 'auto';
+            roleDiv.style.padding = '2%';
+
+            
+            const heading = document.createElement('h3');
+            heading.style.width = '100%';
+            heading.style.textAlign = 'left';
+            heading.style.color = 'black';
+            heading.textContent = role.name;
+
+            roleDiv.appendChild(heading);
+            rolesFields.appendChild(roleDiv);
+        });
+
+        
+
+        const rolesGroup = document.createElement('div');
+        rolesGroup.className = 'roles-group';
+        rolesGroup.style.height = '100%';
+        rolesGroup.style.backgroundColor = 'rgba(247, 249, 251, 1)';
+        rolesGroup.style.marginBottom = '2%';
+        rolesGroup.style.padding = '2%';
+       
+
+        rolesAvailable.forEach((role, index) => {
+
+            var space1 = document.createElement('span');
+            var space2 = document.createElement('span');
+            var space3 = document.createElement('span');
+            space1.innerHTML = ':';
+            space2.innerHTML = ':';
+            space3.innerHTML = ':';
+
+            const ele = document.createElement('h5');
+            ele.textContent = `Signer ${index + 1}`;
+            ele.style.marginTop = '0';
+            rolesGroup.appendChild(ele);
+
+            const roleContainer = document.createElement('div');
+            roleContainer.className = 'role-container';
+            roleContainer.style.display = 'flex';
+            roleContainer.style.flexDirection = 'column';
+            roleContainer.style.marginLeft = '2%';
+
+            const nameDiv = document.createElement('div')
+            nameDiv.style.display = 'flex';
+            nameDiv.style.flexDirection = 'row';
+            nameDiv.style.marginBottom = '1%';
+
+            const nameLabel = document.createElement('label');
+            nameLabel.textContent = 'Role Name';
+            nameLabel.htmlFor = `${role.name}`;
+            nameLabel.style.margin = '0';
+            nameLabel.style.minWidth = '16%'
+            
+
+            const nameInput = document.createElement('label');
+            nameInput.textContent = `${role.name}`;
+            nameInput.id = "RoleName"
+            nameInput.style.color = 'black';     
+            nameInput.style.margin = '0';
+            nameInput.style.marginLeft = '2%';
+            nameInput.style.fontSize = '100%';
+
+            nameDiv.appendChild(nameLabel);
+            nameDiv.appendChild(space1);
+            nameDiv.appendChild(nameInput);
+            roleContainer.appendChild(nameDiv);
+
+            const signerNameDiv = document.createElement('div')
+            signerNameDiv.style.display = 'flex';
+            signerNameDiv.style.flexDirection = 'row';
+            signerNameDiv.style.marginBottom = '1%';
+
+            const signerNameLabel = document.createElement('label');
+            signerNameLabel.textContent = 'Signer Name';
+            signerNameLabel.htmlFor = `signerName-${role.name}`;
+            signerNameLabel.style.margin = '0';
+            signerNameLabel.style.minWidth = '16%'
+
+            const signerNameInput = document.createElement('input');
+            signerNameInput.type = 'text';
+            signerNameInput.id = `SignerName`;
+            signerNameInput.name = `signerName-${role.name}`;
+            signerNameInput.style.fontSize = '80%';
+            signerNameInput.style.marginLeft = '2%';
+            signerNameInput.style.width = '60%'
+
+            signerNameDiv.appendChild(signerNameLabel);
+            signerNameDiv.appendChild(space2);
+            signerNameDiv.appendChild(signerNameInput);
+            roleContainer.appendChild(signerNameDiv);
+
+            const emailDiv = document.createElement('div')
+            emailDiv.style.display = 'flex';
+            emailDiv.style.flexDirection = 'row';
+            emailDiv.style.marginBottom = '1%';
+
+            const emailLabel = document.createElement('label');
+            emailLabel.textContent = 'Email';
+            emailLabel.htmlFor = `email-${role.name}`;
+            emailLabel.style.margin = '0';
+            emailLabel.style.minWidth = '16%'
+            
+
+            const emailInput = document.createElement('input');
+            emailInput.type = 'text';
+            emailInput.id = `RoleEmail`;
+            emailInput.name = `email-${role.name}`;
+            emailInput.style.fontSize = '80%';
+            emailInput.style.marginLeft = '2%';
+            emailInput.style.width = '60%'
+
+            emailDiv.appendChild(emailLabel);
+            emailDiv.appendChild(space3);
+            emailDiv.appendChild(emailInput);
+            roleContainer.appendChild(emailDiv);
+
+            rolesGroup.appendChild(roleContainer);
+        });
+
+
+        (document.getElementById('roles')).appendChild(rolesGroup);
+    }
+
+   
+    var steps = document.querySelectorAll('.steps .circle');
+    var line = document.querySelector('.progress-bar .indicator');
+
+    function updateProgressBar(step, color) {
+        steps.forEach((stepElement, index) => {
+            stepElement.classList[index < step ? 'add' : 'remove']('active');
+        });
+
+        var width = ((step - 1) / (steps.length - 1)) * 100;
+        line.style.width = width + '%';
+        line.style.background = color;
+    }
+
+    function updateCircleColors(step, color) {
+        steps.forEach((stepElement, index) => {
+            stepElement.style.borderColor = index < step ? color : '#e0e0e0';
+            stepElement.style.color = index < step ? color : '#e0e0e0';
+        });
+    }
+
+    $("#nextButton").on("click", function (e) {
+        e.preventDefault(); 
+
+        const divs = document.querySelectorAll('#configurations > div');
+
+        // Find the currently visible div (without the 'hide' class)
+        const visibleDiv = Array.from(divs).find(div => !div.classList.contains('classshide'));
+
+        if (visibleDiv) {
+            const currentId = parseInt(visibleDiv.id); 
+            const nextId = currentId % 3 + 1; 
+
+            visibleDiv.classList.add('classshide');
+
+            const nextDiv = document.getElementById(nextId.toString());
+            if (nextDiv) {
+                nextDiv.classList.remove('classshide');
+            }
+
+            updateProgressBar(nextId, "#acc43d");
+            updateCircleColors(nextId, "#acc43d");
+
+            const leftCol = document.getElementById('stepContent');
+            const rightCol = document.getElementById('pdfContainerMain');
+
+            
+            if (nextId === 3) {
+                (document.getElementById('nextButton')).style.display = 'none';
+                (document.getElementById('sendButton')).style.display = 'block';
+                
+                const loader = document.createElement('div');
+                loader.className = 'loader';
+                loader.id = 'pdfloader';
+
+                rightCol.appendChild(loader);
+                document.getElementById('pdf-container').innerHTML = "";
+
+                rightCol.classList.remove('col-md-4');
+                leftCol.classList.remove('col-md-8');
+                rightCol.classList.add('col-md-8');
+
+                
+                leftCol.classList.add('col-md-4');
+                
+                setTimeout(loadTemplate, 1000);
+
+
+                
+            } 
+
+            
+            
+        }
+        
+
+        window.scrollTo(0, 0);
+    });
+
+    $("#prevButton").on("click", function (e) {
+        e.preventDefault();
+
+        const divs = document.querySelectorAll('#configurations > div');
+
+        // Find the currently visible div (without the 'hide' class)
+        const visibleDiv = Array.from(divs).find(div => !div.classList.contains('classshide'));
+
+        if (visibleDiv) {
+            const currentId = parseInt(visibleDiv.id);
+            const prevId = currentId === 1 ? divs.length : currentId - 1; // Circular navigation
+
+            // Hide the current div
+            visibleDiv.classList.add('classshide');
+
+            // Show the previous div
+            const prevDiv = document.getElementById(prevId.toString());
+            if (prevDiv) {
+                prevDiv.classList.remove('classshide');
+            }
+
+            updateProgressBar(prevId, "#acc43d");
+            updateCircleColors(prevId, "#acc43d");
+
+            const leftCol = document.getElementById('stepContent');
+            const rightCol = document.getElementById('pdfContainerMain');
+
+            
+            if (currentId === 3) {
+                (document.getElementById('nextButton')).style.display = 'block';
+                (document.getElementById('sendButton')).style.display = 'none'; 
+                const loader = document.createElement('div');
+                loader.className = 'loader';
+                loader.id = 'pdfloader';
+
+                rightCol.appendChild(loader);
+
+                document.getElementById('pdf-container').innerHTML = "";
+
+                rightCol.classList.remove('col-md-8');
+                leftCol.classList.remove('col-md-4');
+                rightCol.classList.add('col-md-4');
+
+
+                leftCol.classList.add('col-md-8');
+                setTimeout(loadTemplate, 1000);
+            }
+            
+        }
+
+        window.scrollTo(0, 0);
+    });
+
+    $("#sendButton").on("click", function (e) {
+        e.preventDefault();
+
+        const sequence = document.getElementById('sequentialSign');
+        const docName = document.getElementById('docName').value;
+        const signDays = document.getElementById('signDays').value;
+
+        
+
+        
+        const roleContainers = document.querySelectorAll('#roles .roles-group .role-container');
+        const roleDataList = Array.from(roleContainers).map(container => {
+            // const roleName = container.querySelector('#RoleName')?.value || '';  
+            // const signerName = container.querySelector('#SignerName')?.value || ''; 
+            const email = container.querySelector('#RoleEmail')?.value || '';
+
+
+            return { email };
+        });
+
+ 
+
+        
+        const radioGroups = {};
+        const pdfradioGroups = {};
+
+        var Cordinates = { "imgHeight": "", "imgWidth": "", "signatureYaxis": "", "signatureXaxis": "", "pageNumber": "" }
+        var signCoordinates = {
+            "esealplaceHolderCoordinates": Cordinates,
+            "placeHolderCoordinates": Cordinates,
+            "qrPlaceHolderCoordinates": Cordinates,
+        }
+        var esealplaceHolderCoordinates = {};
+        var placeHolderCoordinates = {};
+
+        document.querySelectorAll('.pdf-page').forEach((pageElement, pageIndex) => {
+            const annotationLayer = pageElement.querySelector('.annotation-layer');
+            const canvas = pageElement.querySelector('canvas'); // Get the canvas element
+            const width = canvas.getBoundingClientRect().width; // Get the width of the canvas
+            const height = canvas.getBoundingClientRect().height; // Get the height of the canvas
+
+            annotationLayer.querySelectorAll('.draggable').forEach(element => {
+                var computedStyle = window.getComputedStyle(element);
+
+
+                var draggablepadding = computedStyle.getPropertyValue('padding-top');
+
+                const rect = element.getBoundingClientRect();
+                if (element.querySelectorAll('.editable-text')[0]) {
+                    var inputrect = element.querySelector('.editable-text').getBoundingClientRect();
+                } else if (element.querySelector('#Signature')) {
+                    var inputrect = element.querySelector('#Signature').getBoundingClientRect();
+                }
+                else if (element.querySelector('#Eseal')) {
+                    var inputrect = element.querySelector('#Eseal').getBoundingClientRect();
+                }
+                else if (element.querySelector('#Wsave')) {
+                    var inputrect = element.querySelector('#Wsave').getBoundingClientRect();
+                }
+                else if (element.querySelector('#Wfill')) {
+                    var inputrect = element.querySelector('#Wfill').getBoundingClientRect();
+                }
+                else if (element.querySelectorAll('.image-container')[0]) {
+                    var inputrect = element.querySelector('.image-container').getBoundingClientRect();
+                }
+                else {
+                    var ele = element.querySelector('.input-field');
+                    var inputrect = element.querySelector('.input-field').getBoundingClientRect();
+                }
+
+                const parentRect = element.parentElement.getBoundingClientRect();
+
+                if (element.querySelector('input[type="radio"]')) {
+                    // Handle radio buttons
+                    const radio = element.querySelector('input[type="radio"]');
+                    const groupName = radio.name;
+                    if (!radioGroups[groupName]) {
+                        radioGroups[groupName] = {
+                            type: 'radio',
+                            name: groupName,
+                            buttons: [],
+                            page: pageIndex + 1 // Page number (1-based index)
+                        };
+                        pdfradioGroups[groupName] = {
+                            type: 'radio',
+                            name: groupName,
+                            buttons: [],
+                            page: pageIndex + 1 // Page number (1-based index)
+                        };
+                    }
+                    radioGroups[groupName].buttons.push({
+                        value: radio.value,
+                        x: ((rect.left - parentRect.left) / width) * 100,
+                        y: ((rect.top - parentRect.top) / height) * 100,
+                        width: (inputrect.width / width) * 100,
+                        height: (inputrect.height / height) * 100,
+                        draggablepadding: (parseFloat(draggablepadding) / width) * 100,
+                        id: radio.id,
+
+                    });
+                    pdfradioGroups[groupName].buttons.push({
+                        value: radio.value,
+                        x: ((rect.left - parentRect.left) * scaleX),
+                        y: ((rect.top - parentRect.top) * scaleY),
+                        width: (inputrect.width * scaleX),
+                        height: (inputrect.height * scaleY),
+                        radioName: radio.id,
+
+                    });
+                }
+                else if (element.querySelector('input[type="text"]')) {
+                    var fontSize = element.querySelector('input[type="text"]').style.fontSize;
+                    if (fontSize === "") {
+                        var computedStyle = window.getComputedStyle(element.querySelector('input[type="text"]'));
+                        fontSize = computedStyle.getPropertyValue('font-size');
+                    }
+                    // Handle text fields and checkboxes
+                    annotations.push({
+                        type: 'text',
+                        x: ((rect.left - parentRect.left) / width) * 100,
+                        y: ((rect.top - parentRect.top) / height) * 100,
+                        width: (inputrect.width / width) * 100,
+                        height: (inputrect.height / height) * 100,
+                        fontsize: (parseFloat(fontSize) / width) * 100,
+                        draggablepadding: (parseFloat(draggablepadding) / width) * 100,
+                        content: element.querySelector('input[type="text"]') ? element.querySelector('input[type="text"]').value : '',
+                        id: element.querySelector('input') ? element.querySelector('input').id : '',
+                        page: pageIndex + 1 // Page number (1-based index)
+                    });
+                    pdfAnnotations.push({
+                        type: 'text',
+                        x: ((rect.left - parentRect.left) * scaleX),
+                        y: ((rect.top - parentRect.top) * scaleY),
+                        width: (inputrect.width * scaleX),
+                        height: (inputrect.height * scaleY),
+                        page: pageIndex + 1
+                    });
+                }
+                else if (element.querySelector('input[type="checkbox"]')) {
+                    annotations.push({
+                        type: 'checkbox',
+                        x: ((rect.left - parentRect.left) / width) * 100,
+                        y: ((rect.top - parentRect.top) / height) * 100,
+                        width: (inputrect.width / width) * 100,
+                        height: (inputrect.height / height) * 100,
+                        draggablepadding: (parseFloat(draggablepadding) / width) * 100,
+                        value: element.querySelector('input[type="checkbox"]') ? element.querySelector('input[type="checkbox"]').value : '',
+                        id: element.querySelector('input') ? element.querySelector('input').id : '',
+                        page: pageIndex + 1 // Page number (1-based index)
+                    });
+                    pdfAnnotations.push({
+                        type: 'checkbox',
+                        x: ((rect.left - parentRect.left) * scaleX),
+                        y: ((rect.top - parentRect.top) * scaleY),
+                        width: (inputrect.width * scaleX),
+                        height: (inputrect.height * scaleY),
+                        page: pageIndex + 1
+                    });
+                }
+                else if (element.querySelector('select')) {
+
+                    var fontSize = element.querySelector('select').style.fontSize;
+                    if (fontSize === "") {
+                        var computedStyle = window.getComputedStyle(element.querySelector('select'));
+                        fontSize = computedStyle.getPropertyValue('font-size');
+                    }
+                    annotations.push({
+                        type: 'select',
+                        x: ((rect.left - parentRect.left) / width) * 100,
+                        y: ((rect.top - parentRect.top) / height) * 100,
+                        width: (inputrect.width / width) * 100,
+                        height: (inputrect.height / height) * 100,
+                        fontsize: (parseFloat(fontSize) / width) * 100,
+                        draggablepadding: (parseFloat(draggablepadding) / width) * 100,
+                        options: element.querySelector('select') ? Array.from(element.querySelector('select').options).map(option => option.value).filter(value => value !== "Select Option") : [],
+                        id: element.querySelector('select') ? element.querySelector('select').id : '',
+                        page: pageIndex + 1 // Page number (1-based index)
+                    });
+                    pdfAnnotations.push({
+                        type: 'select',
+                        x: ((rect.left - parentRect.left) * scaleX),
+                        y: ((rect.top - parentRect.top) * scaleY),
+                        width: (inputrect.width * scaleX),
+                        height: (inputrect.height * scaleY),
+                        options: element.querySelector('select') ? Array.from(element.querySelector('select').options).map(option => option.value).filter(value => value !== "Select Option") : [],
+                        name: element.querySelector('select') ? element.querySelector('select').id : '',
+                        page: pageIndex + 1
+                    });
+                }
+                else if (element.querySelector('input[type="date"]')) {
+                    var fontSize = element.querySelector('input[type="date"]').style.fontSize;
+                    if (fontSize === "") {
+                        var computedStyle = window.getComputedStyle(element.querySelector('input[type="date"]'));
+                        fontSize = computedStyle.getPropertyValue('font-size');
+                    }
+                    annotations.push({
+                        type: 'date',
+                        x: ((rect.left - parentRect.left) / width) * 100,
+                        y: ((rect.top - parentRect.top) / height) * 100,
+                        width: (inputrect.width / width) * 100,
+                        height: (inputrect.height / height) * 100,
+                        fontsize: (parseFloat(fontSize) / width) * 100,
+                        draggablepadding: (parseFloat(draggablepadding) / width) * 100,
+                        content: element.querySelector('input[type="date"]') ? element.querySelector('input[type="date"]').value : '',
+                        id: element.querySelector('input') ? element.querySelector('input').id : '',
+                        page: pageIndex + 1
+                    });
+                    pdfAnnotations.push({
+                        type: 'date',
+                        x: ((rect.left - parentRect.left) * scaleX),
+                        y: ((rect.top - parentRect.top) * scaleY),
+                        width: (inputrect.width * scaleX),
+                        height: (inputrect.height * scaleY),
+                        name: element.querySelector('input') ? element.querySelector('input').id : '',
+                        page: pageIndex + 1
+                    });
+                }
+                else if (element.querySelector('.editable-text')) {
+                    var fontSize = element.querySelector('.editable-text').style.fontSize;
+                    if (fontSize === "") {
+                        var computedStyle = window.getComputedStyle(element.querySelector('.editable-text'));
+                        fontSize = computedStyle.getPropertyValue('font-size');
+                    }
+                    annotations.push({
+                        type: 'plain-text',
+                        x: ((rect.left - parentRect.left) / width) * 100,
+                        y: ((rect.top - parentRect.top) / height) * 100,
+                        width: (inputrect.width / width) * 100,
+                        height: (inputrect.height / height) * 100,
+                        fontsize: (parseFloat(fontSize) / width) * 100,
+                        draggablepadding: (parseFloat(draggablepadding) / width) * 100,
+                        content: element.querySelectorAll('.editable-text') ? element.querySelectorAll('.editable-text')[0].innerText : '',
+                        page: pageIndex + 1 // Page number (1-based index)
+                    });
+                    pdfAnnotations.push({
+                        type: 'plain-text',
+                        x: ((rect.left - parentRect.left) * scaleX),
+                        y: ((rect.top - parentRect.top) * scaleY),
+                        width: (inputrect.width * scaleX),
+                        height: (inputrect.height * scaleY),
+                        content: element.querySelectorAll('.editable-text') ? element.querySelectorAll('.editable-text')[0].innerText : '',
+                        page: pageIndex + 1
+                    });
+                } else if (element.querySelector("#Signature")) {
+                    annotations.push({
+                        type: 'Signature',
+                        x: ((rect.left - parentRect.left) / width) * 100,
+                        y: ((rect.top - parentRect.top) / height) * 100,
+                        width: (inputrect.width / width) * 100,
+                        height: (inputrect.height / height) * 100,
+                        page: pageIndex + 1
+                    });
+                    const pdfPage = document.getElementsByClassName("pdf-page")[0];
+                    var rect1 = pdfPage.getBoundingClientRect();
+
+
+                    scaleX = originalWidth / rect1.width;
+                    scaleY = originalHeight / rect1.height;
+                    signatureX = (rect.left - parentRect.left) * scaleX;
+                    signatureY = (rect.top - parentRect.top) * scaleY;
+                    signaturePage = pageIndex + 1;
+                    signCoordinates.placeHolderCoordinates.signatureXaxis = signatureX;
+                    signCoordinates.placeHolderCoordinates.signatureYaxis = signatureY;
+                    signCoordinates.placeHolderCoordinates.pageNumber = signaturePage;
+
+                } else if (element.querySelector("#Eseal")) {
+                    annotations.push({
+                        type: 'Eseal',
+                        x: ((rect.left - parentRect.left) / width) * 100,
+                        y: ((rect.top - parentRect.top) / height) * 100,
+                        width: (inputrect.width / width) * 100,
+                        height: (inputrect.height / height) * 100,
+                        page: pageIndex + 1
+                    });
+
+                    const pdfPage = document.getElementsByClassName("pdf-page")[0];
+                    var rect1 = pdfPage.getBoundingClientRect();
+                    scaleX = originalWidth / rect1.width;
+                    scaleY = originalHeight / rect1.height;
+                    esealX = (rect.left - parentRect.left) * scaleX;
+                    esealY = (rect.top - parentRect.top) * scaleY;
+                    esealPage = pageIndex + 1;
+
+                    signCoordinates.esealplaceHolderCoordinates.signatureXaxis = esealX;
+                    signCoordinates.esealplaceHolderCoordinates.signatureYaxis = esealY;
+                    signCoordinates.esealplaceHolderCoordinates.pageNumber = esealPage;
+                }
+                else if (element.querySelector('#Wsave')) {
+                    annotations.push({
+                        type: 'Wsave',
+                        x: ((rect.left - parentRect.left) / width) * 100,
+                        y: ((rect.top - parentRect.top) / height) * 100,
+                        width: (inputrect.width / width) * 100,
+                        height: (inputrect.height / height) * 100,
+                        page: pageIndex + 1
+                    });
+                }
+                else if (element.querySelector('#Wfill')) {
+                    annotations.push({
+                        type: 'Wfill',
+                        x: ((rect.left - parentRect.left) / width) * 100,
+                        y: ((rect.top - parentRect.top) / height) * 100,
+                        width: (inputrect.width / width) * 100,
+                        height: (inputrect.height / height) * 100,
+                        page: pageIndex + 1
+                    });
+                }
+                else if (element.querySelector('.image-container')) {
+                    annotations.push({
+                        type: 'imagefield',
+                        id: ((element.querySelector('.image-container')).children[1]).id,
+                        x: ((rect.left - parentRect.left) / width) * 100,
+                        y: ((rect.top - parentRect.top) / height) * 100,
+                        width: (inputrect.width / width) * 100,
+                        height: (inputrect.height / height) * 100,
+                        page: pageIndex + 1
+                    });
+                }
+            });
+        });
+
+        for (const groupName in radioGroups) {
+            if (radioGroups.hasOwnProperty(groupName)) {
+                annotations.push(radioGroups[groupName]);
+                pdfAnnotations.push(pdfradioGroups[groupName]);
+            }
+        }
+        
+   
+
+        var signingOrder = {};
+        var roleAnnotations = {};
+
+        var Data = @rolesData;
+        var result = {};
+        Data.forEach((role,index) => { 
+            roleId = (role._id);
+            
+            signingOrder[roleId] = index + 1;
+            
+            roleAnnotations[roleId] = signCoordinates;
+            
+            result[role._id] = { email: roleDataList[index].email };
+        });
+
+        
+        
+  
+
+
+        var fileFormData = new FormData();
+        fileFormData.append("sequentialSigning", sequence.checked);
+        fileFormData.append("documentName", docName);
+        fileFormData.append("RequestType", "Individual");
+        fileFormData.append("TemplateType", "PDF");
+        fileFormData.append("daysToComplete", signDays);
+        fileFormData.append("roleMappings", JSON.stringify(result));
+        fileFormData.append("preFilledData", JSON.stringify(preFilledData));
+        fileFormData.append("htmlSchema", JSON.stringify(annotations));
+        fileFormData.append("pdfSchema", JSON.stringify(pdfAnnotations));
+        fileFormData.append("RoleAnnotations", JSON.stringify(roleAnnotations));
+        fileFormData.append("roleSigningOrder", JSON.stringify(signingOrder));
+        fileFormData.append("formId", "@Model.tempid");
+        
+        SaveDocument("@Url.Action("SendRequest", "DigitalForms")", fileFormData)
+            .then((response) => {
+
+                if (response.status == "Success") {
+                    swal({
+                        title: "Success",
+                        text: response.message,
+                        type: "success",
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            document.getElementById("navigationNetworkOverlay").style.display = "block";
+                            window.location.href = '@Url.Action("Index", "DigitalForms")';
+                        }
+                    });
+                }
+                else {
+                    swal({
+                        title: "Error",
+                        text: response.message,
+                        type: "error",
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            document.getElementById("navigationNetworkOverlay").style.display = "block";
+                            window.location.href = '@Url.Action("Index", "DigitalForms")';
+                        }
+                    });
+
+                }
+
+            })
+    });
+
+    const toolbarButtons = document.querySelectorAll('#toolbar button');
+    toolbarButtons.forEach(button => {
+        button.addEventListener('mousedown', onMouseDown);
+    });
+
+    function onMouseDown(event) {
+        const type = event.target.id;
+        const ghostElement = createGhostElement(event);
+
+        document.body.appendChild(ghostElement);
+
+
+        const offsetX = document.documentElement.scrollLeft || document.body.scrollLeft;
+
+        const offsetY = document.documentElement.scrollTop || document.body.scrollTop;
+
+        function onMouseMove(e) {
+            ghostElement.style.left = e.clientX + offsetX + 'px';
+            ghostElement.style.top = e.clientY + offsetY + 'px';
+        }
+
+        function onMouseUp(e) {
+            const pageElements = document.elementsFromPoint(e.clientX, e.clientY);
+            const pdfPage = pageElements.find(el => el.classList.contains('pdf-page'));
+
+            if (!pdfPage) {
+                ghostElement.remove();
+                 document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                return;
+            }
+
+            const ghostRect = ghostElement.getBoundingClientRect();
+            const pageRect = pdfPage.getBoundingClientRect();
+
+            const tolerance = 1;
+            const isFullyInside =
+                ghostRect.top >= pageRect.top - tolerance &&
+                ghostRect.left >= pageRect.left - tolerance &&
+                ghostRect.bottom <= pageRect.bottom + tolerance &&
+                ghostRect.right <= pageRect.right + tolerance;
+
+
+            if (!isFullyInside) {
+                ghostElement.remove(); // Not fully inside the page
+                 document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                return;
+            }
+
+            if (pdfPage) {
+                const annotationLayer = pdfPage.querySelector('.annotation-layer');
+                const rect = pdfPage.getBoundingClientRect();
+                const left = e.clientX - rect.left;
+                const top = e.clientY - rect.top;
+
+                if (type === "text-field") {
+
+                    const newHeader = '<h5 class="modal-title">Enter Field Name</h5>';
+                    const newBody = `<input type="text"  id="FieldNameInput" class="form-control"  placeholder="Enter Field Name">
+                                <span id="errorFieldName" style="color: red; display: none;"></span>
+                            `;
+                    const newFooter = `
+                                                    <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                            `;
+
+                    updateModalContent(newHeader, newBody, newFooter);
+
+                    document.getElementById('saveFieldName').addEventListener('click', () => {
+                        fieldName = document.getElementById('FieldNameInput').value;
+                        if (fieldName.replace(/\s+/g, '') !== '') {
+                            if (!fieldnameslist.includes(fieldName)) {
+
+                                const element = createDraggableElement(type, left, top, fieldName);
+                                annotationLayer.appendChild(element);
+                                if ((element.offsetWidth + left) > rect.width) {
+                                    annotationLayer.removeChild(element);
+                                } else {
+                                    fieldnameslist.push(fieldName);
+                                }
+                                $('#EditFields_Modal').modal('hide');
+                            } else {
+                                document.getElementById('errorFieldName').innerText = "Field Name already taken";
+                                document.getElementById('errorFieldName').style.display = 'block';
+
+                            }
+
+                        } else {
+                            document.getElementById('errorFieldName').innerText = "Field Name can't be empty";
+                            document.getElementById('errorFieldName').style.display = 'block';
+
+                        }
+
+                    });
+
+                    document.getElementById('FieldNameInput').addEventListener('click', function () {
+                        document.getElementById('errorFieldName').style.display = 'none';
+                    });
+
+                    $('#EditFields_Modal').modal('show');
+
+                }
+                else if (type === "radio-button") {
+
+                    const radioGroupOptions = Object.keys(radioGroups).map(group => `<option value="${group}">${group}</option>`).join('');
+
+
+                    const newHeader = '<h5 class="modal-title">Radio Button Details</h5>';
+                    const newBody = `
+
+                                         <div style='display:flex;'>
+                                            <label>Select Group :</label>
+                                                <select id="radio-group-select" style="margin-left:5%;width:46%" >
+                                                    <option value="">Select Group</option>
+                                                    ${radioGroupOptions}
+                                                </select>
+
+                                                    <button id="radio-add-new-group-btn" style='margin-left:2%;' class="btn btn-primary">Create</button>
+                                         </div>
+                                             <span id="errorSelectFieldName" style="color: red; display: none;">Group Name can't be empty</span>
+                                         <div style='display:none;margin-top:5%;' id='entergroup'></div>
+                                             <span id="errorInputGroupName" style="color: red; display: none;">Group Name can't be empty</span>
+                                         <div style='display:flex;margin-top:5%;'>
+                                            <label>Radio Value :</label>
+                                            <input id="radio-value" style='margin-left:6%' placeholder="Radio Button Value">
+                                         </div>
+                                             <span id="errorRadioValue" style="color: red; display: none;">Radio Value can't be empty</span>`;
+                    const newFooter = `
+                                                        <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                `;
+
+                    updateModalContent(newHeader, newBody, newFooter);
+
+                    document.getElementById('radio-add-new-group-btn').addEventListener('click', (event) => {
+
+                        if (!document.getElementById('radio-group-name')) {
+                            const groupinput = document.createElement('input');
+                            const grouplabel = document.createElement('label');
+                            const groupdiv = document.getElementById('entergroup');
+                            const selectGroup = document.getElementById('radio-group-select');
+
+                            selectGroup.selectedIndex = 0;
+
+                            groupdiv.style.display = 'flex';
+
+                            groupdiv.style.marginTop = '5%';
+
+                            grouplabel.innerHTML = 'Group Name :';
+
+                            grouplabel.id = 'group-label';
+
+                            groupinput.id = 'radio-group-name';
+
+                            groupinput.placeholder = 'Enter Group Name';
+
+                            groupinput.style.marginLeft = '5%';
+
+                            groupdiv.appendChild(grouplabel);
+
+                            groupdiv.appendChild(groupinput);
+
+                        }
+
+                    })
+
+                    document.getElementById('radio-group-select').addEventListener('change', (event) => {
+
+                        const selectelement = document.getElementById('radio-group-select');
+
+                        if (selectelement.value !== "") {
+
+                            const ele = document.getElementById('radio-group-name')
+
+                            const elelabel = document.getElementById('group-label')
+
+                            if (ele) {
+
+                                ele.remove()
+
+                            }
+
+                            if (elelabel) {
+
+                                elelabel.remove()
+
+                            }
+
+                            const groupdiv = document.getElementById('entergroup');
+
+                            groupdiv.style.display = 'none';
+
+                        }
+                    })
+
+                    document.getElementById('saveFieldName').addEventListener('click', () => {
+                        const radioValue = document.getElementById('radio-value').value;
+                        if (document.getElementById('radio-group-select').value === "") {
+                            if (document.getElementById('radio-group-name') != undefined) {
+                                if (document.getElementById('radio-group-name').value !== "") {
+                                    var selectedGroup = 'new-group';
+                                    var newGroupName = document.getElementById('radio-group-name').value;
+                                } else {
+                                    Swal.showValidationMessage('Group name cannot be empty');
+                                    return false;
+                                }
+                            } else {
+                                Swal.showValidationMessage('Group name cannot be empty');
+                                return false;
+                            }
+
+                        } else if (document.getElementById('radio-group-select').value !== "") {
+                            var selectedGroup = document.getElementById('radio-group-select').value;
+                            var newGroupName = document.getElementById('radio-group-select').value;
+
+                        } else {
+                            Swal.showValidationMessage('Group name cannot be empty');
+                            return false;
+                        }
+
+                        var group = (selectedGroup === 'new-group' ? newGroupName : selectedGroup);
+
+                        if (!radioGroups[group]) {
+                            radioGroups[group] = [];
+                        }
+                        radioGroups[group].push(radioValue);
+
+                        const element = createDraggableElement(type, left, top, group, radioValue);
+                        annotationLayer.appendChild(element);
+                        if ((element.offsetWidth + left) > rect.width) {
+                            annotationLayer.removeChild(element);
+                        }
+
+                        $('#EditFields_Modal').modal('hide');
+                    });
+
+                    $('#EditFields_Modal').modal('show');
+                }
+                else if (type === "check-box") {
+
+                    const newHeader = '<h5 class="modal-title">Enter checkbox value</h5>';
+                    const newBody = `<input type="text"  id="FieldNameInput" class="form-control"  placeholder="Enter Value">
+                                <span id="errorFieldName" style="color: red; display: none;"></span>`;
+                    const newFooter = `
+                                                        <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                `;
+
+                    updateModalContent(newHeader, newBody, newFooter);
+
+                    document.getElementById('saveFieldName').addEventListener('click', () => {
+                        valueName = document.getElementById('FieldNameInput').value;
+                        if (valueName.replace(/\s+/g, '') !== '') {
+                            if (!fieldnameslist.includes(valueName)) {
+
+                                const element = createDraggableElement(type, left, top, valueName);
+                                annotationLayer.appendChild(element);
+                                if ((element.offsetWidth + left) > rect.width) {
+                                    annotationLayer.removeChild(element);
+                                } else {
+                                    fieldnameslist.push(valueName);
+                                }
+                                $('#EditFields_Modal').modal('hide');
+                            } else {
+                                document.getElementById('errorFieldName').innerText = "Field Name already taken";
+                                document.getElementById('errorFieldName').style.display = 'block';
+                            }
+
+
+                        } else {
+                            document.getElementById('errorFieldName').innerText = "Field Name can't be empty";
+                            document.getElementById('errorFieldName').style.display = 'block';
+                        }
+                    });
+
+                    document.getElementById('FieldNameInput').addEventListener('click', function () {
+                        document.getElementById('errorFieldName').style.display = 'none';
+                    });
+
+                    $('#EditFields_Modal').modal('show');
+                }
+                else if (type === "select") {
+
+                    const newHeader = '<h5 class="modal-title">Select Group Details</h5>';
+                    const newBody = `<div>
+                                                <label>Group Name:</label>
+                                                <input id="select-group-name" placeholder="Enter Group Name" style="margin-left:10px;">
+                                                    <span id="errorFieldName" style="color: red; display: none;"></span>
+                                            </div>
+                                            <div id="edit-options-container" style="margin-top:10px;margin-left:8%">
+                                                <div style='display:flex;margin-top:10px;'>
+                                                    <label>Option 1:</label>
+                                                    <input class="edit-select-option" placeholder="Enter Option" style="margin-left:10px;">
+                                                    <button class="edit-delete-option-btn" style="margin-left:10px;border:none;background:transparent;"><i class="fa fa-trash"></i></button>
+                                                </div>
+
+                                            </div>
+                                                <button id="edit-add-new-option-btn" class="btn btn-primary" style="margin-top:10px;float:right;">Add Option</button>
+                                                `;
+                    const newFooter = `
+                                    <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            `;
+
+                    updateModalContent(newHeader, newBody, newFooter);
+
+                    document.getElementById('edit-add-new-option-btn').addEventListener('click', () => {
+                        const optionsContainer = document.getElementById('edit-options-container');
+                        const optionIndex = optionsContainer.children.length + 1;
+                        const optionDiv = document.createElement('div');
+                        optionDiv.style.display = 'flex';
+                        optionDiv.style.marginTop = '10px';
+
+                        const optionLabel = document.createElement('label');
+                        optionLabel.innerText = `Option ${optionIndex}:`;
+
+                        const optionInput = document.createElement('input');
+                        optionInput.classList.add('edit-select-option');
+                        optionInput.placeholder = 'Enter Option';
+                        optionInput.style.marginLeft = '10px';
+
+                        const deleteButton = document.createElement('button');
+
+                        const icon = document.createElement('i');
+                        icon.classList.add('fa', 'fa-trash');
+                        deleteButton.appendChild(icon);
+                        deleteButton.classList.add('edit-delete-option-btn');
+                        deleteButton.style.marginLeft = '10px';
+                        deleteButton.style.border = 'none';
+                        deleteButton.style.background = 'transparent';
+                        deleteButton.addEventListener('click', () => {
+                            optionsContainer.removeChild(optionDiv);
+                            updateOptionLabels();
+                        });
+
+                        optionDiv.appendChild(optionLabel);
+                        optionDiv.appendChild(optionInput);
+                        optionDiv.appendChild(deleteButton);
+                        optionsContainer.appendChild(optionDiv);
+                    });
+                    Array.from(document.getElementsByClassName('edit-delete-option-btn')).forEach(button => {
+                        button.addEventListener('click', (event) => {
+                            const optionsContainer = document.getElementById('edit-options-container');
+                            const optionDiv = event.target.parentElement;
+                            optionsContainer.removeChild(optionDiv);
+                            updateOptionLabels();
+                        });
+                    });
+
+                    document.getElementById('saveFieldName').addEventListener('click', () => {
+                        const groupName = document.getElementById('select-group-name').value.trim();
+                        const options = Array.from(document.getElementsByClassName('edit-select-option'))
+                            .map(input => input.value.trim())
+                            .filter(value => value);
+
+                        if (groupName.replace(/\s+/g, '') !== '') {
+                            if (!fieldnameslist.includes(groupName)) {
+
+
+                                const element = createDraggableElement(type, left, top, groupName, options);
+                                annotationLayer.appendChild(element);
+                                if ((element.offsetWidth + left) > rect.width) {
+                                    annotationLayer.removeChild(element);
+                                } else {
+                                    fieldnameslist.push(groupName);
+                                }
+                                $('#EditFields_Modal').modal('hide');
+                            } else {
+                                document.getElementById('errorFieldName').innerText = "Group Name already taken";
+                                document.getElementById('errorFieldName').style.display = 'block';
+                            }
+                        } else {
+                            document.getElementById('errorFieldName').innerText = "Group Name can't be empty";
+                            document.getElementById('errorFieldName').style.display = 'block';
+                        }
+
+
+
+
+
+                    });
+
+                    $('#EditFields_Modal').modal('show');
+
+                }
+                else if (type === "date") {
+
+                    const newHeader = '<h5 class="modal-title">Enter Field Name</h5>';
+                    const newBody = `<input type="text"  id="FieldNameInput" class="form-control"  placeholder="Enter Field Name">
+                                <span id="errorFieldName" style="color: red; display: none;"></span>`;
+                    const newFooter = `
+                                                        <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                `;
+
+                    updateModalContent(newHeader, newBody, newFooter);
+
+                    document.getElementById('saveFieldName').addEventListener('click', () => {
+                        fieldName = document.getElementById('FieldNameInput').value;
+                        if (fieldName.replace(/\s+/g, '') !== '') {
+                            if (!fieldnameslist.includes(fieldName)) {
+
+                                const element = createDraggableElement(type, left, top, fieldName);
+                                annotationLayer.appendChild(element);
+                                if ((element.offsetWidth + left) > rect.width) {
+                                    annotationLayer.removeChild(element);
+                                } else {
+                                    fieldnameslist.push(fieldName);
+                                }
+                                $('#EditFields_Modal').modal('hide');
+                            } else {
+                                document.getElementById('errorFieldName').innerText = "Field Name already taken";
+                                document.getElementById('errorFieldName').style.display = 'block';
+                            }
+
+
+                        } else {
+                            document.getElementById('errorFieldName').innerText = "Field Name can't be empty";
+                            document.getElementById('errorFieldName').style.display = 'block';
+                        }
+
+                    });
+
+                    document.getElementById('FieldNameInput').addEventListener('click', function () {
+                        document.getElementById('errorFieldName').style.display = 'none';
+                    });
+
+                    $('#EditFields_Modal').modal('show');
+                }
+                else if (type === "plain-text") {
+                    const element = createDraggableElement(type, left, top);
+                    annotationLayer.appendChild(element);
+                    if ((element.offsetWidth + left) > rect.width) {
+                        annotationLayer.removeChild(element);
+                    }
+                    // updateFieldsList();
+                }
+                else if (type === "signature" || type === "eseal") {
+                    if (type === "signature") {
+                        var fieldname = 'Signature';
+                    } else {
+                        var fieldname = 'Eseal';
+                    }
+                    if (!fieldnameslist.includes(fieldname)) {
+
+                        const element = createDraggableElement(type, left, top);
+                        annotationLayer.appendChild(element);
+                        if ((element.offsetWidth + left) > rect.width) {
+                            annotationLayer.removeChild(element);
+                        } else {
+                            fieldnameslist.push(fieldname);
+                        }
+                        scaleX = originalWidth / rect.width;
+                        scaleY = originalHeight / rect.height;
+                    } else {
+
+                    }
+                }
+                else if (type === 'websave' || type === 'webfill') {
+                    if (type === "websave") {
+                        var fieldname = 'Wsave';
+                    } else {
+                        var fieldname = 'Wfill';
+                    }
+                    if (!fieldnameslist.includes(fieldname)) {
+                        const element = createDraggableElement(type, left, top);
+                        annotationLayer.appendChild(element);
+
+                        if ((element.offsetWidth + left) > rect.width) {
+                            annotationLayer.removeChild(element);
+                        } else {
+                            fieldnameslist.push(fieldname);
+                        }
+                    }
+
+                }
+                else if (type === 'imagefield') {
+
+                    const newHeader = '<h5 class="modal-title">Enter Image Name</h5>';
+                    const newBody = `<input type="text"  id="FieldNameInput" class="form-control"  placeholder="Enter Image Name">
+                                    <span id="errorFieldName" style="color: red; display: none;"></span>`;
+                    const newFooter = `
+                                                            <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                    `;
+
+                    updateModalContent(newHeader, newBody, newFooter);
+
+                    document.getElementById('saveFieldName').addEventListener('click', () => {
+                        fieldName = document.getElementById('FieldNameInput').value;
+                        if (fieldName.replace(/\s+/g, '') !== '') {
+                            if (!fieldnameslist.includes(fieldName)) {
+
+                                const element = createDraggableElement(type, left, top, fieldName);
+                                annotationLayer.appendChild(element);
+                                if ((element.offsetWidth + left) > rect.width) {
+                                    annotationLayer.removeChild(element);
+                                } else {
+                                    fieldnameslist.push(fieldName);
+                                }
+                                $('#EditFields_Modal').modal('hide');
+                            } else {
+                                document.getElementById('errorFieldName').innerText = "Field Name already taken";
+                                document.getElementById('errorFieldName').style.display = 'block';
+                            }
+
+
+                        } else {
+                            document.getElementById('errorFieldName').innerText = "Field Name can't be empty";
+                            document.getElementById('errorFieldName').style.display = 'block';
+                        }
+
+                    });
+
+                    document.getElementById('FieldNameInput').addEventListener('click', function () {
+                        document.getElementById('errorFieldName').style.display = 'none';
+                    });
+
+                    $('#EditFields_Modal').modal('show');
+                }
+            }
+            ghostElement.remove();
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
+
+    function updateModalContent(headerContent, bodyContent, footerContent) {
+        
+        document.querySelector('#EditFields_Modal .modal-header').innerHTML = headerContent;
+
+        
+        document.querySelector('#EditFields_Modal .modal-body').innerHTML = bodyContent;
+
+        
+        document.querySelector('#EditFields_Modal .modal-footer').innerHTML = footerContent;
+    }
+
+    function createDraggableElement(type, left, top, group, value) {
+        const element = document.createElement('div');
+        element.classList.add('draggable');
+        element.style.left = left + 'px';
+        element.style.top = top + 'px';
+        element.style.border = 'none';
+        if (type === 'radio-button'){
+            element.style.padding = '0.8%';
+        }
+        const content = document.createElement('div');
+        content.classList.add('draggable-content');
+
+        if (type === 'text-field') {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Please Enter ' + fieldName;
+            input.classList.add('input-field');
+            input.id = fieldName;
+
+            input.addEventListener('input', () => {
+                if (input.value) {
+                    input.classList.add('has-value');
+                } else {
+                    input.classList.remove('has-value');
+                }
+            });
+
+            input.addEventListener('blur', () => {
+                if (input.value) {
+                    input.classList.add('has-value');
+                } else {
+                    input.classList.remove('has-value');
+                }
+            });
+
+            content.appendChild(input);
+        }
+        else if (type === 'radio-button') {
+
+            const radioField = document.createElement('input');
+            radioField.type = 'radio';
+            radioField.name = group;
+            radioField.value = value;
+            radioField.classList.add('input-field');
+            content.appendChild(radioField);
+
+        }
+        else if (type === 'check-box') {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = valueName;
+            checkbox.value = valueName;
+            checkbox.classList.add('input-field');
+
+
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    checkbox.classList.add('checked');
+                } else {
+                    checkbox.classList.remove('checked');
+                }
+            });
+
+            content.appendChild(checkbox);
+        }
+        else if (type === 'select') {
+
+            const select = document.createElement('select');
+            select.id = group;
+
+            select.classList.add('input-field');
+            select.style.border = '2px solid black';
+
+            const option = document.createElement('option');
+            option.value = "Select Option";
+            option.text = "Select Option";
+            select.appendChild(option);
+
+
+            value.forEach(optionText => {
+
+                const option = document.createElement('option');
+                option.value = optionText;
+                option.text = optionText;
+                select.appendChild(option);
+            });
+
+
+            // Add an event listener for change event
+            select.addEventListener('change', () => {
+
+                if (select.value === "Select Option") {
+                    select.classList.remove('has-value');
+                } else {
+                    select.classList.add('has-value');
+                }
+
+            });
+
+            // Append the select element to a container
+
+            content.appendChild(select);
+        }
+        else if (type === 'date') {
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.placeholder = 'Date Field';
+            input.classList.add('input-field');
+            input.style.color = '#636161';
+            input.id = fieldName;
+
+            input.addEventListener('input', () => {
+                if (input.value) {
+                    input.classList.add('has-value');
+                    input.style.color = 'black';
+                } else {
+                    input.classList.remove('has-value');
+                    input.style.color = '#636161';
+                }
+            });
+
+            input.addEventListener('blur', () => {
+                if (input.value) {
+                    input.classList.add('has-value');
+                } else {
+                    input.classList.remove('has-value');
+                }
+            });
+
+            content.appendChild(input);
+        }
+        else if (type === 'plain-text') {
+            const editableTextContainer = document.createElement('div');
+
+            editableTextContainer.classList.add('editable-text');
+            editableTextContainer.setAttribute('contenteditable', 'true');
+
+            editableTextContainer.innerText = 'Click to edit text';
+            editableTextContainer.addEventListener('input', function () {
+                
+            });
+            editableTextContainer.addEventListener("focus", () => {
+                if (editableTextContainer.innerText == "Click to edit text") {
+                    editableTextContainer.innerText = ""; // Clear the content
+                }
+            });
+
+            // Add blur event listener to restore default text if left empty
+            editableTextContainer.addEventListener("blur", () => {
+                if (editableTextContainer.innerText.trim()  == "") {
+                    editableTextContainer.innerText = "Click to edit text"; // Restore default text
+                }
+            });
+            content.appendChild(editableTextContainer);
+        }
+        else if (type === 'signature') {
+            element.style.padding = '0';
+            const input = document.createElement('div');
+            input.style.border = "1px solid #44aad1";
+
+
+
+
+            input.style.textAlign = 'center';
+
+            input.style.width = (canvasWidth * 0.15) + 'px';
+            input.style.height = (canvasWidth * 0.03) + 'px';
+            input.textContent = 'Signature';
+
+            input.style.backgroundColor = "#d8d7d78a";
+            input.style.color = "#44aad1";
+            input.style.fontSize = "77%";
+
+
+            input.id = 'Signature';
+
+            content.appendChild(input);
+        }
+        else if (type === 'eseal') {
+            element.style.padding = '0';
+            const input = document.createElement('div');
+            input.style.border = "1px solid #44aad1";
+
+
+
+
+            input.style.textAlign = 'center';
+            input.style.padding = '30%';
+            input.style.width = (canvasWidth * 0.15) + 'px';
+            input.style.height = (canvasWidth * 0.15) + 'px';
+            input.textContent = 'Eseal';
+
+            input.style.backgroundColor = "#d8d7d78a";
+            input.style.color = "#44aad1";
+            input.style.fontSize = "77%";
+
+
+
+            input.id = 'Eseal';
+
+            content.appendChild(input);
+        }
+        else if (type === 'webfill') {
+            var fillbutton = document.createElement("button");
+            fillbutton.textContent = "Auto Fill";
+            fillbutton.id = "Wfill";
+            fillbutton.style.textAlign = 'center';
+
+            fillbutton.style.width = (canvasWidth * 0.15) + 'px';
+            fillbutton.style.height = (canvasWidth * 0.05) + 'px';
+            fillbutton.style.color = "white";
+            fillbutton.style.backgroundColor = 'rgb(37 66 95)';
+            fillbutton.style.borderRadius = '5px';
+            fillbutton.style.fontSize = "77%";
+
+            content.appendChild(fillbutton);
+        }
+        else if (type === 'websave') {
+            var submitbutton = document.createElement("button");
+            submitbutton.textContent = "Submit";
+            submitbutton.id = "Wsave";
+            submitbutton.style.textAlign = 'center';
+
+            submitbutton.style.width = (canvasWidth * 0.15) + 'px';
+            submitbutton.style.height = (canvasWidth * 0.05) + 'px';
+            submitbutton.style.color = "white";
+            submitbutton.style.backgroundColor = 'rgb(37 66 95)';
+            submitbutton.style.borderRadius = '5px';
+            submitbutton.style.fontSize = "77%";
+
+            content.appendChild(submitbutton);
+        }
+        else if (type === 'imagefield') {
+
+
+
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'image-container';
+
+            const imageUpload = document.createElement('input');
+            imageUpload.setAttribute('type', 'file');
+            imageUpload.className = 'image-upload';
+            imageUpload.setAttribute('accept', 'image/*');
+
+            const uploadedImage = document.createElement('img');
+            uploadedImage.className = 'uploaded-image';
+            uploadedImage.setAttribute('alt', 'Uploaded Image');
+            uploadedImage.id = fieldName;
+
+            // Create the placeholder text
+            const placeholderText = document.createElement('span');
+            placeholderText.className = 'placeholder-text';
+            placeholderText.innerText = 'Upload Image';
+
+            // Create the remove button
+            const removeImageBtn = document.createElement('button');
+            removeImageBtn.className = 'remove-image-btn';
+            removeImageBtn.innerHTML = '&times;';
+
+            // Append elements to the image container
+
+            imageContainer.appendChild(imageUpload);
+            imageContainer.appendChild(uploadedImage);
+            imageContainer.appendChild(placeholderText);
+            imageContainer.appendChild(removeImageBtn);
+            imageUpload.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        uploadedImage.src = e.target.result;
+                        uploadedImage.style.display = 'block';
+
+                        placeholderText.style.display = 'none';
+                        removeImageBtn.classList.add('uploaded');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+
+            removeImageBtn.addEventListener('click', function () {
+                // Hide the image
+                uploadedImage.src = '';
+                uploadedImage.style.display = 'none';
+
+                // Show the placeholder text again
+                placeholderText.style.display = 'block';
+
+                // Hide the remove button
+                removeImageBtn.classList.remove('uploaded');
+
+                // Clear the file input value
+                imageUpload.value = '';
+            });
+
+            content.appendChild(imageContainer);
+
+        }
+        element.appendChild(content);
+        if (type !== 'signature' && type !== 'eseal' && type !== 'websave' && type !== 'webfill') {
+            addResizeHandles(content);
+
+        }
+
+        addEditIcon(content, type);
+        element.style.position = 'absolute';
+        element.style.pointerEvents = 'auto';  // Enable interactions
+        element.style.zIndex = '1000';  // Ensure it's on top of other elements
+
+
+        makeDraggable(element);
+
+        return element;
+    }
+
+
+
+    function createGhostElement(event) {
+        const element = document.createElement('div');
+        element.classList.add('draggable');
+
+        const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+
+        if (event.target.id === 'text-field') {
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Text Field';
+            input.classList.add('input-field');
+            element.appendChild(input);
+
+        }
+        else if (event.target.id === 'radio-button') {
+
+            const radioField = document.createElement('input');
+            radioField.type = 'radio';
+            radioField.name = "group";
+            radioField.value = "value";
+            radioField.classList.add('input-field');
+            element.appendChild(radioField);
+
+        }
+        else if (event.target.id === 'check-box') {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = "valueName";
+            checkbox.value = "valueName";
+            checkbox.classList.add('input-field');
+            element.appendChild(checkbox);
+        }
+        else if (event.target.id === 'select') {
+            const select = document.createElement('select');
+            select.id = "group";
+
+            select.classList.add('input-field');
+
+            const option = document.createElement('option');
+            option.value = "Select Option";
+            option.text = "Select Option";
+            select.appendChild(option);
+            element.appendChild(select)
+        }
+        else if (event.target.id === 'date' || event.target.id === 'Date of Birth') {
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.placeholder = 'Date Field';
+            input.classList.add('input-field');
+            input.id = "fieldName";
+
+
+            element.appendChild(input);
+        }
+        else if (event.target.id === 'plain-text') {
+            const editableTextContainer = document.createElement('div');
+
+            editableTextContainer.classList.add('editable-text');
+            editableTextContainer.setAttribute('contenteditable', 'true');
+
+            editableTextContainer.innerText = 'Click to edit text';
+
+            element.appendChild(editableTextContainer);
+        }
+        else if (event.target.id === 'signature') {
+            const input = document.createElement('div');
+            input.style.border = "1px solid #44aad1";
+
+
+
+
+            input.style.textAlign = 'center';
+
+            input.style.width = (canvasWidth * 0.15) + 'px';
+            input.style.height = (canvasWidth * 0.03) + 'px';
+            input.textContent = 'Signature';
+
+            input.style.backgroundColor = "#d8d7d78a";
+            input.style.color = "#44aad1";
+            input.style.fontSize = "77%";
+
+            element.appendChild(input);
+        }
+        else if (event.target.id === 'eseal') {
+            const input = document.createElement('div');
+            input.style.border = "1px solid #44aad1";
+            input.style.textAlign = 'center';
+            input.style.padding = '30%';
+            input.style.width = (canvasWidth * 0.15) + 'px';
+            input.style.height = (canvasWidth * 0.15) + 'px';
+            input.textContent = 'Eseal';
+
+            input.style.backgroundColor = "#d8d7d78a";
+            input.style.color = "#44aad1";
+            input.style.fontSize = "77%";
+            element.appendChild(input);
+        }
+        else if (event.target.id === 'websave') {
+            var submitbutton = document.createElement("button");
+            submitbutton.textContent = "Submit";
+            submitbutton.style.textAlign = 'center';
+
+            submitbutton.style.width = (canvasWidth * 0.15) + 'px';
+            submitbutton.style.height = (canvasWidth * 0.05) + 'px';
+            submitbutton.style.color = "white";
+            submitbutton.style.backgroundColor = 'rgb(37 66 95)';
+            submitbutton.style.borderRadius = '5px';
+            submitbutton.style.fontSize = "77%";
+            element.appendChild(submitbutton);
+        }
+        else if (event.target.id === 'webfill') {
+            var fillbutton = document.createElement("button");
+            fillbutton.textContent = "Auto Fill";
+            fillbutton.style.textAlign = 'center';
+
+            fillbutton.style.width = (canvasWidth * 0.15) + 'px';
+            fillbutton.style.height = (canvasWidth * 0.05) + 'px';
+            fillbutton.style.color = "white";
+            fillbutton.style.backgroundColor = 'rgb(37 66 95)';
+            fillbutton.style.borderRadius = '5px';
+            fillbutton.style.fontSize = "77%";
+            element.appendChild(fillbutton);
+        }
+        else if (event.target.id === 'imagefield' || event.target.id === 'Selfie') {
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'image-container';
+
+            // Create the placeholder text
+            const placeholderText = document.createElement('span');
+            placeholderText.className = 'placeholder-text';
+            placeholderText.innerText = 'Upload Image';
+
+            imageContainer.appendChild(placeholderText);
+            element.appendChild(imageContainer);
+        }
+        else {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Text Field';
+            input.classList.add('input-field');
+            element.appendChild(input);
+        }
+
+        element.style.position = 'absolute';
+        element.style.pointerEvents = 'none';  // Disable interactions while dragging
+        element.style.zIndex = '1000';
+        element.style.opacity = '0.5';
+        element.style.left = (event.clientX + scrollLeft) + 'px';
+        element.style.top = (event.clientY + scrollTop) + 'px';
+
+        return element;
+    }
+
+    function addResizeHandles(content) {
+        const handles = ['bottom-right'];
+        handles.forEach(position => {
+            const handle = document.createElement('div');
+            handle.classList.add('resize-handle', position);
+            content.appendChild(handle);
+
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                resizeStart(e, content, position);
+            });
+        });
+    }
+
+    function addEditIcon(content, type) {
+        const editIcon = document.createElement('div');
+        editIcon.classList.add('edit-icon', 'top-right');
+        editIcon.innerHTML = '✏️';
+
+
+        // Add event listener for edit action
+        if (type === 'text' || type === 'text-field') {
+            editIcon.addEventListener('click', () => {
+                
+                const firstChild = content.firstElementChild;
+
+                const newHeader = '<h5 class="modal-title">Update Field Name</h5>';
+                const newBody = `<input type="text" value="${firstChild.id}" id="FieldNameInput" class="form-control"  placeholder="Enter new field name">
+                            <span id="errorFieldName" style="color: red; display: none;"></span>`;
+                const newFooter = `
+                                                <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                               <button type="button" class="btn btn-danger" style="color:red;"  id="deleteFieldName">Delete</button>
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                        `;
+
+                // Update the modal content
+                updateModalContent(newHeader, newBody, newFooter);
+
+                document.getElementById('saveFieldName').addEventListener('click', () => {
+
+
+                    if ((document.getElementById('FieldNameInput').value).replace(/\s+/g, '') !== '') {
+                        if (!fieldnameslist.includes(document.getElementById('FieldNameInput').value)) {
+
+                            fieldnameslist.push(document.getElementById('FieldNameInput').value);
+                            fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+
+                            firstChild.id = document.getElementById('FieldNameInput').value;
+                            $('#EditFields_Modal').modal('hide');
+                        } else {
+                            document.getElementById('errorFieldName').innerText = "Field Name already taken";
+                            document.getElementById('errorFieldName').style.display = 'block';
+
+                        }
+
+                    } else {
+                        document.getElementById('errorFieldName').innerText = "Field Name can't be empty";
+                        document.getElementById('errorFieldName').style.display = 'block';
+
+                    }
+                });
+                document.getElementById('deleteFieldName').addEventListener('click', () => {
+                    const element = content.parentElement;
+                    fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+                    element.remove();
+                    $('#EditFields_Modal').modal('hide');
+                });
+                // Show the modal
+                $('#EditFields_Modal').modal('show');
+
+
+
+            });
+        }
+        else if (type === 'checkbox' || type === 'check-box') {
+            editIcon.addEventListener('click', () => {
+                const firstChild = content.firstElementChild;
+
+                const newHeader = '<h5 class="modal-title">Update Field Name</h5>';
+                const newBody = `<input type="text" value="${firstChild.id}" id="FieldNameInput" class="form-control"  placeholder="Enter new field name">
+                            <span id="errorFieldName" style="color: red; display: none;"></span>`;
+                const newFooter = `
+                                                    <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                                        <button type="button" class="btn btn-danger" style="color:red;"  id="deleteFieldName">Delete</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                            `;
+
+                // Update the modal content
+                updateModalContent(newHeader, newBody, newFooter);
+
+                document.getElementById('saveFieldName').addEventListener('click', () => {
+
+
+                    if ((document.getElementById('FieldNameInput').value).replace(/\s+/g, '') !== '') {
+                        if (!fieldnameslist.includes(document.getElementById('FieldNameInput').value)) {
+
+                            fieldnameslist.push(document.getElementById('FieldNameInput').value);
+                            fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+
+                            firstChild.id = document.getElementById('FieldNameInput').value;
+                            firstChild.value = document.getElementById('FieldNameInput').value;
+                            $('#EditFields_Modal').modal('hide');
+                        } else {
+                            document.getElementById('errorFieldName').innerText = "Field Name already taken";
+                            document.getElementById('errorFieldName').style.display = 'block';
+
+                        }
+
+                    } else {
+                        document.getElementById('errorFieldName').innerText = "Field Name can't be empty";
+                        document.getElementById('errorFieldName').style.display = 'block';
+
+                    }
+                });
+                document.getElementById('deleteFieldName').addEventListener('click', () => {
+                    const element = content.parentElement;
+                    fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+                    element.remove();
+                    $('#EditFields_Modal').modal('hide');
+                });
+                // Show the modal
+                $('#EditFields_Modal').modal('show');
+
+            });
+
+        }
+        else if (type === "select") {
+            editIcon.addEventListener('click', () => {
+                const firstChild = content.firstElementChild;
+
+
+                const newHeader = '<h5 class="modal-title">Update Select Field</h5>';
+                const newBody = `
+                                    <div>
+                                        <label>Group Name:</label>
+                                        <input id="edit-select-group-name" value="${firstChild.id}" placeholder="Enter Group Name" style="margin-left:10px;">
+                                            <span id="errorFieldName" style="color: red; display: none;"></span>
+                                    </div>
+                                        <div id="edit-options-container" style="margin-top:10px;margin-left:8%">
+                                        ${Array.from(firstChild.options).map((group, index) => {
+                    if (group.text === "Select Option") {
+                        return '';
+                    }
+                    return `
+                                            <div style='display:flex;margin-top:10px;'>
+                                                <label>Option ${index}:</label>
+                                                <input class="select-option" placeholder="Enter Option" value="${group.text}" style="margin-left:10px;">
+
+                                                <button class="edit-delete-option-btn" style="margin-left:10px;border:none;background:transparent;"><i class="fa fa-trash"></i></button>
+                                            </div>
+                                            `;
+                }).join('')}
+                                    </div>
+                                        <button id="edit-add-new-option-btn" class="btn btn-primary" style="margin-top:10px;float:right;">Add Option</button>
+
+
+
+                                `;
+
+                const newFooter = `
+                                                        <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                                            <button type="button" class="btn btn-danger" style="color:red;"  id="deleteFieldName">Delete</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                `;
+
+                updateModalContent(newHeader, newBody, newFooter);
+
+                const addButton = document.querySelector('#edit-add-new-option-btn');
+                const optionsContainer = document.querySelector('#edit-options-container');
+
+                addButton.addEventListener('click', () => {
+                    const newOptionIndex = optionsContainer.children.length;
+                    optionsContainer.insertAdjacentHTML('beforeend', `
+                                <div style='display:flex;margin-top:10px;'>
+                                    <label>Option ${newOptionIndex + 1}:</label>
+                                    <input class="select-option" placeholder="Enter Option" style="margin-left:10px;">
+
+                                    <button class="edit-delete-option-btn" style="margin-left:10px;border:none;background:transparent;"><i class="fa fa-trash"></i></button>
+                                </div>
+                            `);
+                });
+
+
+
+                optionsContainer.addEventListener('click', (event) => {
+                    
+                    if (event.target.classList.contains('fa-trash')) {
+                        (event.target.parentElement).parentElement.remove();
+
+                        Array.from(optionsContainer.children).forEach((child, index) => {
+                            child.querySelector('label').textContent = `Option ${index}:`;
+                        });
+                    }
+                });
+
+                document.getElementById('saveFieldName').addEventListener('click', () => {
+
+                    const groupName = document.querySelector('#edit-select-group-name').value;
+                    const options = Array.from(document.querySelectorAll('.select-option')).map(input => input.value);
+
+
+
+                    if (groupName.replace(/\s+/g, '') !== '') {
+                        if (!fieldnameslist.includes(groupName) || firstChild.id === groupName) {
+
+                            fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+                            fieldnameslist.push(groupName);
+
+                            firstChild.id = groupName;
+                            firstChild.innerHTML = '';
+
+
+                            var optionElement = document.createElement('option');
+                            optionElement.textContent = "Select Option";
+                            optionElement.value = "Select Option";
+                            firstChild.appendChild(optionElement);
+
+                            options.forEach(option => {
+                                var optionElement = document.createElement('option');
+                                optionElement.textContent = option;
+                                optionElement.value = option;
+                                firstChild.appendChild(optionElement);
+                            });
+
+                            $('#EditFields_Modal').modal('hide');
+
+                        } else {
+                            document.getElementById('errorFieldName').innerText = "Group Name already taken";
+                            document.getElementById('errorFieldName').style.display = 'block';
+                        }
+                    } else {
+                        document.getElementById('errorFieldName').innerText = "Group Name can't be empty";
+                        document.getElementById('errorFieldName').style.display = 'block';
+                    }
+                });
+                document.getElementById('deleteFieldName').addEventListener('click', () => {
+                    const element = content.parentElement;
+                    fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+                    element.remove();
+                    $('#EditFields_Modal').modal('hide');
+                });
+                // Show the modal
+                $('#EditFields_Modal').modal('show');
+
+            });
+
+        }
+        else if (type === 'date') {
+            editIcon.addEventListener('click', () => {
+                const firstChild = content.firstElementChild;
+
+                const newHeader = '<h5 class="modal-title">Update Field Name</h5>';
+                const newBody = `<input type="text" value="${firstChild.id}" id="FieldNameInput" class="form-control"  placeholder="Enter new field name">
+                            <span id="errorFieldName" style="color: red; display: none;"></span>`;
+                const newFooter = `
+                                                        <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                                            <button type="button" class="btn btn-danger" style="color:red;"  id="deleteFieldName">Delete</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                `;
+
+                // Update the modal content
+                updateModalContent(newHeader, newBody, newFooter);
+
+                document.getElementById('saveFieldName').addEventListener('click', () => {
+
+
+                    if ((document.getElementById('FieldNameInput').value).replace(/\s+/g, '') !== '') {
+                        if (!fieldnameslist.includes(document.getElementById('FieldNameInput').value)) {
+
+                            fieldnameslist.push(document.getElementById('FieldNameInput').value);
+                            fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+
+                            firstChild.id = document.getElementById('FieldNameInput').value;
+                            $('#EditFields_Modal').modal('hide');
+                        } else {
+                            document.getElementById('errorFieldName').innerText = "Field Name already taken";
+                            document.getElementById('errorFieldName').style.display = 'block';
+
+                        }
+
+                    } else {
+                        document.getElementById('errorFieldName').innerText = "Field Name can't be empty";
+                        document.getElementById('errorFieldName').style.display = 'block';
+
+                    }
+                });
+                document.getElementById('deleteFieldName').addEventListener('click', () => {
+                    const element = content.parentElement;
+                    fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+                    element.remove();
+                    $('#EditFields_Modal').modal('hide');
+                });
+
+                // Show the modal
+                $('#EditFields_Modal').modal('show');
+
+            });
+
+        }
+        else if (type === 'plain-text') {
+            editIcon.addEventListener('click', () => {
+                const firstChild = content.firstElementChild;
+
+                const newHeader = '<h5 class="modal-title">Do you want to delete this field?</h5>';
+                const newBody = `<input type="text" value="${firstChild.innerHTML}" id="FieldNameInput" class="form-control"  placeholder="Enter new field name">`;
+                const newFooter = `
+                                                            <button type="button" class="btn btn-primary"  id="deleteFieldName">Delete</button>
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                    `;
+
+                // Update the modal content
+                updateModalContent(newHeader, newBody, newFooter);
+
+                document.getElementById('deleteFieldName').addEventListener('click', () => {
+                    const element = content.parentElement;
+                    element.remove();
+                    $('#EditFields_Modal').modal('hide');
+                });
+
+                // Show the modal
+                $('#EditFields_Modal').modal('show');
+
+            });
+
+        }
+        else if (type === 'radio' || type === 'radio-button') {
+            const firstChild = content.firstElementChild;
+            editIcon.addEventListener('click', () => {
+
+
+                const newHeader = '<h5 class="modal-title">Update Radio Group</h5>';
+                const newBody = `
+                            <div style='display:flex; margin-bottom:7%;'>
+                                 <label for="group-name">Group Name :</label>
+                                <input id="edit-group-name" style="margin-left:5%" class="swal2-input" value="${firstChild.name}">
+                            </div>
+                            <div style='display:flex;'>
+                               <label for="radio-values">Radio Value  :</label>
+                                    <div id="edit-radio-values-container" style="margin-left:6%">
+                                        <div class="radio-value-item"  id="radio-item-${firstChild.value}">
+                                                <input class="swal2-input"  type="text" value="${firstChild.value}" id="radio-value-${firstChild.value}">
+                                    </div>
+                                </div>
+                            </div>
+                             `;
+                const newFooter = `
+                                                    <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                                        <button type="button" class="btn btn-danger" style="color:red;"  id="deleteFieldName">Delete</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                            `;
+
+                // Update the modal content
+                updateModalContent(newHeader, newBody, newFooter);
+
+                document.getElementById('saveFieldName').addEventListener('click', () => {
+                    const updatedGroupName = document.getElementById('edit-group-name').value.trim();
+                    const newValues = [];
+                    document.querySelectorAll('#edit-radio-values-container input').forEach(input => {
+                        newValues.push(input.value.trim());
+                    });
+                    firstChild.name = updatedGroupName;
+                    firstChild.value = newValues[0];
+                    radioGroups[firstChild.name] = radioGroups[updatedGroupName]
+
+                    $('#EditFields_Modal').modal('hide');
+                });
+                document.getElementById('deleteFieldName').addEventListener('click', () => {
+                    const element = content.parentElement;
+                    element.remove();
+                    $('#EditFields_Modal').modal('hide');
+                });
+
+                // Show the modal
+                $('#EditFields_Modal').modal('show');
+
+            });
+
+        }
+        else if (type === 'signature' || type === 'Signature') {
+            editIcon.addEventListener('click', () => {
+                const firstChild = content.firstElementChild;
+
+                const newHeader = '<h5 class="modal-title">Do you want to delete this field?</h5>';
+                const newBody = `<input type="text" value="${firstChild.id}" id="FieldNameInput" class="form-control"  placeholder="Enter new field name">`;
+                const newFooter = `
+                                                                <button type="button" class="btn btn-primary"  id="deleteFieldName">Delete</button>
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                        `;
+
+                // Update the modal content
+                updateModalContent(newHeader, newBody, newFooter);
+
+                document.getElementById('deleteFieldName').addEventListener('click', () => {
+                    const element = content.parentElement;
+                    fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+                    element.remove();
+                    $('#EditFields_Modal').modal('hide');
+                });
+
+                // Show the modal
+                $('#EditFields_Modal').modal('show');
+
+            });
+        }
+        else if (type === 'eseal' || type === 'Eseal') {
+            editIcon.addEventListener('click', () => {
+                const firstChild = content.firstElementChild;
+
+                const newHeader = '<h5 class="modal-title">Do you want to delete this field?</h5>';
+                const newBody = `<input type="text" value="${firstChild.id}" id="FieldNameInput" class="form-control"  placeholder="Enter new field name">`;
+                const newFooter = `
+                                                                    <button type="button" class="btn btn-primary"  id="deleteFieldName">Delete</button>
+                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                            `;
+
+                // Update the modal content
+                updateModalContent(newHeader, newBody, newFooter);
+
+                document.getElementById('deleteFieldName').addEventListener('click', () => {
+                    const element = content.parentElement;
+                    fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+                    element.remove();
+                    $('#EditFields_Modal').modal('hide');
+                });
+
+                // Show the modal
+                $('#EditFields_Modal').modal('show');
+
+            });
+        }
+        else if (type === 'Wsave') {
+            editIcon.addEventListener('click', () => {
+                const firstChild = content.firstElementChild;
+
+                const newHeader = '<h5 class="modal-title">Do you want to delete this field?</h5>';
+                const newBody = `<input type="text" value="This button is used to submit form" id="FieldNameInput" class="form-control"  placeholder="Enter new field name">`;
+                const newFooter = `
+                                                                        <button type="button" class="btn btn-danger"  id="deleteFieldName">Delete</button>
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                `;
+
+                // Update the modal content
+                updateModalContent(newHeader, newBody, newFooter);
+
+                document.getElementById('deleteFieldName').addEventListener('click', () => {
+                    const element = content.parentElement;
+                    fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+                    element.remove();
+                    $('#EditFields_Modal').modal('hide');
+                });
+
+                // Show the modal
+                $('#EditFields_Modal').modal('show');
+
+            });
+        }
+        else if (type === 'Wfill') {
+            editIcon.addEventListener('click', () => {
+                const firstChild = content.firstElementChild;
+
+                const newHeader = '<h5 class="modal-title">Do you want to delete this field?</h5>';
+                const newBody = `<input type="text" value="This button is used to auto fill" id="FieldNameInput" class="form-control"  placeholder="Enter new field name">`;
+                const newFooter = `
+                                                                            <button type="button" class="btn btn-danger"  id="deleteFieldName">Delete</button>
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                    `;
+
+                // Update the modal content
+                updateModalContent(newHeader, newBody, newFooter);
+
+                document.getElementById('deleteFieldName').addEventListener('click', () => {
+                    const element = content.parentElement;
+                    fieldnameslist = fieldnameslist.filter(item => item !== firstChild.id);
+                    element.remove();
+                    $('#EditFields_Modal').modal('hide');
+                });
+
+                // Show the modal
+                $('#EditFields_Modal').modal('show');
+
+            });
+        }
+        else if (type === 'imagefield') {
+            editIcon.addEventListener('click', () => {
+                
+                const ele = content.firstElementChild;
+                const secondChild = ele.children[1];
+
+
+                const newHeader = '<h5 class="modal-title">Update Field Name</h5>';
+                const newBody = `<input type="text" value="${secondChild.id}" id="FieldNameInput" class="form-control"  placeholder="Enter new field name">
+                                <span id="errorFieldName" style="color: red; display: none;"></span>
+
+                                `;
+                const newFooter = `
+                                                    <button type="button" class="btn btn-primary"  id="saveFieldName">Save</button>
+                                                   <button type="button" class="btn btn-danger" style="color:red;"  id="deleteFieldName">Delete</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                            `;
+
+                // Update the modal content
+                updateModalContent(newHeader, newBody, newFooter);
+
+                document.getElementById('saveFieldName').addEventListener('click', () => {
+
+
+                    if ((document.getElementById('FieldNameInput').value).replace(/\s+/g, '') !== '') {
+                        if (!fieldnameslist.includes(document.getElementById('FieldNameInput').value) || (secondChild.id === document.getElementById('FieldNameInput').value)) {
+
+                            fieldnameslist.push(document.getElementById('FieldNameInput').value);
+                            fieldnameslist = fieldnameslist.filter(item => item !== secondChild.id);
+
+                            secondChild.id = document.getElementById('FieldNameInput').value;
+
+
+                            $('#EditFields_Modal').modal('hide');
+                        } else {
+                            document.getElementById('errorFieldName').innerText = "Field Name already taken";
+                            document.getElementById('errorFieldName').style.display = 'block';
+
+                        }
+
+                    } else {
+                        document.getElementById('errorFieldName').innerText = "Field Name can't be empty";
+                        document.getElementById('errorFieldName').style.display = 'block';
+
+                    }
+                });
+                document.getElementById('deleteFieldName').addEventListener('click', () => {
+                    const element = content.parentElement;
+                    fieldnameslist = fieldnameslist.filter(item => item !== secondChild.id);
+                    element.remove();
+                    $('#EditFields_Modal').modal('hide');
+                });
+                // Show the modal
+                $('#EditFields_Modal').modal('show');
+
+
+
+            });
+        }
+        content.appendChild(editIcon);
+    }
+
+    function resizeStart(e, content, handlePosition) {
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startWidth = parseFloat(getComputedStyle(content.firstChild, null).width.replace('px', ''));
+        const startHeight = parseFloat(getComputedStyle(content.firstChild, null).height.replace('px', ''));
+        const isRadioButton = content.firstChild.type === 'radio';
+        const isCheckBox = content.firstChild.type === 'checkbox';
+
+
+
+        function resizeMove(e) {
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            let newWidth = startWidth;
+            let newHeight = startHeight;
+
+            if (handlePosition.includes('right')) {
+                newWidth = startWidth + dx;
+            } else if (handlePosition.includes('left')) {
+                newWidth = startWidth - dx;
+                content.style.left = `${content.offsetLeft + dx}px`; // Adjust position
+            }
+
+            if (handlePosition.includes('bottom')) {
+                newHeight = startHeight + dy;
+            } else if (handlePosition.includes('top')) {
+                newHeight = startHeight - dy;
+                content.style.top = `${content.offsetTop + dy}px`; // Adjust position
+            }
+
+
+            if (isRadioButton || isCheckBox) {
+
+                const newSize = Math.min(newWidth, newHeight);
+                content.firstChild.style.width = `${newSize}px`;
+                content.firstChild.style.height = `${newSize}px`;
+            } else {
+                content.firstChild.style.width = `${newWidth}px`;
+                content.firstChild.style.height = `${newHeight}px`;
+            }
+
+            // Dynamically adjust font size based on height
+            const fontSize = newHeight / 2; // You can adjust the divisor for better scaling
+            content.firstChild.style.fontSize = `${fontSize}px`;
+        }
+
+
+        function resizeEnd() {
+            document.removeEventListener('mousemove', resizeMove);
+            document.removeEventListener('mouseup', resizeEnd);
+        }
+
+        document.addEventListener('mousemove', resizeMove);
+        document.addEventListener('mouseup', resizeEnd);
+    }
+
+    function makeDraggable(element) {
+        let offsetX, offsetY, isDragging = false;
+        var newLeft;
+        var newTop;
+        element.addEventListener('mousedown', (e) => {
+            if (!e.target.classList.contains('resize-handle') && !e.target.classList.contains('edit-icon') && !e.target.classList.contains('input-field') && !e.target.classList.contains('editable-text')) {
+                isDragging = true;
+                offsetX = e.clientX - element.getBoundingClientRect().left;
+                offsetY = e.clientY - element.getBoundingClientRect().top;
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            }
+        });
+
+
+
+        function onMouseMove(e) {
+            if (isDragging) {
+                const pageRect = element.parentElement.getBoundingClientRect();
+                const elementRect = element.getBoundingClientRect(); // Get bounding rect of the draggable element
+
+                // Calculate the new position of the draggable element
+                newLeft = e.clientX - pageRect.left - offsetX;
+                newTop = e.clientY - pageRect.top - offsetY;
+
+                // Boundary checks for left, right, top, and bottom of the layer
+                if (newLeft < 0) {
+                    newLeft = 0; // Restrict to the left boundary
+                } else if (newLeft + elementRect.width > pageRect.width) {
+                    newLeft = pageRect.width - elementRect.width; // Restrict to the right boundary
+                }
+
+                if (newTop < 0) {
+                    newTop = 0; // Restrict to the top boundary
+                } else if (newTop + elementRect.height > pageRect.height) {
+                    newTop = pageRect.height - elementRect.height; // Restrict to the bottom boundary
+                }
+
+                // Apply the new position to the element
+                element.style.left = `${newLeft}px`;
+                element.style.top = `${newTop}px`;
+                // element.style.left = `${e.clientX - pageRect.left - offsetX}px`;
+                // element.style.top = `${e.clientY - pageRect.top - offsetY}px`;
+            }
+        }
+
+        function onMouseUp(e) {
+            isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+
+
+
+            const pdfPages = document.querySelectorAll('.pdf-page');
+
+            const draggableRect = element.getBoundingClientRect();
+
+            // Loop through all pages to find where the draggable belongs
+            for (let i = 0; i < pdfPages.length; i++) {
+                const page = pdfPages[i];
+                const pageRect = page.getBoundingClientRect();
+
+                if (isInside(draggableRect, pageRect)) {
+                    // Move the draggable to the correct page's annotation layer
+                    const annotationLayer = page.querySelector('.annotation-layer');
+                    annotationLayer.appendChild(element);
+                    break; // Exit the loop once the correct page is found
+                }
+            }
+            // var pageRect = element.parentElement.getBoundingClientRect();
+            // element.style.left = `${e.clientX - pageRect.left - offsetX}px`;
+            // element.style.top = `${e.clientY - pageRect.top - offsetY}px`;
+            element.style.left = newLeft;
+            element.style.top = newTop;
+        }
+    }
+
+    function isInside(elementRect, pageRect) {
+        return (
+            elementRect.top >= pageRect.top &&
+            elementRect.bottom <= pageRect.bottom
+        );
+    }
+
+    function SaveDocument(url, formData) {
+        
+ 
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: url,
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                method: 'POST',
+                type: 'POST',
+                beforeSend: function () {
+                    $('#overlay').show();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                },
+                success: function (data) {
+                    resolve(data)
+                },
+                // error: function (err) {
+                //     reject(err)
+                // }
+                error: ajaxErrorHandler
+            });
+        });
+    }
+
+</script>

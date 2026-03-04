@@ -1,0 +1,782 @@
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@inject IConfiguration Configuration
+@{
+    var currentStaging = Configuration["CurrentStaging"];
+
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signing Portal</title>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+    <noscript>Please enable java script in your browser.</noscript>
+    <link rel="icon" type="image/x-icon" href="~/assets/fav05.svg" asp-append-version="true" />
+    <!-- Use Bootstrap 5.3-->
+    <link href="~/local-cdns/Shared/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+          href="~/local-cdns/Shared/bootstrap-icons/1.11.3/bootstrap-icons.min.css" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="~/local-cdns/Shared/fontawesome/6.4.0/css/all.min.css">
+    <!-- Toastr CSS -->
+    <link href="~/local-cdns/Shared/toastr/latest/toastr.min.css" rel="stylesheet" />
+
+    <!-- Inter Font (local) -->
+   
+    <!-- jQuery MUST load before Bootstrap bundle and plugins -->
+    <script src="~/local-cdns/Shared/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Bootstrap bundle JS (requires jQuery) -->
+    <script src="~/local-cdns/Shared/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+
+    <link href="~/lib/sweetalert/dist/sweetalert.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+
+    <script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+
+    <script type="text/javascript" charset="utf8" src="~/local-cdns/Shared/datatables/1.11.5/jquery.dataTables.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="~/local-cdns/Shared/datatables/1.11.5/jquery.dataTables.css" defer>
+    <link rel="stylesheet" href="~/local-cdns/Shared/datatables-responsive/2.2.9/responsive.dataTables.min.css" defer>
+    <script src="~/local-cdns/Shared/datatables-responsive/2.2.9/dataTables.responsive.min.js" defer></script>
+   
+    
+    <!-- Responsive Layout Styles -->
+    <link href="~/css/responsive-layout.css" rel="stylesheet" type="text/css" asp-append-version="true" />
+</head>
+<style>
+    /* Base styles that complement responsive-layout.css */
+    
+   @@font-face {
+    font-family: "Inter";
+    src: url("/local-cdns/Shared/fonts/inter/InterVariable.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@@font-face {
+    font-family: "Inter";
+    src: url("/local-cdns/Shared/fonts/inter/InterVariable-Italic.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+
+    html, body {
+        height: 100%;
+        overflow: hidden;
+        margin: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    #networkOverlay, #overlay, #navigationNetworkOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 100000;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.3);
+        display: none;
+        justify-content: center;
+    }
+
+    .spinner {
+        width: 2.5rem;
+        height: 2.5rem;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .user-role {
+        color: #475569;
+        font-weight: 500;
+        font-size: 12px;
+        margin-top: 0.25rem;
+    }
+
+    .custom-sidebar-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sidebar-icon-wrapper {
+        width: 2.5rem;
+        height: 2.5rem;
+        background: linear-gradient(135deg, #0A1F44 0%, #059669 100%);
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar-icon {
+        font-size: 22px;
+        color: white;
+    }
+
+    .sidebar-title {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0b2343;
+    }
+
+    .sidebar-subtitle {
+        color: #7d8da5;
+        font-size: 0.75rem;
+        margin-top: 0px;
+        display: block;
+    }
+
+    /* Fix list bullets */
+    .sidebar-nav ul,
+    .sidebar-nav li {
+        list-style: none !important;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Base sidebar link layout */
+    .sidebar .nav-link {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 8px 12px !important;
+        text-decoration: none !important;
+        border-radius: 12px !important;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+        /* Fix icon size + spacing */
+        .sidebar .nav-link i {
+            font-size: 0.875rem;
+            width: 1rem;
+            height: 1rem;
+            text-align: center;
+            color: #4b5563;
+        }
+
+
+        /* Hover - match your screenshot */
+        .sidebar .nav-link:hover {
+            background: rgba(10, 31, 68, 0.05);
+            transform: translateX(4px);
+            color: #0B2343 !important;
+        }
+
+        /* ACTIVE STATE */
+        .sidebar .nav-link.active {
+            background: linear-gradient(135deg, #0A1F44 0%, #059669 100%) !important;
+            color: white !important;
+        }
+
+            .sidebar .nav-link.active i {
+                color: white !important;
+            }
+
+    .tracking-wider {
+        letter-spacing: 0.05em;
+    }
+
+    .text-xs {
+        font-size: 0.75rem;
+    }
+
+    .text-sm {
+        font-size: .9rem;
+        font-weight: 500;
+    }
+
+    /* Overlay */
+    .u-swal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+    }
+
+    /* Modal wrapper */
+    .u-swal-modal {
+        width: 520px;
+        max-width: 90%;
+        border-radius: 18px;
+        background: #ffffff;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        animation: fadeIn 0.25s ease-out;
+    }
+
+    /* Header */
+    .u-swal-header {
+        background: #04ad78;
+        padding: 18px;
+        text-align: center;
+        border-top-left-radius: 18px;
+        border-top-right-radius: 18px;
+    }
+
+    .u-swal-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    /* Body */
+    .u-swal-body {
+        padding: 25px 35px;
+        font-size: 16px;
+        color: #333;
+        line-height: 1.45;
+        background: #fff;
+        min-height: 70px;
+    }
+
+    /* Footer */
+    .u-swal-footer {
+        padding: 10px 18px 20px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* Three dots loader */
+    .u-swal-dots {
+        display: flex;
+        gap: 6px;
+    }
+
+        /* Animated dots */
+        .u-swal-dots span {
+            width: 8px;
+            height: 8px;
+            background: #555;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 0.6s infinite alternate;
+        }
+
+            .u-swal-dots span:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+
+            .u-swal-dots span:nth-child(3) {
+                animation-delay: 0.4s;
+            }
+
+    /* Pulse animation */
+    @@keyframes pulse {
+        from {
+            opacity: 0.3;
+            transform: scale(0.8);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Animations */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .sweet-alert button {
+        background-color: #118c6f !important;
+    }
+
+    .sweet-alert .sa-icon.sa-success .sa-line{
+        background: #118c6f !important;
+    }
+</style>
+<body>
+    <!-- Mobile Header - Visible on tablet/mobile only -->
+    <header class="mobile-header" id="mobileHeader">
+        <div class="mobile-header-left">
+            <button type="button"
+                    class="hamburger-btn"
+                    id="sidebarToggle"
+                    aria-label="Toggle navigation menu"
+                    aria-expanded="false"
+                    aria-controls="mainSidebar">
+                <div class="hamburger-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
+            <div class="mobile-brand">
+                <div class="mobile-brand-icon">
+                    <i class="fa-solid fa-file-lines"></i>
+                </div>
+                <h1 class="mobile-brand-title">Signing Portal</h1>
+            </div>
+        </div>
+        <div class="mobile-header-right">
+            <!-- Mobile notification bell can be added here if needed -->
+        </div>
+    </header>
+
+    <!-- Sidebar Overlay - For closing sidebar on outside click -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="page-wrapper">
+        <nav class="sidebar" id="mainSidebar" aria-label="Main navigation">
+            <!-- Sidebar Close Button - Visible on mobile/tablet -->
+            <button type="button"
+                    class="sidebar-close-btn"
+                    id="sidebarClose"
+                    aria-label="Close navigation menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+
+            @await Html.PartialAsync("_NavigationNew")
+
+            @await Html.PartialAsync("_SidebarFooter")
+        </nav>
+
+        <div class="main-content-wrapper">
+            <main>
+                <div id="overlay" style="display:none;">
+                    <div class="cv-spinner"
+                         style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                        <span class="spinner"></span>
+                    </div>
+                </div>
+                <div id="navigationNetworkOverlay" style="display:none;">
+                    <div class="cv-spinner"
+                         style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                        <span class="spinner"></span>
+                    </div>
+                </div>
+                <div id="overlay6" class="u-swal-overlay" style="display:none;">
+                    <div class="u-swal-modal">
+
+                        <div class="u-swal-header">
+                            <p class="u-swal-title">Information</p>
+                        </div>
+
+                        <div class="u-swal-body">
+                            <p>Check for @currentStaging mobile app notification and approve signing request</p>
+                        </div>
+
+                        <div class="u-swal-footer">
+                            <div class="u-swal-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <div id="networkOverlay">
+                    <div class="cv-spinner"
+                         style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                        <span class="spinner"></span>
+                    </div>
+                </div>
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <!-- UI Libraries -->
+    <script src="~/local-cdns/Shared/lucide/latest/lucide.min.js"></script>
+    <script src="~/local-cdns/Shared/chartjs/latest/chart.umd.min.js"></script>
+    <script src="~/local-cdns/Shared/chartjs-datalabels/2.0.0/chartjs-plugin-datalabels.min.js"></script>
+    <script src="~/lib/sweetalert/dist/sweetalert.min.js" asp-append-version="true"></script>
+    <script src="~/local-cdns/Shared/toastr/latest/toastr.min.js"></script>
+
+
+    <script>
+        toastr.options = {
+            "positionClass": "toast-top-right", // This positions the toast at the top-middle
+            "closeButton": true,                 // Adds a close button to the toast
+            "timeOut": "1500",                   // Time duration before auto-hide (5 seconds)
+            "extendedTimeOut": "0",            // Time duration for mouseover extension
+            "newestOnTop": false,
+            "tapToDismiss": false,
+            "preventDuplicates": true,
+            "onShown": function () { toastVisible = true; },    // Set visible when toast is shown
+            "onHidden": function () { toastVisible = false; },
+        };
+
+        function formatDateToDDMMYYYY(dateString) {
+            if (!dateString) return "";
+
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+            const year = date.getFullYear();
+
+            return `${day}/${month}/${year}`;
+        }
+
+        function convertToLocalTime(serverTime) {
+            // Parse the server-sent time (with offset) into a Date object
+            const date = new Date(serverTime);
+
+            // Convert to user's local time
+            const localTime = date.toLocaleString("en-US", { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+
+            return localTime;
+        }
+        function updateTimestamps() {
+            document.querySelectorAll(".convert-time").forEach(function (element) {
+                const serverTime = element.getAttribute("data-timestamp");
+                if (serverTime) {
+                    const localTime = convertToLocalTime(serverTime);
+                    element.textContent = formatDateToDDMMYYYY(localTime);
+
+                }
+            });
+        }
+
+        function ajaxErrorHandler(xhr, status, error) {
+            document.getElementById("networkOverlay").style.display = "none";
+            $('#overlay').hide();
+            switch (xhr.status) {
+                case 400:
+                    swal("Error", "Cannot process your request", "error");
+                    break;
+                case 401:
+
+                    swal({ type: 'info', title: "Session Expired", text: "Click on 'Ok' button to login again!" }, function (isConfirm) {
+                        if (isConfirm) {
+
+                            window.location.href = '@Url.Action("Index", "Logout")'
+                        }
+                    });
+                    break;
+                case 403:
+                    swal("Forbidden", "You do not have access to this resource", "error");
+                    break;
+                case 404:
+                    swal("Not Found", "The resource you requested could not be found", "error");
+                    break;
+                case 500:
+                    swal({ title: "Server Error", text: "Internal Server error Occurred", type: "error" }, function (isConfirm) {
+                        if (isConfirm) {
+                            //window.location.reload();
+                            window.location.href = '@Url.Action("Index", "Dashboard")'
+                        }
+                    });
+                    break;
+                case 502:
+                    swal("Bad Gateway", "Invalid response", "error");
+                    break;
+                case 503:
+                    swal("Service Unavailable", "The Service is currently unavailable, please try after sometime", "error");
+                    break;
+                default:
+                    errors = ["Bad Request", "Bad Gateway", "Not Found", "Internal Server Error", "Forbidden", "Unauthorized", "Service Unavailable"]
+                    if (xhr.readyState == 0 && xhr.status == 0 && xhr.responseJSON == undefined) {
+                        if (!errors.includes(error)) {
+                            if (window.navigator.onLine) {
+                                if (error == "") {
+                                    error = "Something went wrong, please try later"
+                                }
+                                swal({ type: 'error', title: "Error", text: error }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        //window.location.reload();
+                                        window.location.href = '@Url.Action("Index", "Dashboard")'
+                                    }
+                                });
+                            }
+                            else {
+                                swal({ type: 'info', title: "No Internet", text: "Check your network connection!" }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        window.location.reload();
+                                    }
+                                });
+                            }
+                        }
+                        else {
+                            swal({ type: 'error', title: "Error", text: "Something went wrong, please try later" }, function (isConfirm) {
+                                if (isConfirm) {
+                                    //window.location.reload();
+                                    window.location.href = '@Url.Action("Index", "Dashboard")'
+                                }
+                            });
+                        }
+                    }
+                    break;
+            }
+        }
+        function formatDateToDDMMYYYYtime(dateString) {
+            if (!dateString) return "";
+
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+            const year = date.getFullYear();
+
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, "0");
+            const seconds = String(date.getSeconds()).padStart(2, "0");
+
+            const ampm = hours >= 12 ? "PM" : "AM";
+            hours = hours % 12;
+            hours = hours ? hours : 12; // Convert '0' to '12'
+            const formattedHours = String(hours).padStart(2, "0");
+
+            return `${day}/${month}/${year} ${formattedHours}:${minutes}:${seconds} ${ampm}`;
+        }
+        function updateDatestamps() {
+            document.querySelectorAll(".convert-date").forEach(function (element) {
+                const serverTime = element.getAttribute("data-timestamp");
+                if (serverTime) {
+                    const localTime = convertToLocalTime(serverTime);
+                    element.textContent = formatDateToDDMMYYYY(localTime);
+
+                }
+            });
+        }
+
+        function updateTimestamps_statuspage() {
+            document.querySelectorAll(".convert-time").forEach(function (element) {
+                const serverTime = element.getAttribute("data-timestamp");
+                if (serverTime) {
+                    const localTime = convertToLocalTime(serverTime);
+                    element.textContent = formatDateToDDMMYYYYtime(localTime);
+
+                }
+            });
+
+        }
+        const appBaseUrl = '@Url.Content("~/")';
+    </script>
+
+    <!-- Responsive Sidebar Toggle Script -->
+    <script>
+        (function() {
+            'use strict';
+
+            // DOM Elements
+            const body = document.body;
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarClose = document.getElementById('sidebarClose');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const sidebar = document.getElementById('mainSidebar');
+            const sidebarToggleCollapse = document.getElementById('sidebarToggleCollapse');
+
+            // Early exit if elements don't exist
+            if (!sidebarToggle || !sidebar) return;
+
+            // State
+            let isOpen = false;
+            let isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+
+            // Apply initial collapsed state on desktop
+            if (isCollapsed && window.innerWidth > 1024) {
+                sidebar.classList.add('collapsed');
+            }
+
+            // Initialize Bootstrap tooltips for collapsed sidebar
+            function initTooltips() {
+                const navLinks = sidebar.querySelectorAll('.nav-link[data-tooltip]');
+                navLinks.forEach(function(link) {
+                    // Destroy existing tooltip if any
+                    const existingTooltip = bootstrap.Tooltip.getInstance(link);
+                    if (existingTooltip) {
+                        existingTooltip.dispose();
+                    }
+
+                    // Only initialize tooltips in collapsed mode
+                    if (sidebar.classList.contains('collapsed')) {
+                        new bootstrap.Tooltip(link, {
+                            title: link.getAttribute('data-tooltip'),
+                            placement: 'right',
+                            container: 'body',
+                            trigger: 'hover',
+                            boundary: 'window'
+                        });
+                    }
+                });
+            }
+
+            // Initialize tooltips on load
+            initTooltips();
+
+            /**
+             * Open the sidebar (mobile/tablet)
+             */
+            function openSidebar() {
+                isOpen = true;
+                body.classList.add('sidebar-open');
+                sidebarToggle.setAttribute('aria-expanded', 'true');
+                sidebar.setAttribute('aria-hidden', 'false');
+
+                // Focus trap - focus the close button when sidebar opens
+                if (sidebarClose) {
+                    setTimeout(function() {
+                        sidebarClose.focus();
+                    }, 300);
+                }
+            }
+
+            /**
+             * Close the sidebar (mobile/tablet)
+             */
+            function closeSidebar() {
+                isOpen = false;
+                body.classList.remove('sidebar-open');
+                sidebarToggle.setAttribute('aria-expanded', 'false');
+                sidebar.setAttribute('aria-hidden', 'true');
+
+                // Return focus to toggle button
+                sidebarToggle.focus();
+            }
+
+            /**
+             * Toggle sidebar state (mobile/tablet)
+             */
+            function toggleSidebar() {
+                if (isOpen) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            }
+
+            /**
+             * Toggle collapsed state (desktop)
+             */
+            function toggleCollapse() {
+                isCollapsed = !isCollapsed;
+                if (isCollapsed) {
+                    sidebar.classList.add('collapsed');
+                    localStorage.setItem('sidebarCollapsed', 'true');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                    localStorage.setItem('sidebarCollapsed', 'false');
+                }
+                // Reinitialize tooltips after state change
+                setTimeout(initTooltips, 100);
+            }
+
+            // Event Listeners
+
+            // Hamburger button click (mobile/tablet)
+            sidebarToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSidebar();
+            });
+
+            // Unified collapse/expand button click (desktop)
+            if (sidebarToggleCollapse) {
+                sidebarToggleCollapse.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleCollapse();
+                });
+            }
+
+            // Close button click
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeSidebar();
+                });
+            }
+
+            // Overlay click (close on outside click)
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeSidebar();
+                });
+            }
+
+            // Escape key to close
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && isOpen) {
+                    closeSidebar();
+                }
+            });
+
+            // Close sidebar when clicking nav links on mobile
+            const navLinks = sidebar.querySelectorAll('.nav-link');
+            navLinks.forEach(function(link) {
+                link.addEventListener('click', function() {
+                    // Only close on mobile/tablet
+                    if (window.innerWidth <= 1024) {
+                        closeSidebar();
+                    }
+                });
+            });
+
+            // Handle resize events
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(function() {
+                    // Close sidebar if transitioning to desktop
+                    if (window.innerWidth > 1024 && isOpen) {
+                        body.classList.remove('sidebar-open');
+                        sidebarToggle.setAttribute('aria-expanded', 'false');
+                        isOpen = false;
+                    }
+
+                    // Re-apply collapsed state on desktop
+                    if (window.innerWidth > 1024 && isCollapsed) {
+                        sidebar.classList.add('collapsed');
+                    } else if (window.innerWidth <= 1024) {
+                        sidebar.classList.remove('collapsed');
+                    }
+
+                    // Reinitialize tooltips after resize
+                    initTooltips();
+                }, 150);
+            });
+
+            // Prevent body scroll when sidebar is open on touch devices
+            sidebar.addEventListener('touchmove', function(e) {
+                // Allow scrolling within sidebar
+                e.stopPropagation();
+            }, { passive: true });
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('touchmove', function(e) {
+                    // Prevent scrolling on overlay
+                    e.preventDefault();
+                }, { passive: false });
+            }
+
+        })();
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
+
+

@@ -1,0 +1,360 @@
+﻿@model SigningPortal.Web.ViewModels.DigitalForms.DocumentTypeViewModel
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+
+<style>
+
+    .card-title {
+        margin-bottom: 10px !important;
+    }
+
+    .toast {
+        margin-right: 50%;
+    }
+
+    .pdf-page {
+        width: 98%;
+        position: relative;
+        display: inline-block;
+        margin: 1%;
+        border: 1px solid #ccc;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .popup {
+        display: none;
+        position: absolute;
+        min-width: 280px;
+        padding: 15px;
+        background-image: linear-gradient(90deg, #30b6ac, #81bc73);
+        color: #000;
+        border-radius: 6px;
+        box-shadow: 0 0 24px rgba(0, 0, 0, .25);
+        font-size: 80%;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s, visibility 0.3s;
+        bottom: 100%;
+        /*/ Position above the status / */
+        right: 0;
+        /*/ Align to the right of the status container / */
+        transform: translateX(0) translateY(-10px);
+        /*/ Adjust vertical positioning /*/
+    }
+
+    .status-container:hover .popup {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .popup::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        /*/ Position the arrow / */
+        right: 20px;
+        /*/ Adjust arrow to align with the popup /*/
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        /*/ Transparent left side /*/
+        border-top: 10px solid #81bc73;
+        /*/ Visible top side /*/
+    }
+
+    .popup .header {
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 0;
+        font-size: 14px;
+    }
+
+    .popup .headersp {
+        padding-bottom: 5px;
+        border-bottom: 1px solid;
+    }
+
+    .popup .row {
+        display: contents;
+    }
+
+    .popup p {
+        line-height: 1 !important;
+        margin-bottom: 0;
+        padding-bottom: 5px;
+        color: #fff;
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .popup ul {
+        padding-left: 0;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        /*/ Ensure vertical alignment /*/
+        list-style: none;
+    }
+
+        .popup ul li {
+            font-size: 14px;
+            font-weight: 600;
+            position: relative;
+            margin-bottom: 0;
+        }
+
+            .popup ul li.first-email::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 14px;
+                height: 14px;
+                background-color: transparent;
+                border: 2px solid #fff;
+                border-radius: 50%;
+            }
+
+            .popup ul li.first-email::after {
+                content: "";
+                width: 6px;
+                height: 6px;
+                background-color: #fff;
+                border-radius: 50%;
+                position: absolute;
+                top: 50%;
+                left: 7px;
+                transform: translate(-50%, -50%);
+            }
+
+            .popup ul li.no-bullet,
+            .popup ul li.delegator-section {
+                padding-left: 0;
+                list-style-type: none;
+                margin-left: 0;
+                /*/ Reset margin for left alignment /*/
+            }
+
+    /*/ Ensure alignment of items in the popup /*/
+    .popup ul {
+        padding-left: 0;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        list-style: none;
+    }
+
+    /* ===== RESPONSIVE STYLES ===== */
+    @@media (max-width: 768px) {
+        .card-body {
+            padding: 1rem;
+        }
+
+        h3.common-heading-color {
+            font-size: 1.25rem !important;
+            padding: 0.5rem !important;
+        }
+
+        .toast {
+            margin-right: 0;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .popup {
+            min-width: 240px;
+            padding: 12px;
+            font-size: 75%;
+        }
+
+        .pdf-page {
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .card-body {
+            padding: 0.75rem;
+        }
+
+        h3.common-heading-color {
+            font-size: 1.1rem !important;
+        }
+
+        .popup {
+            min-width: 200px;
+            padding: 10px;
+        }
+
+            .popup .header {
+                font-size: 12px;
+            }
+
+            .popup p {
+                font-size: 11px;
+            }
+    }
+
+    .gf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        padding-left: 1.5rem;
+        padding-top: 1rem;
+    }
+
+    .gf-heading {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .gf-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 20px;
+        background: #0E7C5A;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+    }
+
+    .gf-heading h3 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .gf-heading p {
+        margin: 0;
+        color: #475467;
+        font-size: 1rem;
+    }
+
+</style>
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+
+<div class="row m-0" style="height:100vh">
+    <div class="col-md-12 p-0" style="height:100%">
+        <div class="card background-image border-0" style="height:100%">
+
+            <div class="card-body background-image" style="background:#F6F7FB">
+
+                <div class="gf-header">
+                    <div class="gf-heading">
+                        <div class="gf-icon">
+                            <i class="fa-solid fa-city"></i>
+                        </div>
+                        <div>
+                            <h3>Organisation Forms</h3>
+                            <p>Access orgnaisationally published forms</p>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="tab-content">
+                        <div id="orgforms" style="display:none;padding:15px;">
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal fade" id="digitalShowModal" tabindex="-1" role="dialog" aria-labelledby="digitalFormModalLabel" aria-hidden="false" data-backdrop="true" style="display:none;opacity: 1;padding-top: 1%;background-color: rgba(0, 0, 0, 0.2);">
+    <div class="modal-dialog modal-lg" role="document" style="width:100%;margin-top:0">
+        <div class="modal-content" style="height:90vh">
+            <div class="modal-header">
+                <button type="button" class="btn btn-primary" onclick="DownloadForm()">Download PDF</button>
+                <img data-toggle="tooltip" data-placement="left" title="Close" style="text-align:left;width:16px;height:20px;margin-left:3%" src='@Url.Content("~/assets/images/cross.svg")' asp-append-version="true" onclick="closemodal()" />
+
+            </div>
+            <div class="modal-body" style="overflow-y:auto">
+
+
+                <div id="pdf-container" style="overflow-y:auto;width:100%;height:100%"></div>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+
+
+@section scripts {
+
+    <script>
+
+
+        document.addEventListener("DOMContentLoaded", async function () {
+
+
+            $('#networkOverlay').hide();
+            viewName = '@ViewBag.ViewName';
+
+
+            orgforms()
+
+
+
+
+
+
+
+        });
+        function orgforms() {
+
+
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("orgforms", "DigitalForms")',
+                beforeSend: function () {
+                    $('#overlay').show();
+                },
+                complete: function () {
+                    $('#overlay').hide();
+                },
+                success: function (data) {
+                    if (data != null) {
+
+                        $('#orgforms').css('display', 'block');
+                        $('#orgforms').html(data);
+                    }
+                    else {
+                        swal({
+                            type: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
+                    }
+                },
+                error: ajaxErrorHandler
+
+
+            });
+        }
+        function closemodal() {
+            $("#digitalShowModal").modal('hide');
+        }
+    </script>
+}
+

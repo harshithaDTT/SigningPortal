@@ -1,0 +1,736 @@
+﻿@model SigningPortal.Web.ViewModels.FormRequests.AllFormRequestsListViewModel
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "View";
+}
+@{
+    var Suid = User.FindFirst(ClaimTypes.UserData).Value;
+    var userEmail = User.FindFirst(ClaimTypes.Email).Value;
+    var bulksign = User.IsInRole("bulkSign");
+    var AccountType = User.FindFirst("AccountType").Value;
+    var OrganizationName = "";
+    var OrganizationUid = "";
+    var login_esealsignatoryrole = User.IsInRole("eSealSignatory");
+    var selfemails = "";
+    if (AccountType != "Self")
+    {
+        selfemails = User.FindFirst("SelfEmails").Value;
+        OrganizationName = User.FindFirst("OrganizationName").Value;
+        OrganizationUid = User.FindFirst("OrganizationUid").Value;
+    }
+}
+
+
+<style>
+    .custom-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .custom-dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #fff;
+        min-width: 120px;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 1;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+    }
+
+        .custom-dropdown-content a {
+            color: #333;
+            padding: 0.25rem 1rem;
+            text-decoration: none;
+            display: block;
+            font-size: 14px;
+        }
+
+            .custom-dropdown-content a:hover {
+                background-color: rgba(0, 0, 0, 0.05) !important;
+                color: #333 !important;
+            }
+
+    .custom-dropdown:hover .custom-dropdown-content {
+        display: block;
+    }
+
+    .custom-dropdown-content li {
+        list-style: none;
+    }
+
+    .btn {
+        text-transform: capitalize !important;
+        font-size: 12px !important;
+    }
+
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+        background-color: transparent;
+    }
+
+    .dataTables_wrapper {
+        position: relative !important;
+        clear: both !important;
+        width: 100% !important;
+    }
+
+    .card-title {
+        margin-bottom: 10px !important;
+    }
+
+    .sweet-alert button.cancel {
+        background-color: rgb(244, 67, 54) !important;
+    }
+
+    .sweet-alert p {
+        color: #797979;
+        font-size: 1.125em !important;
+        text-align: center;
+        font-family: sans-serif;
+        font-weight: 300;
+        position: relative;
+        text-align: inherit;
+        float: none;
+        margin: 0;
+        padding: 0;
+        line-height: normal;
+    }
+    table.dataTable > tbody > tr > td.control::before {
+        font-size: 20px; 
+        font-weight: bold;
+        color: #007bff; 
+        display: inline-block;
+        text-align: center;
+        width: 24px; 
+        height: 24px; 
+        line-height: 24px; 
+        border-radius: 24px;
+    }
+
+    table.dataTable > tbody > tr.parent > td.control::before {
+        font-size: 15px !important;
+        font-weight: bold;
+        display: inline-block;
+        text-align: center;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        border-radius: 20px;
+    }
+
+    table.dataTable tbody tr.parent td.control::before {
+        background-color: forestgreen !important;
+        color: white !important;
+    }
+
+
+    @@media (max-width: 768px) {
+        .table-container {
+            margin: 0 -0.5rem;
+            border-radius: 0;
+        }
+
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter {
+            float: none !important;
+            text-align: center !important;
+            margin-bottom: 0.5rem;
+        }
+
+            .dataTables_wrapper .dataTables_filter input {
+                width: 100% !important;
+                max-width: 280px;
+                margin: 0.5rem auto !important;
+                display: block;
+            }
+
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            float: none !important;
+            text-align: center !important;
+            margin-top: 0.75rem;
+        }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                padding: 0.4rem 0.6rem !important;
+                margin: 0.1rem !important;
+            }
+
+        table.dataTable thead th {
+            font-size: 0.75rem !important;
+            padding: 0.5rem 0.25rem !important;
+            white-space: nowrap;
+        }
+
+        table.dataTable tbody td {
+            font-size: 0.8rem !important;
+            padding: 0.5rem 0.25rem !important;
+        }
+
+        .custom-dropdown-content {
+            min-width: 100px;
+            left: auto;
+            right: 0;
+        }
+
+        .status-container {
+            display: block !important;
+        }
+
+        .email-list {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn {
+            padding: 0.25rem 0.5rem !important;
+            font-size: 11px !important;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .dataTables_wrapper .dataTables_filter input {
+            max-width: 100%;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.3rem 0.4rem !important;
+            font-size: 0.7rem !important;
+        }
+
+        table.dataTable thead th,
+        table.dataTable tbody td {
+            font-size: 0.7rem !important;
+            padding: 0.35rem 0.2rem !important;
+        }
+
+        .custom-dropdown-content a {
+            padding: 0.5rem 0.75rem;
+            font-size: 12px;
+        }
+
+        .btn {
+            padding: 0.2rem 0.4rem !important;
+            font-size: 10px !important;
+        }
+    }
+</style>
+
+@if (Model.myRequests.Count == 0)
+{
+    <div class=" text-center">
+        <div class="card-body" style=" padding:0px;">
+            <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">No  Records Are Found</div>
+        </div>
+    </div>
+}
+else
+{
+    <table id="myList" class="table table-striped table-bordered table-hover table-checkable order-column full-width" style="width:100%;">
+        <thead style="text-align:center">
+            <tr>
+                <th></th>
+                <th style="text-align:justify">Form Name</th>
+               
+                <th>Created Date</th>
+                <th>Form Expiry</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody style="text-align:center">
+            @foreach (var item in Model.myRequests)
+            {
+                var className = "";
+                if (item.Status == "Completed")
+                {
+                    className = "formcompletebtn";
+                }
+                else if (item.Status == "In Progress")
+                {
+                    className = "inprogressbtn";
+                }
+                else if (item.Status == "New")
+                {
+                    className = "newform";
+                }
+                else
+                {
+                    className = "otherbtn";
+                }
+                <tr class="odd gradeX">
+                    <td></td>
+                    <td style="text-align: left !important;">
+                        @item.DocumentName
+                    </td>
+                    
+                    <td>@item.CreatedAt.ToString("dd-MM-yyyy")</td>
+                    <td>@item.ExpieryDate.ToString("dd-MM-yyyy")</td>
+                    <td>
+                        <div class="status-container" style="position: relative; display: inline-block;">
+                            <span class="@className" style="cursor:pointer;">@item.Status</span>
+                            @if (item.Status == "Completed")
+                            {
+                                <div class="popup">
+                                    <p class="header">
+                                        <span class="headersp">
+                                            TOTAL RECIPIENTS: @(item.CompleteSignList?.Count() + item.PendingSignList?.Count())
+                                        </span>
+                                    </p>
+                                    <div class="row">
+                                        <p style="text-align:left">
+                                            SIGNED: @(item.CompleteSignList?.Count() ?? 0)
+                                        </p>
+                                        <ul class="email-list" style="margin-bottom:0;">
+                                            @foreach (var signer in item.CompleteSignList)
+                                            {
+                                                <li class="first-email" style="display:flex;justify-content:start;">
+                                                    <span class="sec" style="padding-left:6%">@signer.email</span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            }
+                            @if (item.Status == "In Progress" || item.Status == "New")
+                            {
+                                <div class="popup">
+                                    <p class="header">
+                                        <span class="headersp">
+                                            TOTAL RECIPIENTS: @(item.CompleteSignList?.Count() + item.PendingSignList?.Count())
+                                        </span>
+                                    </p>
+                                    <div class="row">
+                                        <p style="text-align:left">
+                                            PENDING: @(item.PendingSignList?.Count() ?? 0)
+                                        </p>
+
+                                        <ul class="email-list" style="margin-bottom:0;">
+                                            @foreach (var signer in item.PendingSignList)
+                                            {
+                                                <li class="first-email" style="display:flex;justify-content:start;">
+                                                    <span class="sec" style="padding-left:6%">@signer.email</span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                    @if (item.TemplateRecepients?.Count() != item.PendingSignList?.Count())
+                                    {
+                                        <div class="row">
+                                            <p style="text-align:left">
+                                                SIGNED: @(item.CompleteSignList?.Count() ?? 0)
+                                            </p>
+                                            <ul class="email-list" style="margin-bottom:0;">
+                                                @foreach (var signer in item.CompleteSignList)
+                                                {
+                                                    <li class="first-email" style="display:flex;justify-content:start;">
+                                                        <span class="sec" style="padding-left:6%">@signer.email</span>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                        </div>
+                    </td>
+                    
+                    @* @if (item.DisableOrder == false)
+                    {
+                        @if (item.Status == "New" || item.Status == "In Progress")
+                        {
+                            var firstUser = item.PendingSignList.FirstOrDefault();
+                            if (firstUser != null && firstUser.suid == @Suid)
+                            {
+                                <td class="valigntop">
+                                    <div class="custom-dropdown btn-group">
+                                        <button class="btn btn-success deepGreen-bgcolor no-margin" type="button" data-toggle="dropdown" aria-expanded="false">
+                                            Actions
+                                            <i class="fa fa-caret-down"></i>
+                                        </button>
+
+                                        <div class="custom-dropdown-content" style="height: max-content !important;">
+
+                                            <a asp-action="FillFormData" asp-route-tempId="@item.FormId" asp-route-edmsId="@item.EdmsId" asp-route-documentName="@item.DocumentName" asp-route-flag="globalforms" asp-route-docuid="@item._id" asp-route-Status="@item.Status">
+                                                <i class="icon-pencil"></i>Fill Form
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            }
+
+                            else
+                            {
+                                <td class="valigntop" style="text-align:center">
+                                    <div class="btn-group" onclick="modalForm('@item.EdmsId', '@item.DocumentName','@item.Status')">
+                                        <a href="#">
+                                            <img src="~/assets/images/eyeicon.png" alt="View" />
+                                        </a>
+                                    </div>
+                                </td>
+                            }
+                        }
+
+                        else
+                        {
+                            <td class="valigntop" style="text-align:center">
+                                <div class="btn-group" onclick="modalForm('@item.EdmsId', '@item.DocumentName','@item.Status')">
+                                    <a href="#">
+                                        <img src="~/assets/images/eyeicon.png" alt="View" />
+                                    </a>
+                                </div>
+                            </td>
+
+
+                        }
+                    }
+                    else
+                    {
+
+
+                        if (item.CompleteSignList.Any(sign => sign.suid == Suid))
+                        {
+                            <td class="valigntop" style="text-align:center">
+                                <div class="btn-group" onclick="modalForm('@item.EdmsId', '@item.DocumentName','@item.Status')">
+                                    <a href="#">
+                                        <img src="~/assets/images/eyeicon.png" alt="View" />
+                                    </a>
+                                </div>
+                            </td>
+
+                        }
+                        else
+                        {
+                            <td class="valigntop">
+                                <div class="custom-dropdown btn-group">
+                                    <button class="btn btn-success deepGreen-bgcolor no-margin" type="button" data-toggle="dropdown" aria-expanded="false">
+                                        Actions
+                                        <i class="fa fa-caret-down"></i>
+                                    </button>
+
+                                    <div class="custom-dropdown-content" style="height: max-content !important;">
+
+                                        <a asp-action="FillFormData" asp-route-tempId="@item.FormId" asp-route-edmsId="@item.EdmsId" asp-route-documentName="@item.DocumentName" asp-route-flag="globalforms" asp-route-docuid="@item._id" asp-route-Status="@item.Status">
+                                            <i class="icon-pencil"></i>Fill Form
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+
+                        }
+                    }
+                    
+                  *@
+                    @if (item.DisableOrder == false)
+                    {
+                        @if (item.Status == "New" || item.Status == "In Progress")
+                        {
+                            var firstUser = item.PendingSignList?.FirstOrDefault();
+                            if (firstUser != null && firstUser.suid == @Suid)
+                            {
+
+
+                                <td class="valigntop" style="text-align:center">
+                                    <div class="btn-group">
+                                        <a asp-action="FillFormData" asp-route-tempId="@item.FormId" asp-route-edmsId="@item.EdmsId" asp-route-documentName="@item.DocumentName" asp-route-flag="MyDocuments" asp-route-docuid="@item._id" asp-route-Status="@item.Status" onclick="document.getElementById('navigationNetworkOverlay').style.display='block'">
+                                            <img id="62948ce4f64bd5398250ce11" src="@Url.Content("~/img/icon/file-signature-solid.png")" style="height: 25px;" asp-append-version="true">
+                                        </a>
+                                    </div>
+                                </td>
+                            }
+
+                            else
+                            {
+
+                                if (item.Status == "New")
+                                {
+
+                                    <td class="valigntop" style="text-align:center">
+                                        <div class="btn-group">
+                                            <a asp-action="FillFormData" asp-route-tempId="@item.FormId" asp-route-edmsId="@item.EdmsId" asp-route-documentName="@item.DocumentName" asp-route-flag="preview" asp-route-docuid="@item._id" asp-route-Status="@item.Status" onclick="document.getElementById('navigationNetworkOverlay').style.display='block'">
+                                                <img src='@Url.Content("~/assets/images/eyeicon.png")' asp-append-version="true" alt="View" />
+                                            </a>
+                                        </div>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="valigntop" style="text-align:center">
+                                        <div class="btn-group" onclick="modalForm('@item.EdmsId', '@item.DocumentName','@item.Status')">
+                                            <a href="#">
+                                                <img src='@Url.Content("~/assets/images/eyeicon.png")' asp-append-version="true" alt="View" />
+                                            </a>
+                                        </div>
+                                    </td>
+                                }
+
+                            }
+                        }
+
+                        else
+                        {
+                            <td class="valigntop" style="text-align:center">
+                                <div class="btn-group" onclick="modalForm('@item.EdmsId', '@item.DocumentName','@item.Status')">
+                                    <a href="#">
+                                        <img src='@Url.Content("~/assets/images/eyeicon.png")' asp-append-version="true" alt="View" />
+                                    </a>
+                                </div>
+                            </td>
+
+
+                        }
+                    }
+                    else
+                    {
+
+
+                        if (item.CompleteSignList!=null && item.CompleteSignList.Any(sign => sign.suid == Suid))
+                        {
+                            <td class="valigntop" style="text-align:center">
+                                <div class="btn-group" onclick="modalForm('@item.EdmsId', '@item.DocumentName','@item.Status')">
+                                    <a href="#">
+                                        <img src='@Url.Content("~/assets/images/eyeicon.png")' asp-append-version="true" alt="View" />
+                                    </a>
+                                </div>
+                            </td>
+
+                        }
+                        else
+                        {
+                            <td class="valigntop" style="text-align:center">
+                                <div class="btn-group">
+                                    <a asp-action="FillFormData" asp-route-tempId="@item.FormId" asp-route-edmsId="@item.EdmsId" asp-route-documentName="@item.DocumentName" asp-route-flag="MyDocuments" asp-route-docuid="@item._id" asp-route-Status="@item.Status">
+                                        <img id="62948ce4f64bd5398250ce11" src="@Url.Content("~/img/icon/file-signature-solid.png")" style="height: 25px;" asp-append-version="true">
+                                    </a>
+                                </div>
+                            </td>
+
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+<script>
+        var pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (!pdfjsLib) {
+        console.error('PDF.js library is not loaded.');
+    } else {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '@Url.Content("/local-cdns/Shared/pdfjs/2.10.377/pdf.worker.min.js")';
+    }
+    var loginOrgId = '@OrganizationUid';
+    var viewName = "MyDocuments";
+    var bulksignPermisson = '@bulksign';
+    $(document).ready(function () {
+        $('#networkOverlay').hide();
+        $('#myList').DataTable({
+            searching: false,
+            paging: true,
+            lengthChange: false,
+            pageLength: 5,
+            orderClasses: false,
+            stripeClasses: [],
+            info: true,
+            "ordering": false,
+            responsive: {
+                details: {
+                    type: 'column',
+                    target: 'tr'
+                }
+            },
+             columnDefs: [
+                { className: 'control', orderable: false, targets: 0 }, // Makes 1st column only for expansion
+                { responsivePriority: 1, targets: 1 },
+                { responsivePriority: 2, targets: 6 } ,
+                { responsivePriority: 3, targets: 5 },
+            ]
+
+        });
+
+
+
+
+    });
+
+
+
+    // Overlay function for showing loader
+    function showOverlay(matchedEsealData, matchedSignData) {
+        if (matchedEsealData == null && matchedSignData !== null) {
+            $('#overlay8').css('display', 'flex');
+        } else if (matchedEsealData !== null && matchedSignData === null) {
+            $('#overlay6').css('display', 'flex');
+
+        } else if (matchedEsealData !== null && matchedSignData !== null) {
+            $('#overlay7').css('display', 'flex');
+
+        } else {
+            $('#overlay8').css('display', 'flex');
+
+        }
+    }
+    // Overlay function for hiding loader
+    function hideOverlay(matchedEsealData, matchedSignData) {
+        if (matchedEsealData == null && matchedSignData !== null) {
+            $('#overlay8').hide();
+        } else if (matchedEsealData !== null && matchedSignData === null) {
+            $('#overlay6').hide();
+
+        } else if (matchedEsealData !== null && matchedSignData !== null) {
+            $('#overlay7').hide();
+        } else {
+            $('#overlay8').hide();
+
+        }
+
+    }
+
+
+    var formbase64 = "";
+
+    function renderPDF(pdf) {
+        const pdfContainer = document.getElementById('pdf-container');
+        pdfContainer.innerHTML = '';
+        const numPages = pdf.numPages;
+        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+            pdf.getPage(pageNum).then(page => {
+                const scale = 1.5;
+                const viewport = page.getViewport({ scale });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                canvas.style.width = '100%';
+                const pageContainer = document.createElement('div');
+                pageContainer.className = 'pdf-page';
+                pageContainer.style.position = 'relative';
+                pageContainer.appendChild(canvas);
+                pdfContainer.appendChild(pageContainer);
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                page.render(renderContext)
+            });
+        }
+
+    }
+
+    function base64ToArrayBuffer(base64) {
+        const binaryString = window.atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+    function modalForm(EdmsId, SignerName,status1) {
+        const ele = document.getElementById('downloadbutton');
+        const ele1 = document.getElementById('showclose');
+        if (status1 === "In Progress"){
+
+            if (ele) {
+                ele.style.display='none'
+            }
+            if (ele1) {
+                ele1.style.marginLeft = "auto";
+            }
+        }
+        else{
+            if (ele) {
+                ele.style.display='block'
+            }
+            if (ele1) {
+                ele1.style.marginLeft= "3%"
+            }
+        }
+        $("#digitalShowModal").modal('show');
+        FileName = SignerName + "_signed";
+        
+        $.ajax({
+            url: '@Url.Action("GetPreviewConfig", "DigitalForms")',
+            type: 'GET',
+            data : {
+                edmsId:EdmsId
+            },
+            beforeSend: function () {
+                $('#overlay').show();
+            },
+            complete: function () {
+                $('#overlay').hide();
+            },
+            success: function (resp) {
+                if (resp.success) {
+                    
+                    formbase64 = resp.result;
+                    const pdfArrayBuffer = base64ToArrayBuffer(resp.result);
+                    pdfjsLib.getDocument({ data: pdfArrayBuffer }).promise.then(pdf => {
+                        renderPDF(pdf);
+                    }).catch(error => {
+                        console.error('Error loading PDF:', error);
+                    });
+
+                } else {
+                    swal({
+                        title: 'Error',
+                        text: resp.message,
+                        type: 'error',
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            document.getElementById("navigationNetworkOverlay").style.display = "block";
+                            window.location.href = '@Url.Action("Index", "DigitalForms")';
+                        }
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+  
+                swal({
+                    title: 'Error',
+                    text: 'Something went wrong!',
+                    type: 'error',
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        document.getElementById("navigationNetworkOverlay").style.display = "block";
+                        window.location.href = '@Url.Action("Index", "DigitalForms")';
+                    }
+                });
+            }
+        });
+    }
+
+    function DownloadForm() {
+        var byteCharacters = atob(formbase64); // decode base64
+        var byteNumbers = new Array(byteCharacters.length);
+
+        for (var i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        var byteArray = new Uint8Array(byteNumbers);
+        var blob = new Blob([byteArray], { type: 'application/pdf' });
+
+        // Create a download link and trigger the download
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'SignedForm.pdf'; // The name of the downloaded file
+        link.click(); // Trigger the download
+    };
+
+</script>

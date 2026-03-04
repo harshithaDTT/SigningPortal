@@ -1,0 +1,146 @@
+﻿body {
+}
+
+/*.LoginArea {
+    background-image: url('../img/backgroundLoginimage.jpg');
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    flex-wrap: wrap;
+    padding: 15px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 50%;
+    position: relative;
+    z-index: 1;
+}
+
+.LoginBox {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+img {
+    width: 441px;
+    margin-bottom: 6px;
+}
+
+
+@media only screen and (max-height: 500px) {
+    
+         img {
+            height: 75%;
+            width: 60%;
+        }
+}
+
+@media only screen and (max-width: 500px) {
+
+    img {
+        height: 50%;
+        width: 80%;
+    }
+}*/
+
+.LoginArea {
+    background-image: url('../img/backgroundLoginimage.jpg');
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    padding: 15px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    z-index: 1;
+}
+
+.LoginBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+}
+
+/* Logo Image */
+/* Logo Image */
+.logo-img {
+    width: 100%;
+    max-width: 372px;
+    margin-bottom: 30px;
+}
+
+/* Button Styling */
+.login-button {
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 264px;
+    height: 48px;
+    font-size: 16px;
+    font-family: sans-serif;
+    outline: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    margin-left: 29%; /* Default for large screens */
+}
+
+/* Button Image */
+.button-logo {
+    width: 120px;
+    height: auto;
+}
+
+/* Tablet (max-width: 768px) */
+@media (max-width: 768px) {
+    .logo-img {
+        max-width: 280px;
+        margin-bottom: 22px;
+    }
+
+    .login-button {
+        max-width: 220px;
+        font-size: 14px;
+        height: 45px;
+        margin-left: 20%; /* Adjusted for tablets */
+    }
+
+    .button-logo {
+        width: 100px;
+    }
+}
+
+/* Mobile (max-width: 480px) */
+@media (max-width: 480px) {
+    .LoginBox {
+        max-width: 90%;
+    }
+
+    .logo-img {
+        max-width: 250px;
+        margin-bottom: 18px;
+    }
+
+    .login-button {
+        max-width: 200px;
+        height: 42px;
+        font-size: 12px;
+        margin-left: 10%; /* Centered more on smaller screens */
+    }
+
+    .button-logo {
+        width: 90px;
+    }
+}

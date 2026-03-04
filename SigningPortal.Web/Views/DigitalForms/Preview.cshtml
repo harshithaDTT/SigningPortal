@@ -1,0 +1,363 @@
+﻿@model SigningPortal.Web.ViewModels.DigitalForms.FillFormData;
+
+
+<style>
+    /* ========================================
+           MODERN UI DESIGN SYSTEM - Preview
+           Aligned with UsePdfForm.cshtml theme
+           ======================================== */
+    :root {
+        --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        --primary-green: #10b981;
+        --primary-green-dark: #059669;
+        --primary-green-light: #d1fae5;
+        --accent-blue: #3b82f6;
+        --accent-purple: #8b5cf6;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --bg-page: #f8fafc;
+        --bg-card: #ffffff;
+        --bg-section: #f7f8fa;
+        --border-color: #e2e8f0;
+        --border-light: #f1f5f9;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 20px;
+        --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ========================================
+           Card & Container Styling
+           ======================================== */
+    .card.background-image {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 0px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .well.form-box {
+        background: #ebedef !important;
+        border-bottom: 1px solid var(--border-light);
+        padding: 16px 24px;
+        border-radius: 0px;
+        display: flex;
+        align-items: center;
+    }
+
+        .well.form-box h4 {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin: 0;
+        }
+
+    /* ========================================
+           PDF Container & Page Styling
+           ======================================== */
+    .pdf-page {
+        width: 100%;
+        position: relative;
+        display: inline-block;
+        margin: 12px 0;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        background: var(--bg-card);
+    }
+
+    #pdf-container {
+        padding: 20px;
+        background: var(--bg-page);
+    }
+
+    /* ========================================
+           Form Field Styling
+           ======================================== */
+    .input-field {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-sizing: border-box;
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-base);
+        padding: 8px 12px;
+        min-height: 40px;
+        font-size: 0.875rem;
+        color: #636161;
+        background-color: #d8d7d78a;
+        color: #636161;
+    }
+
+
+        .input-field.has-value {
+            background-color: transparent;
+            color: var(--text-primary);
+            outline: none;
+            text-align: left;
+            border-color: var(--primary-green);
+        }
+
+    .annotated input[type="text"] {
+        border: none;
+        background: var(--text-primary);
+        color: white;
+        width: 100px;
+        height: 32px;
+        padding: 6px 10px;
+        box-sizing: border-box;
+        font-size: 0.875rem;
+        text-align: center;
+        border-radius: var(--radius-sm);
+    }
+
+    #fields-list {
+        margin-top: 24px;
+    }
+
+    .field-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 12px;
+        background: var(--bg-section);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-light);
+    }
+
+        .field-item input {
+            margin-right: 12px;
+            flex: 1;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            transition: all var(--transition-base);
+        }
+
+            .field-item input:focus {
+                border-color: var(--primary-green);
+                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+                outline: none;
+            }
+
+    .editable-text {
+        min-height: 20px;
+        width: 100px;
+        cursor: text;
+    }
+
+    .draggable {
+        position: absolute;
+        padding: 0.48%;
+        cursor: move;
+        background: transparent;
+        border: 2px dashed transparent;
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-fast);
+    }
+
+        .draggable:hover {
+            border-color: var(--primary-green);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+    /* ========================================
+           Image Container Styling
+           ======================================== */
+    .image-container {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: var(--text-secondary);
+        border: 2px dashed var(--primary-green);
+        position: relative;
+        width: 150px;
+        height: 170px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-base);
+    }
+
+        .image-container:hover {
+            background-color: rgba(16, 185, 129, 0.15);
+            border-color: var(--primary-green-dark);
+        }
+
+    .image-upload {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .uploaded-image {
+        display: none;
+        width: 100%;
+        height: 100%;
+        object-fit: fill;
+    }
+
+    .placeholder-text {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .remove-image-btn {
+        display: none;
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: rgba(255, 255, 255, 0.95);
+        color: #ef4444;
+        font-size: 18px;
+        border: none;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: 50%;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
+    }
+
+        .remove-image-btn:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+
+    .image-container:hover .remove-image-btn.uploaded {
+        display: block;
+    }
+
+    /* ========================================
+           Preview Container Layout
+           ======================================== */
+    .preview-container {
+        border: 1px solid var(--border-color) !important;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    /* ========================================
+           Responsive Adjustments
+           ======================================== */
+    @@media (max-width: 768px) {
+        .card-body {
+            padding: 1rem;
+        }
+
+        .well.form-box h4 {
+            font-size: 1.1rem;
+        }
+
+        #pdf-container {
+            padding: 8px;
+        }
+
+        .preview-container {
+            border-radius: 0;
+        }
+
+        .card.background-image {
+            padding: 0 !important;
+        }
+
+        .well.form-box {
+            padding: 0.75rem 1rem;
+        }
+
+        .well.form-box h4 {
+            margin-left: 0 !important;
+            font-size: 1rem;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .card-body {
+            padding: 0.5rem;
+        }
+
+        .well.form-box h4 {
+            font-size: 0.9rem;
+        }
+
+        #pdf-container {
+            padding: 4px;
+        }
+
+        .remove-image-btn {
+            padding: 4px 8px;
+            font-size: 14px;
+        }
+    }
+</style>
+
+
+<link rel="stylesheet" href="~/local-cdns/Shared/fontawesome/6.0.0-beta3/css/all.min.css">
+<script src="~/local-cdns/Shared/sweetalert2/11/sweetalert2.min.js"></script>
+<script src="~/local-cdns/Shared/pdfjs/2.10.377/pdf.min.js"></script>
+<script src="~/local-cdns/Shared/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="~/local-cdns/Shared/pdf-lib/1.16.0/pdf-lib.min.js"></script>
+
+<div class="row m-0">
+    <div class="col-md-12 p-0" style="height:100vh">
+        <div class="card background-image p-0 p-md-3 p-lg-4" style="height:100%;padding:0.5rem">
+
+
+
+            <div class="card-body" style="padding:0;height:100%;border:1px solid #ccc;border-radius:0.25rem;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);">
+                <div class="preview-container" style="padding:0;height:100%">
+
+                    <div class="well form-box" style='display:flex; flex-flow:wrap;justify-content:space-between;width:100%;'>
+                        <h4 style="margin-left:3%;margin-top:auto;margin-bottom:auto"><b>Preview</b></h4>
+                    </div>
+
+
+                    <div style="overflow-y:auto; height:92%;background:var(--bg-page)">
+                        <div id="pdf-container" style="width:98%"></div>
+                    </div>
+
+
+
+                </div>
+            </div>
+
+
+
+
+        </div>
+    </div>
+
+    <input type="hidden" id="filebase64" name="filebase64" value="@Model.pdfblob" />
+    <input type="hidden" id="pdfschema" name="pdfschema" value="@Model.htmlschma" />
+    <input type="hidden" id="autodata" name="autodata" value="@Model.autofilldata" />
+</div>
+
+<script>
+    var flagType='@Model.flag';
+</script>
+
+@if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    <script src="~/js/DigitalForms/Preview.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+else
+{
+    <script src="~/dist/DigitalForms/Preview.min.js" type="text/javascript" asp-append-version="true" defer></script>
+}

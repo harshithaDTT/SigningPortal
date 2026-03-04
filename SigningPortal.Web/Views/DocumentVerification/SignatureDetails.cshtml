@@ -1,0 +1,268 @@
+﻿@model List<SigningPortal.Web.ViewModels.DocumentVerificationViewModel.VerificationViewModel>
+@inject IConfiguration Configuration
+
+@{
+    var currentStaging = Configuration["CurrentStaging"];
+    var OkImageUrl = @Url.Content($"~/Images_change/{currentStaging}/icons8-0k-241.png");
+    var CancelImageUrl = Url.Content("/img/icon/icons8-cancel-24.png");
+}
+
+@{
+    int count = 1; // Initialize count variable
+}
+
+<style>
+    .dv-signature-page {
+        background: #f5f7fa;
+        min-height: 100vh;
+        padding: 12px;
+    }
+
+    .dv-signature-shell {
+        max-width: 1080px;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+
+    .dv-signature-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fafcff;
+    }
+
+    .dv-signature-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .dv-signature-meta {
+        padding: 14px 16px;
+        display: grid;
+        grid-template-columns: 1.4fr .8fr;
+        gap: 12px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .dv-label {
+        font-size: 0.66rem;
+        color: #94a3b8;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .dv-value {
+        margin-top: 4px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0f172a;
+        word-break: break-word;
+    }
+
+    .dv-signatory-list {
+        padding: 14px 16px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: #fbfcfe;
+    }
+
+    .dv-signatory-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #ffffff;
+        padding: 12px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+
+    .dv-signatory-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .dv-signer-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .dv-signer-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        background: #10b981;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .dv-signer-name {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .dv-signer-index {
+        color: #64748b;
+        margin-right: 4px;
+    }
+
+    .dv-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 4px 9px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+        .dv-status-pill.invalid {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .dv-status-pill img {
+            width: 12px;
+            height: 12px;
+            object-fit: contain;
+        }
+
+    .dv-signatory-meta {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .dv-time-item {
+        display: flex;
+        align-items: baseline;
+        gap: 5px;
+    }
+
+        .dv-time-item .dv-label {
+            margin: 0;
+        }
+
+        .dv-time-item .dv-time {
+            font-size: 0.78rem;
+            color: #334155;
+            font-weight: 600;
+        }
+
+    .dv-footer {
+        padding: 0 16px 12px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    @@media (max-width: 640px) {
+        .dv-signature-page {
+            padding: 8px;
+        }
+
+        .dv-signature-meta {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="dv-signature-page">
+    <div class="dv-signature-shell">
+        <div class="dv-signature-header">
+            <h3 class="dv-signature-title">Document Verification Report</h3>
+        </div>
+
+        <div class="dv-signature-meta">
+            <div>
+                <div class="dv-label">Document Name</div>
+                <div class="dv-value">@Model[0].documentName</div>
+            </div>
+            <div>
+                <div class="dv-label">Total Signatures</div>
+                <div class="dv-value">@Model.Count</div>
+            </div>
+        </div>
+
+        <div class="dv-signatory-list">
+            @foreach (var item in Model)
+            {
+                var validClass = item.signatureValid ? "dv-status-pill" : "dv-status-pill invalid";
+                var statusText = item.signatureValid ? "Verified" : "Invalid";
+                var statusImage = item.signatureValid ? OkImageUrl : CancelImageUrl;
+                var initials = "";
+                if (!string.IsNullOrWhiteSpace(item.signedBy))
+                {
+                    var parts = item.signedBy.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                    initials = parts.Length > 1 ? $"{parts[0][0]}{parts[1][0]}" : $"{parts[0][0]}";
+                }
+
+                <div class="dv-signatory-card">
+                    <div class="dv-signatory-top">
+                        <div class="dv-signer-left">
+                            <span class="dv-signer-avatar">@(string.IsNullOrEmpty(initials) ? "NA" : initials.ToUpper())</span>
+                            <p class="dv-signer-name"><span class="dv-signer-index">@count)</span>@item.signedBy</p>
+                        </div>
+
+                        <div class="@validClass">
+                            <img src="@statusImage" alt="validation status" asp-append-version="true" />
+                            @statusText
+                        </div>
+                    </div>
+
+                    <div class="dv-signatory-meta">
+                        <div class="dv-time-item">
+                            <span class="dv-label">Signed</span>
+                            <span class="dv-time convert-time" data-timestamp="@item.signedTime.ToString("o")">@item.signedTime</span>
+                        </div>
+                        <div class="dv-time-item">
+                            <span class="dv-label">Validated</span>
+                            <span class="dv-time convert-time" data-timestamp="@item.validationTime.ToString("o")">@item.validationTime</span>
+                        </div>
+                    </div>
+                </div>
+
+                count++;
+            }
+        </div>
+
+        <div class="dv-footer">
+            <a type="button" asp-action="Index" class="submit-button">Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+
+@if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    <script src="~/js/DocumentVerification/SignatureDetails.js" type="text/javascript" asp-append-version="true" defer></script>
+}
+else
+{
+    <script src="~/dist/DocumentVerification/SignatureDetails.min.js" type="text/javascript" asp-append-version="true" defer></script>
+}

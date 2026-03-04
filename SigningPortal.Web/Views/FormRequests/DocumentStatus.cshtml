@@ -1,0 +1,602 @@
+﻿@model SigningPortal.Web.ViewModels.DigitalForms.StatusDoc;
+@using System.Security.Claims;
+@using Newtonsoft.Json
+
+<link rel="stylesheet" href="~/local-cdns/Shared/fontawesome/6.4.0/css/all.min.css">
+<style>
+    /* ========================================
+           STYLES ALIGNED WITH DocumentDetailsById.cshtml
+           ======================================== */
+
+    .Downloadbutton {
+        background: #d1f4e0;
+        border: none;
+        border-radius: 0.25rem;
+        color: #198754;
+        gap: 8px;
+        font-weight: 500;
+    }
+
+        .Downloadbutton:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px #d1f4e0;
+        }
+
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        color: #4976af;
+        background-color: #dbeafe;
+        border: none;
+        border-radius: 0.25rem;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        }
+
+    .document-container {
+        display: flex;
+        gap: 20px;
+        width: 100%;
+    }
+
+    .document-image {
+        width: 80px;
+        height: auto;
+    }
+
+    .jss19 {
+        width: 80px;
+        height: auto;
+    }
+
+    .signaturesRequired {
+        margin-top: 10px;
+    }
+
+    /* Signatory Card Styles - Exact match with DocumentDetailsById */
+    .signatories-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .signatory-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .signatory-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .signatory-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .signatory-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .signatory-name {
+        font-weight: 600;
+        font-size: 15px;
+        color: #1f2937;
+        text-transform: uppercase;
+    }
+
+    .signatory-email {
+        font-size: 14px;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .signatory-email i {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+    .detail-item {
+        font-size: 13px;
+        color: #6b7280;
+        display: flex;
+        gap: 4px;
+    }
+
+    .detail-label {
+        color: #9ca3af;
+    }
+
+    .detail-value {
+        color: #374151;
+    }
+
+    .signatory-status {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .signingstats-heading {
+        font-size: 12px;
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    .signingstats-text {
+        font-size: 14px;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    .signed-btn {
+        min-width: 100px;
+    }
+
+    .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .signatory-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .signatory-status {
+            width: 100%;
+            justify-content: flex-start;
+            padding-top: 12px;
+            border-top: 1px solid #f3f4f6;
+        }
+    }
+
+    @@media (min-width: 576px) {
+        .d-sm-none {
+            display: none !important;
+        }
+
+        .d-sm-flex {
+            display: flex !important;
+        }
+
+        .d-sm-block {
+            display: block !important;
+        }
+
+        .flex-sm-column {
+            flex-direction: column !important;
+        }
+
+        .mr-sm-5 {
+            margin-right: 3rem !important;
+        }
+
+        .mr-sm-1 {
+            margin-right: 0.25rem !important;
+        }
+    }
+
+    @@media (min-width: 992px) {
+        .d-lg-none {
+            display: none !important;
+        }
+
+        .d-lg-flex {
+            display: flex !important;
+        }
+    }
+
+    @@media (min-width: 1200px) {
+        .d-xl-none {
+            display: none !important;
+        }
+
+        .d-xl-flex {
+            display: flex !important;
+        }
+    }
+
+    @@media (min-width: 1400px) {
+        .d-xxl-none {
+            display: none !important;
+        }
+
+        .d-xxl-flex {
+            display: flex !important;
+        }
+    }
+</style>
+
+@{
+    var bgColor = Model.Status switch
+    {
+        "In Progress" => "#f57c00",
+        "Completed" => "rgb(19 180 105)",
+        "Failed" or "Declined" => "red",
+        "Expired" => "#bdbdbd",
+        _ => "#f57c00"
+    };
+}
+
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+    @Html.AntiForgeryToken()
+    <div class="col-md-12">
+        <div>
+            <div class="card-body">
+                <div class="card shadow-sm p-4" style="border-radius: 12px;">
+                    <div class="row">
+                        <!-- LEFT COLUMN : Document Details -->
+                        <div class="col-lg-7">
+                            <h1 style="font-weight:700;font-size:20px !important;margin-bottom:16px;">Document Details</h1>
+
+                            <div style="max-width: 600px;">
+                                <!-- Name -->
+                                <div class="row mb-2 d-block d-sm-flex align-items-sm-center">
+                                    <div class="fw-semibold d-inline d-sm-block col-sm-4 pr-0">
+                                        <i class="bi bi-file-earmark-text-fill me-1" style="color:#6c757d !important"></i> Name
+                                    </div>
+                                    <div class="d-inline d-sm-block text-end col-sm-1">:</div>
+                                    <div class="d-inline d-sm-block col-sm-7">@Model.DocumentName</div>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="row mb-2 d-block d-sm-flex align-items-sm-center">
+                                    <div class="fw-semibold d-inline d-sm-block col-sm-4 pr-0">
+                                        <i class="bi bi-info-circle-fill me-1 text-info" style="color:#6c757d !important"></i> Status
+                                    </div>
+                                    <div class="d-inline d-sm-block text-end col-sm-1">:</div>
+                                    <div class="d-inline d-sm-block col-sm-7">
+                                        <span style="background-color: @bgColor; color: white; border-radius: 16px; padding: 4px 16px; font-size: 15px;">
+                                            @(Model.Status == "In Progress" ? "Signatures Pending" : Model.Status)
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Created on -->
+                                <div class="row mb-2 d-block d-sm-flex align-items-sm-center">
+                                    <div class="fw-semibold d-inline d-sm-block col-sm-4 pr-0">
+                                        <i class="bi bi-clock-fill me-1" style="color:#6c757d !important"></i> Created on
+                                    </div>
+                                    <div class="d-inline d-sm-block text-end col-sm-1">:</div>
+                                    <div class="d-inline d-sm-block col-sm-7 convert-time" data-timestamp="@Model.CreateTime.ToString("o")"></div>
+                                </div>
+
+                                <!-- Completed On -->
+                                @if (Model.Status == "Completed")
+                                {
+                                    <div class="row mb-2 d-block d-sm-flex align-items-sm-center">
+                                        <div class="fw-semibold d-inline d-sm-block col-sm-4 pr-0">
+                                            <i class="bi bi-check-circle-fill me-1 text-success" style="color:#6c757d !important"></i> Completed on
+                                        </div>
+                                        <div class="d-inline d-sm-block text-end col-sm-1">:</div>
+                                        <div class="d-inline d-sm-block col-sm-7 convert-time" data-timestamp="@Model.CompleteTime.ToString("o")"></div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- RIGHT COLUMN : Image + Buttons -->
+                        <div class="col-lg-5 col-md-12 p-0 d-flex flex-column align-items-center" style="margin-top:30px;">
+                            <div class="document-container d-flex gap-20 w-100">
+                                @if (Model.Status == "Completed")
+                                {
+                                    <img src='@Url.Content("~/img/icon/Signed-icons-green.png")' asp-append-version="true" id="completedImage" class="document-image jss19 img-fluid">
+                                }
+                                else if (Model.Status == "Failed" || Model.Status == "Declined")
+                                {
+                                    <img src='@Url.Content("~/img/icon/Declined-icons-gray.png")' asp-append-version="true" id="declinedExpiredImage" class="document-image jss19 img-fluid">
+                                }
+                                else if (Model.Status == "In Progress")
+                                {
+                                    <img src='@Url.Content("~/img/icon/Viewed-icons-orange.png")' asp-append-version="true" id="viewedImage" class="document-image jss19 img-fluid">
+                                }
+                                else
+                                {
+                                    <img src='@Url.Content("~/img/icon/Expired icon.svg")' asp-append-version="true" id="sentImage" class="document-image jss19 img-fluid">
+                                }
+                            </div>
+
+                            <br />
+
+                            <div class="d-flex justify-content-start align-items-center gap-20" style="align-self:flex-start;margin-left:10px;">
+                                @if (Model.Status == "Completed")
+                                {
+                                    <button id="downloadbutton" class="submit-button Downloadbutton" style="font-size:14px;padding:6px 12px;margin-right:10px;" onclick="modalForm('@Model.DocumentName','@Model.EdmsId')">
+                                        <i class="bi bi-download mr-1"></i> Download
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm p-4 mt-4" style="border-radius: 12px;">
+                    <h4 style="font-weight:600;margin-bottom:23px;">Signatories</h4>
+
+                    <div class="signatories-container">
+                        @for (int i = 0; i < Model.TemplateRecepients.Count; i++)
+                        {
+                            var item = Model.TemplateRecepients[i];
+
+                            <div class="signatory-card">
+                                <div class="signatory-header">
+                                    <div class="signatory-profile">
+                                        <div style="width:50px;height:50px;border-radius:50px;" id="loader-@i" class="spinner"></div>
+                                        <img id="thumb-@i" asp-append-version="true" style="width:50px;height:50px;border-radius:50px;display:none;" />
+                                        <div class="signatory-info">
+                                            <div class="signatory-name">
+                                                @(string.IsNullOrWhiteSpace(item.SignedBy) ? "NA" : item.SignedBy.ToUpper())
+                                            </div>
+                                            <div class="signatory-email">
+                                                <i class="fas fa-envelope"></i>
+                                                @item.Signer.email
+                                            </div>
+
+                                            @if (!string.IsNullOrEmpty(item.OrganizationName))
+                                            {
+                                                <div class="detail-item"><span class="detail-label">Organization:</span><span class="detail-value">@item.OrganizationName</span></div>
+                                            }
+                                            else
+                                            {
+                                                <div class="detail-item"><span class="detail-label">Account:</span><span class="detail-value">Self</span></div>
+                                            }
+
+                                            <div class="d-none d-sm-flex d-lg-none">
+                                                <div class="signingstats-heading">Mandatory</div>
+                                                <div class="signingstats-heading pr-2">:</div>
+                                                <div class="gap-1 signingstats-text">
+                                                    @(item.SignatureMandatory ? "Yes" : "No")
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="signatory-status">
+                                    @if (item.Status == "Signed" || item.Status == "Completed")
+                                    {
+                                        <div class="d-flex d-sm-none d-xl-flex flex-sm-column mr-sm-5">
+                                            <div class="signingstats-heading">Signed on</div>
+                                            <div class="signingstats-heading d-sm-none pr-2">:</div>
+                                            <div class="gap-1 signingstats-text convert-time" data-timestamp="@item.SigningCompleteTime.ToString("o")">
+                                                @item.SigningCompleteTime
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <div class="d-flex d-sm-none d-lg-flex flex-sm-column mr-sm-5">
+                                        <div class="signingstats-heading">Mandatory</div>
+                                        <div class="signingstats-heading d-sm-none pr-2">:</div>
+                                        <div class="gap-1 signingstats-text">
+                                            @(item.SignatureMandatory ? "Yes" : "No")
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex d-sm-none d-lg-flex flex-sm-column mr-sm-5">
+                                        <div class="signingstats-heading">Order</div>
+                                        <div class="signingstats-heading d-sm-none pr-2">:</div>
+                                        <div class="gap-1 signingstats-text">
+                                            @item.Order
+                                        </div>
+                                    </div>
+
+                                    @if (item.HasDelegation)
+                                    {
+                                        <div class="d-flex d-sm-none d-lg-flex flex-sm-column mr-sm-5">
+                                            <div class="signingstats-heading">Delegator</div>
+                                            <div class="signingstats-heading d-sm-none pr-2">:</div>
+                                            <div class="gap-1 signingstats-text">
+                                                @item.Signer.email
+                                            </div>
+                                        </div>
+                                    }
+
+                                    @if (item.Status == "Signed" || item.Status == "Completed")
+                                    {
+                                        <div class="d-inline-flex justify-content-end align-items-center signed-btn">
+                                            <div class="d-inline-flex justify-content-center align-items-center bg-success text-white px-3 py-2 shadow-sm mr-1" style="font-size: 0.95rem;border-radius:16px;min-width:80px;background-color:rgb(19 180 105) !important;">
+                                                <i class="bi bi-check-circle-fill me-2" style="margin-right:10px;"></i>
+                                                Signed
+                                            </div>
+                                        </div>
+                                    }
+                                    else if (item.Status == "Pending")
+                                    {
+                                        <div class="d-flex flex-sm-column mr-sm-1" style="min-width:130px;">
+                                            <div class="signingstats-heading">Signing Status</div>
+                                            <div class="signingstats-heading d-sm-none pr-2">:</div>
+                                            <div class="gap-1 signingstats-text" style="color: #f57c00;">
+                                                Pending
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="d-flex flex-sm-column mr-sm-1" style="min-width:130px;">
+                                            <div class="signingstats-heading">Signing Status</div>
+                                            <div class="signingstats-heading d-sm-none pr-2">:</div>
+                                            <div class="gap-1 signingstats-text" style="color: #f57c00;">
+                                                @item.Status
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div style="display:flex;width:100%;justify-content:end;margin-top:20px;">
+                        <button class="btn-primary" style="padding:6px 12px;" onclick="backhandle()">
+                            <i class="fa-solid fa-arrow-left mr-1"></i> Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const recipients = @Html.Raw(Json.Serialize(Model.TemplateRecepients));
+    var OrgDetailsByEmailUrl = '@Url.Action("OrgDetailsByEmail", "Documents")';
+
+    $(document).ready(function () {
+        $('#networkOverlay').hide();
+
+        // Fetch profile images for all recipients
+        recipients.forEach((recipient, index) => {
+            const email = recipient.signer?.email || recipient.Signer?.email;
+            if (email) {
+                const imgId = `thumb-${index}`;
+                const loaderId = `loader-${index}`;
+                sendEmailToGetThumbnail(email, imgId, loaderId);
+            }
+        });
+
+        updateTimestamps_statuspage();
+    });
+
+    function sendEmailToGetThumbnail(email, imgId, loaderId) {
+        $.ajax({
+            type: "POST",
+            url: OrgDetailsByEmailUrl,
+            headers: {
+
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+
+            },
+            data: { email: email },
+            success: function (response) {
+                const userdetails = response.userProfile;
+                const imgUrl = userdetails?.selfieThumbnail;
+                var loaderEl = document.getElementById(loaderId);
+                var imgEl = document.getElementById(imgId);
+                if (loaderEl) loaderEl.style.display = "none";
+                if (imgEl) {
+                    imgEl.style.display = "flex";
+                    if (imgUrl) {
+                        imgEl.src = `data:image/jpeg;base64,${imgUrl}`;
+                    } else {
+                        imgEl.src = '/img/Signatory_dp.png';
+                    }
+                }
+            },
+            error: function() {
+                var loaderEl = document.getElementById(loaderId);
+                var imgEl = document.getElementById(imgId);
+                if (loaderEl) loaderEl.style.display = "none";
+                if (imgEl) {
+                    imgEl.style.display = "flex";
+                    imgEl.src = '/img/Signatory_dp.png';
+                }
+            }
+        });
+    }
+
+    function modalForm(documentname, EdmsId) {
+        $.ajax({
+            url: '@Url.Action("GetPreviewConfig", "DigitalForms")',
+            type: 'GET',
+            data: {
+                edmsId: EdmsId
+            },
+            beforeSend: function () {
+                $('#overlay').show();
+            },
+            complete: function () {
+                $('#overlay').hide();
+            },
+            success: function (resp) {
+                if (resp.success) {
+                    formbase64 = resp.result;
+                    DownloadForm(documentname, formbase64);
+                } else {
+                    swal({
+                        title: 'Error',
+                        text: resp.message,
+                        type: 'error',
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            document.getElementById("navigationNetworkOverlay").style.display = "block";
+                            window.location.href = '@Url.Action("Index", "DigitalForms")';
+                        }
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                swal({
+                    title: 'Error',
+                    text: 'Something went wrong!',
+                    type: 'error',
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        document.getElementById("navigationNetworkOverlay").style.display = "block";
+                        window.location.href = '@Url.Action("Index", "DigitalForms")';
+                    }
+                });
+            }
+        });
+    }
+
+    function DownloadForm(documentname, formbase64) {
+        var byteCharacters = atob(formbase64);
+        var byteNumbers = new Array(byteCharacters.length);
+
+        for (var i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        var byteArray = new Uint8Array(byteNumbers);
+        var blob = new Blob([byteArray], { type: 'application/pdf' });
+
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = documentname;
+        link.click();
+    };
+
+    function backhandle() {
+        window.history.back();
+    }
+</script>
+

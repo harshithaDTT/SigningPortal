@@ -1,0 +1,197 @@
+﻿@model SigningPortal.Web.ViewModels.SignatureDelegation.EditDelegationViewModel
+
+
+<div class="container-fluid p-4" style="background:#F6F7FB; min-height:100vh;">
+
+    <div class="col-md-12">
+
+        <div>
+            <h3>Signature Delegation Details</h3>
+        </div>
+        <br>
+        <div class="card" style="box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 10px;padding: 15px;">
+            <div class="row ml-2">
+                <div class="col-12 col-lg-6">
+                    <div class="form-group row">
+                        <label class="col-4 col-md-3 col-lg-4">Start Date:</label>
+                        <label class="col-8 col-md-9 col-lg-8" data-start="@Model.StartDateTime.ToString("o")"></label>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="form-group row">
+                        <label class="col-4 col-md-3 col-lg-4">End Date:</label>
+                        <label class="col-8 col-md-9 col-lg-8" data-end="@Model.EndDateTime.ToString("o")"></label>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="from-group row">
+                        <label class="col-4 col-md-3 col-lg-4">Status :</label>
+                        <label class="col-8 col-md-9 col-lg-8" style=" color: @(Model.DelegationStatus == "Pending" ? "rgb(245, 124, 0) !important" : Model.DelegationStatus == "Cancelled" ? "red !important" : "") ;">@Model.DelegationStatus</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <br />
+
+        <div class="row ml-2">
+            <div class="col-md-12">
+                <div class="card" style="box-shadow:rgba(0, 0, 0, 0.2) 0px 3px 10px; padding-top:0;">
+                    <div class="row" style="box-shadow:rgba(0, 0, 0, 0.2) 0px 3px 10px;margin-left:1px;margin-right:1px;">
+                        <div class="col-sm" style="margin-bottom: 17px; margin-top: 10px;margin-left:3px;">Delegatee list</div>
+                    </div>
+                    <br />
+                    <table id="delegateeViewTable" style="margin-bottom:20px;">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th style="text-align:center">Profile</th>
+                                <th style="text-align:center">Name</th>
+                                <th style="text-align:center">Email</th>
+                                <th style="text-align:center">Status</th>
+                            </tr>
+                        </thead>
+                        <br />
+                        @foreach (var item in Model.Delegatees)
+                        {
+                            <tbody class="MuiTableBody-root jss137">
+                                <tr class="MuiTableRow-root">
+                                    <td></td>
+                                    <td style="text-align:center;">
+                                        <div>
+                                            <img src="data:image/png;base64,@item.Thumbnail" style="width:3rem;height:3rem;" asp-append-version="true" class="initial" alt="Thumbnail">
+                                        </div>
+                                    </td>
+                                    <td style="text-align:center">@item.FullName</td>
+                                    <td style="text-align:center">@item.Email</td>
+                                    <td style="text-align:center;color: @(Model.DelegationStatus == "Pending" ? "rgb(245, 124, 0) !important" : Model.DelegationStatus == "Cancelled" ? "red !important" : Model.DelegationStatus == "Active" ? "green !important" : "")">
+                                        @Model.DelegationStatus
+                                    </td>
+                                </tr>
+                            </tbody>
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+        <br>
+        <div>
+            @if (Model.DelegationStatus != "Expired" &&
+            Model.DelegationStatus != "Completed" &&
+            Model.DelegationStatus != "Rejected" &&
+            Model.DelegationStatus != "Cancelled")
+            {
+                <a accessibilitylabel="revoke" class="btn btn-primary" style="float: right; margin-right: 17%;width:100px" onclick="revokeDelegate('@Model.DelegationID')">Revoke</a>
+            }
+        </div>
+
+    </div>
+</div>
+<div class="classshide">
+    <div id='viewer'></div>
+</div>
+<script src="~/local-cdns/Shared/sweetalert2/11/sweetalert2.min.js"></script>
+<script>
+
+    $(document).ready(function () {
+
+        $('#networkOverlay').hide();
+        $('#SignatureDelegationMenu').addClass('active');
+
+        var actWidth = $(".nav-tabs").find(".active").parent("li").width();
+        var actPosition = $(".nav-tabs .active").position();
+
+        $(".slider").css({
+            "left": 0, /* + actPosition.left */
+            "width": $(".nav-tabs .active").parent("li").width()
+        });
+
+        // Convert Start Date label
+        $('label[data-start]').each(function () {
+            const utcStart = $(this).attr('data-start');
+            const startDate = new Date(utcStart);
+
+            if (!isNaN(startDate.getTime())) {
+                const formattedStartDate =
+                    startDate.toLocaleDateString('en-GB') + ' ' +
+                    startDate.toLocaleTimeString();
+                $(this).text(formattedStartDate);
+            } else {
+                $(this).text('Invalid Date');
+            }
+        });
+
+        // Convert End Date label
+        $('label[data-end]').each(function () {
+            const utcEnd = $(this).attr('data-end');
+            const endDate = new Date(utcEnd);
+
+            if (!isNaN(endDate.getTime())) {
+                const formattedEndDate =
+                    endDate.toLocaleDateString('en-GB') + ' ' +
+                    endDate.toLocaleTimeString();
+                $(this).text(formattedEndDate);
+            } else {
+                $(this).text('Invalid Date');
+            }
+        });
+
+    });
+
+
+    function revokeDelegate(delegationId) {
+        // Show confirmation dialog
+        Swal.fire({
+            title: 'Message',
+            text: "Are you sure to revoke delegation",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#acc43d",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "OK"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // User clicked OK, proceed with revoking delegation
+                // Make an AJAX GET request
+                $.ajax({
+                    url: '@Url.Action("RevokeDelegate", "SignatureDelegation")',
+                    type: 'GET',
+                    data: { delegationId: delegationId },
+                    beforeSend: function () {
+                        $('#overlay').show();
+                    },
+                    complete: function () {
+                        $('#overlay').hide();
+                    },
+                    error: ajaxErrorHandler,
+                    success: function (response) {
+                        if (response.status == "Failed") {
+                            swal({
+                                title: 'Server response',
+                                text: response.message,
+                                type: 'info',
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = '@Url.Action("List", "SignatureDelegation")';
+                                }
+                            });
+                        }
+                        else {
+                            swal({
+                                title: 'Success',
+                                text: response.message,
+                                type: 'success',
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = '@Url.Action("List", "SignatureDelegation")';
+                                }
+                            });
+
+                        }
+                    }
+                });
+            }
+        });
+    }
+</script>
