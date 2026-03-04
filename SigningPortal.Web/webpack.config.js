@@ -11,8 +11,14 @@ const entries = {};
 files.forEach(file => {
     // Skip already minified files
     if (file.endsWith('.min.js')) {
-        const distPath = path.resolve(__dirname, 'wwwroot/dist', path.relative(path.resolve(__dirname, 'wwwroot/js'), file));
+        const baseDir = path.resolve(__dirname, 'wwwroot/dist');
+        const requestedPath = path.resolve(baseDir, file);
 
+        if (!requestedPath.startsWith(baseDir)) {
+            throw new Error('Invalid file path');
+        }
+
+        const distPath = requestedPath;
         // Ensure directory exists
         fs.mkdirSync(path.dirname(distPath), { recursive: true });
 
