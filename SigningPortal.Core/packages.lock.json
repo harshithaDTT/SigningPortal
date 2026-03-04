@@ -276,7 +276,7 @@
         "resolved": "1.50.5",
         "contentHash": "1vPpX7WQmQCIb7rwlGOUoVs/yWZhVKvdhuG7WrJV+V+qsP8btnrrCqVWHENAlJxBAnUw5rhWfmuba9/Egei9MA==",
         "dependencies": {
-          "System.Data.SqlClient": "4.4.0",
+          "System.Data.SqlClient": "4.8.6",
           "System.Reflection.Emit.Lightweight": "4.3.0",
           "System.Reflection.TypeExtensions": "4.4.0"
         }
@@ -943,12 +943,12 @@
       },
       "runtime.native.System.Data.SqlClient.sni": {
         "type": "Transitive",
-        "resolved": "4.4.0",
+        "resolved": "4.8.6",
         "contentHash": "A8v6PGmk+UGbfWo5Ixup0lPM4swuSwOiayJExZwKIOjTlFFQIsu3QnDXECosBEyrWSPryxBVrdqtJyhK3BaupQ==",
         "dependencies": {
-          "runtime.win-arm64.runtime.native.System.Data.SqlClient.sni": "4.4.0",
-          "runtime.win-x64.runtime.native.System.Data.SqlClient.sni": "4.4.0",
-          "runtime.win-x86.runtime.native.System.Data.SqlClient.sni": "4.4.0"
+          "runtime.win-arm64.runtime.native.System.Data.SqlClient.sni": "4.8.6",
+          "runtime.win-x64.runtime.native.System.Data.SqlClient.sni": "4.8.6",
+          "runtime.win-x86.runtime.native.System.Data.SqlClient.sni": "4.8.6"
         }
       },
       "runtime.native.System.IO.Compression": {
@@ -1045,17 +1045,17 @@
       },
       "runtime.win-arm64.runtime.native.System.Data.SqlClient.sni": {
         "type": "Transitive",
-        "resolved": "4.4.0",
+        "resolved": "4.8.6",
         "contentHash": "LbrynESTp3bm5O/+jGL8v0Qg5SJlTV08lpIpFesXjF6uGNMWqFnUQbYBJwZTeua6E/Y7FIM1C54Ey1btLWupdg=="
       },
       "runtime.win-x64.runtime.native.System.Data.SqlClient.sni": {
         "type": "Transitive",
-        "resolved": "4.4.0",
+        "resolved": "4.8.6",
         "contentHash": "38ugOfkYJqJoX9g6EYRlZB5U2ZJH51UP8ptxZgdpS07FgOEToV+lS11ouNK2PM12Pr6X/PpT5jK82G3DwH/SxQ=="
       },
       "runtime.win-x86.runtime.native.System.Data.SqlClient.sni": {
         "type": "Transitive",
-        "resolved": "4.4.0",
+        "resolved": "4.8.6",
         "contentHash": "YhEdSQUsTx+C8m8Bw7ar5/VesXvCFMItyZF7G1AUY+OM0VPZUOeAVpJ4Wl6fydBGUYZxojTDR3I6Bj/+BPkJNA=="
       },
       "SharpCompress": {
@@ -1160,13 +1160,13 @@
       },
       "System.Data.SqlClient": {
         "type": "Transitive",
-        "resolved": "4.4.0",
+        "resolved": "4.8.6",
         "contentHash": "fxb9ghn1k1Ua7FFdlvtiBOD4/PsQvD/fk2KnhS+FK7VC6OggEx6P+lP1P0+KMb5V2dqS1+FbR7HCenoqzJMNIA==",
         "dependencies": {
           "Microsoft.Win32.Registry": "4.4.0",
           "System.Security.Principal.Windows": "4.4.0",
           "System.Text.Encoding.CodePages": "4.4.0",
-          "runtime.native.System.Data.SqlClient.sni": "4.4.0"
+          "runtime.native.System.Data.SqlClient.sni": "4.8.6"
         }
       },
       "System.Diagnostics.Debug": {
