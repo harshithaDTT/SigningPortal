@@ -85,7 +85,8 @@ function redirectToDocumentDetails(id) {
     // Construct the URL for the action
     var url = DocumentDetailsByIdUrl + "/" + id;
     // Redirect to the URL
-    window.location.href = url;
+    const urlval = new URL(url, window.location.origin);
+    window.location.href = urlval.toString();
 }
 
 
@@ -551,7 +552,8 @@ function getSelectedSendType() {
                 const queryString = new URLSearchParams(params).toString();
                 const urlWithParams = `${baseUrl}?${queryString}`;
                 document.getElementById('navigationNetworkOverlay').style.display = 'block';
-                window.location.href = urlWithParams;
+                const urlval = new URL(urlWithParams, window.location.origin);
+                window.location.href = urlval.toString();
             } else {
                 var baseUrl = SendFormUrl;
                 const params = payload;
@@ -559,7 +561,8 @@ function getSelectedSendType() {
                 const queryString = new URLSearchParams(params).toString();
                 const urlWithParams = `${baseUrl}?${queryString}`;
                 document.getElementById('navigationNetworkOverlay').style.display = 'block'
-                window.location.href = urlWithParams;
+                const urlval = new URL(urlWithParams, window.location.origin);
+                window.location.href = urlval.toString();
             }
 
         }
@@ -582,7 +585,8 @@ async function showSuccess(message) {
 }
 function redirectToIndex() {
     document.getElementById('navigationNetworkOverlay').style.display = 'block'
-    window.location.href = DigitalFormsIndexUrl;
+    const urlval = new URL(DigitalFormsIndexUrl, window.location.origin);
+    window.location.href = urlval.toString();
 }
 
 function Unpublish(templateId) {

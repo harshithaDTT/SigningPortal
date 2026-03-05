@@ -385,6 +385,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\css\FormRequests\" />
+    <Folder Include="wwwroot\js\Dashboard\" />
   </ItemGroup>
   <ProjectExtensions>
     <VisualStudio>

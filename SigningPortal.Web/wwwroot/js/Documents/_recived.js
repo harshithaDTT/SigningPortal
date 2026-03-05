@@ -944,7 +944,9 @@ function redirectToDocumentDetails(id) {
     var viewName = "RecievedDocuments";
     var url = DocumentDetailsByIdUrl+'?id=' + id + '&viewName=' + viewName;
     // Redirect to the URL
-    window.location.href = url;
+    const urlval = new URL(url, window.location.origin);
+
+    window.location.href = urlval.toString();
 }
 
 async function signActionConfigByDocIdOnclick(docId, currentDocNo = 0, totalDocs = 0) {
@@ -1000,7 +1002,10 @@ async function signActionConfigByDocIdOnclick(docId, currentDocNo = 0, totalDocs
                 var viewName = "RecievedDocuments";
                 localStorage.setItem("CurrentDocNo", currentDocNo);
                 localStorage.setItem("TotalDocs", totalDocs);
-                window.location.href = SignActionConfigByDocId + '?docId=' + docId + '&viewName=' + viewName;
+                const url = new URL(SignActionConfigByDocId, window.location.origin);
+                url.searchParams.append('?docId=', docId);
+                url.searchParams.append('&viewName=', viewName)
+                window.location.href = url.toString();
             }
         }
     } catch (error) {
@@ -1052,7 +1057,9 @@ async function handle_delegation_orgid_suid_selfloginuser(delegation_req_data) {
                         type: "error",
                     }, function (isConfirm) {
                         if (isConfirm) {
-                            window.location.href = IndexDocuments;
+                            const urlval = new URL(IndexDocuments, window.location.origin);
+
+                            window.location.href = urlval.toString();
                         }
                     });
                     resolve(false);

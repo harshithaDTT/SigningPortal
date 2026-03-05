@@ -21,5 +21,8 @@
     "terser-webpack-plugin": "^5.3.14",
     "webpack": "^5.101.3",
     "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "sweetalert2": "^11.26.21"
   }
 }

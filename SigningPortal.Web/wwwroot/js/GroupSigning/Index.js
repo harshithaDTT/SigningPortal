@@ -30,17 +30,22 @@
 });
 function handlecreateTemplate() {
     document.getElementById("navigationNetworkOverlay").style.display = "block";
-    window.location.href = CreateTemplate;
+    const urlval = new URL(CreateTemplate, window.location.origin);
+    window.location.href = urlval.toString();
 }
 function handleEditTemplate(templateId) {
     document.getElementById("navigationNetworkOverlay").style.display = "block";
-    window.location.href = GetTemplateDetails + `?templateId=${templateId}`;
+    const url = new URL(GetTemplateDetails, window.location.origin);
+    url.searchParams.append('?templateId=', templateId);
+    window.location.href = url.toString();
 
 }
 
 function handlePreview(templateId) {
     document.getElementById("navigationNetworkOverlay").style.display = "block";
-    window.location.href = Preview + `?templateId=${templateId}`;
+    const url = new URL(Preview, window.location.origin);
+    url.searchParams.append('?templateId=', templateId);
+    window.location.href = url.toString();
 
 }
 
@@ -57,10 +62,14 @@ function handlenewTranscation(status, actionRequired, expiredSoon) {
     }
 
     if (status === "In Progress") {
-        window.location.href = url
+        const urlval = new URL(url, window.location.origin);
+        window.location.href = urlval.toString();
     }
     else {
-        window.location.href = IndexDocuments + status;
+        const url = new URL(IndexDocuments, window.location.origin);
+        url.pathname += encodeURIComponent(status);
+
+        window.location.href = url.toString();
     }
 }
 
@@ -68,12 +77,16 @@ function handlenewTranscation(status, actionRequired, expiredSoon) {
 function handleDocumentsSigningStatus(groupId) {
 
     document.getElementById("navigationNetworkOverlay").style.display = "block";
-    window.location.href = DocumentsSigningStatus + `?groupId=${groupId}`;
+    const url = new URL(DocumentsSigningStatus, window.location.origin);
+    url.searchParams.append('?groupId=', groupId);
+    window.location.href = url.toString();
 }
 
 
 $(".handleGroupSign").on("click", function () {
     const groupId = $(this).data("docid");
     document.getElementById("navigationNetworkOverlay").style.display = "block";
-    window.location.href = DocumentsSigningStatus + `?groupId=${groupId}`;
+    const url = new URL(DocumentsSigningStatus, window.location.origin);
+    url.searchParams.append('?groupId=', groupId);
+    window.location.href = url.toString();
 })

@@ -1369,7 +1369,11 @@ function PerformBulkSigning(correlationId, signcord, esealcord) {
 					type: "info",
 				}, function (isConfirm) {
 					if (isConfirm) {
-						window.location.href = BulkSigningStatusUrl + '?correlationId=' + correlationId;
+						//window.location.href = BulkSigningStatusUrl + '?correlationId=' + correlationId;
+						const url = new URL(BulkSigningStatusUrl, window.location.origin);
+						url.searchParams.append('correlationId', correlationId);
+
+						window.location.href = url.toString();
 					}
 				});
 

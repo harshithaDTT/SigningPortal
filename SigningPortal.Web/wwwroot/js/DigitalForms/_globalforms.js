@@ -109,7 +109,8 @@ function modalForm(EdmsId, SignerName) {
                     type: 'error',
                 }, function (isConfirm) {
                     if (isConfirm) {
-                        window.location.href = DigitalFormsIndexUrl;
+                        const url = new URL(DigitalFormsIndexUrl, window.location.origin);
+                        window.location.href = url.toString();
                     }
                 });
             }
@@ -122,7 +123,8 @@ function modalForm(EdmsId, SignerName) {
                     type: "error"
                 }, function (isConfirm) {
                     if (isConfirm) {
-                        window.location.href = DigitalFormsIndexUrl;
+                        const url = new URL(DigitalFormsIndexUrl, window.location.origin);
+                        window.location.href = url.toString();
                     }
                 });
             } else {
@@ -174,8 +176,13 @@ function fillFormData(tempId, edmsId, documentName, flag) {
         success: function (response) {
             if (response.success) {
                 // Redirect to FillFormData if validation passes
-                window.location.href = FillFormDataUrl + '?tempId=' + tempId + '&edmsId=' + edmsId + '&documentName=' + documentName + '&flag=' + flag;
+                const url = new URL(FillFormDataUrl, window.location.origin);
+                url.searchParams.append('?tempId=', tempId);
+                url.searchParams.append('&edmsId=', edmsId)
+                url.searchParams.append('&documentName=', documentName)
+                url.searchParams.append('&flag=', flag)
 
+                window.location.href = url.toString();
             } else {
                 // Show Swal message if validation fails
                 swal({

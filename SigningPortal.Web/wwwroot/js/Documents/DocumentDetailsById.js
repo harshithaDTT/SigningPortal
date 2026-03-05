@@ -246,7 +246,10 @@ async function signActionByDocIdForReferedDocOnclick(docId) {
                 });
                 return false; // Stop further execution
             } else {
-                window.location.href = signActionByDocIdForReferedDoc + '?docId=' + docId + '&viewName=' + viewname;
+                const url = new URL(signActionByDocIdForReferedDoc, window.location.origin);
+                url.searchParams.append('?docId=', docId);
+                url.searchParams.append('&viewName=', viewName)
+                window.location.href = url.toString();
 
 
             }
@@ -301,7 +304,10 @@ async function signActionConfigByDocIdOnclick(docId) {
                 });
                 return false; // Stop further execution
             } else {
-                window.location.href = SignActionConfigByDocId + '?docId=' + docId + '&viewName=' + viewname;
+                const url = new URL(SignActionConfigByDocId, window.location.origin);
+                url.searchParams.append('?docId=', docId);
+                url.searchParams.append('&viewName=', viewName)
+                window.location.href = url.toString();
 
 
             }
@@ -356,7 +362,9 @@ async function handle_delegation_orgid_suid_selfloginuser(delegation_req_data) {
                         type: "error",
                     }, function (isConfirm) {
                         if (isConfirm) {
-                            window.location.href = IndexDocuments;
+                            const urlval = new URL(IndexDocuments, window.location.origin);
+
+                            window.location.href = urlval.toString();
                         }
                     });
                     resolve(false);
