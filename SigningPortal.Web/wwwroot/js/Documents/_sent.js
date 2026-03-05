@@ -120,7 +120,7 @@ $(document).ready(function () {
                                 $('#showMoreBtnSent').hide();
                                 if (totalRecords > pageSize) {
                                     $('#allDocsLoadedMsgSent').show();
-                                    document.getElementById("allDocsLoadedMsgSent").innerHTML = `All documents loaded (${totalRecords})`
+                                    document.getElementById("allDocsLoadedMsgSent").innerHTML = DOMPurify.sanitize(`All documents loaded (${totalRecords})`);
                                 }
 
                             } else {

@@ -283,7 +283,7 @@ function isUserVerifiedCode() {
                     if (result.operation == "warning") {
                         document.getElementById(errorDivId).className = "danger";
                         document.getElementById(errorDivId).style.display = "block"
-                        document.getElementById(errorDivId).innerHTML = result.message;
+                        document.getElementById(errorDivId).innerHTML = DOMPurify.sanitize(result.message);
                     }
                     if (result.operation == "stop") {
 

@@ -2254,7 +2254,7 @@ function customTextAreaParser(block) {
     inputElement.style.overflowWrap = 'break-word';
 
 
-    inputElement.innerHTML = block.data.value || '';
+    inputElement.innerHTML = DOMPurify.sanitize(block.data.value || '');
 
     inputWrapper.appendChild(inputElement);
 
@@ -2390,7 +2390,7 @@ function customImageParser(block) {
         placeholder.style.justifyContent = 'center';
         placeholder.style.cursor = 'pointer';
         placeholder.style.textAlign = 'center';
-        placeholder.innerHTML = block.data.placeholderText || 'Upload Image';
+        placeholder.innerHTML = DOMPurify.sanitize(block.data.placeholderText || 'Upload Image');
         placeholder.style.color = '#999';
         placeholder.style.fontSize = '18px';
         placeholder.style.fontStyle = 'italic';

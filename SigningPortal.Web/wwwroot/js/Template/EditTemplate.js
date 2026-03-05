@@ -1644,13 +1644,13 @@ function rgbToHex(r, g, b) {
 
 function updateModalContent(headerContent, bodyContent, footerContent) {
     // Update the modal header
-    document.querySelector('#EditFields_Modal .modal-header').innerHTML = headerContent;
+    document.querySelector('#EditFields_Modal .modal-header').innerHTML = DOMPurify.sanitize(headerContent);
 
     // Update the modal body
-    document.querySelector('#EditFields_Modal .modal-body').innerHTML = bodyContent;
+    document.querySelector('#EditFields_Modal .modal-body').innerHTML = DOMPurify.sanitize(bodyContent);
 
     // Update the modal footer
-    document.querySelector('#EditFields_Modal .modal-footer').innerHTML = footerContent;
+    document.querySelector('#EditFields_Modal .modal-footer').innerHTML = DOMPurify.sanitize(footerContent);
 }
 
 function addEditIcon(content, type) {

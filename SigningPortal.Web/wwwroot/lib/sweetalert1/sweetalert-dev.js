@@ -248,7 +248,7 @@ sweetAlert.showInputError = swal.showInputError = function (errorMessage) {
   var $errorContainer = modal.querySelector('.sa-error-container');
   _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.addClass($errorContainer, 'show');
 
-  $errorContainer.querySelector('p').innerHTML = errorMessage;
+    $errorContainer.querySelector('p').innerHTML = DOMPurify.sanitize(errorMessage);
 
   setTimeout(function () {
     sweetAlert.enableButtons();
@@ -993,7 +993,7 @@ var setParameters = function setParameters(params) {
   /*
    * Title
    */
-  $title.innerHTML = params.html ? params.title : _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.escapeHtml(params.title).split('\n').join('<br>');
+    $title.innerHTML = DOMPurify.sanitize(params.html ? params.title : _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.escapeHtml(params.title).split('\n').join('<br>'));
 
   /*
    * Text
